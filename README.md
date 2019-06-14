@@ -36,8 +36,7 @@ import scared
 def first_sub_bytes(plaintext, guesses):
     res = np.empty((plaintext.shape[0], len(guesses), plaintext.shape[1]), dtype='uint8')
     for guess in guesses:
-        key = np.array([guess for i in range(16)], dtype='uint8')
-        res[:, guess, :] = aes.encrypt(plaintext=plaintext, key=key, at_round=1, after_step=aes.Steps.SUB_BYTES)
+        res[:, guess, :] = np.bitwise_xor(plaintext, guess)
     return res
 
 # Create an analysis CPA

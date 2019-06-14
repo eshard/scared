@@ -3,7 +3,7 @@
     :align: right
 
 
-Scared - The side-channel analysis framework 
+Scared - The side-channel analysis framework
 ============================================
 
 .. toctree::
@@ -11,7 +11,7 @@ Scared - The side-channel analysis framework
 
     Start here! <README.md>
     Practical guides <guides/index.rst>
-    Don't be scared - fundamentals <fundamentals.md>
+    Scared fundamentals <fundamentals.md>
     API reference <api_reference/index.rst>
     Contribute <CONTRIBUTING.md>
     Changelog <CHANGELOG.md>
@@ -21,5 +21,3 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
