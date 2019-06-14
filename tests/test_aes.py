@@ -1,0 +1,675 @@
+from .context import scared  # noqa: F401
+from scared import aes
+import pytest
+import numpy as np
+from itertools import product
+from Crypto.Cipher import AES as crypto_aes  # noqa: N811
+
+
+_key_sizes = (16, 24, 32)
+_multiple_keys = _multiple_states = (True, False)
+_cases = list(product(_key_sizes, _multiple_keys, _multiple_states))
+number_of_keys = 20
+
+
+@pytest.fixture(params=_cases)
+def encrypt_cases(request):
+    key_size, mult_keys, mult_state = request.param
+    return _cases(key_size, mult_keys, mult_state)
+
+
+@pytest.fixture(params=_cases)
+def decrypt_cases(request):
+    key_size, mult_keys, mult_state = request.param
+    return _cases(key_size, mult_keys, mult_state, mode='decrypt')
+
+
+def _cases(key_size, mult_keys, mult_state, mode='encrypt'):
+    if mult_keys:
+        keys = np.random.randint(0, 255, (number_of_keys, key_size), dtype='uint8')
+        if mult_state:
+            state = np.random.randint(0, 255, (number_of_keys, 16), dtype='uint8')
+            expected = np.empty((number_of_keys, 16), dtype='uint8')
+            for i, key in enumerate(keys):
+                a = crypto_aes.AESCipher(key)
+                expected[i] = np.frombuffer(getattr(a, mode)(state[i]), dtype='uint8')
+        else:
+            state = np.random.randint(0, 255, (16), dtype='uint8')
+            expected = np.empty((number_of_keys, 16), dtype='uint8')
+            for i, key in enumerate(keys):
+                a = crypto_aes.AESCipher(key)
+                expected[i] = np.frombuffer(getattr(a, mode)(state), dtype='uint8')
+    else:
+        keys = np.random.randint(0, 255, (key_size), dtype='uint8')
+        a = crypto_aes.AESCipher(keys)
+        if mult_state:
+            state = np.random.randint(0, 255, (number_of_keys, 16), dtype='uint8')
+            expected = np.empty((number_of_keys, 16), dtype='uint8')
+            for i, s in enumerate(state):
+                expected[i] = np.frombuffer(getattr(a, mode)(s), dtype='uint8')
+        else:
+            state = np.random.randint(0, 255, (16), dtype='uint8')
+            expected = np.frombuffer(getattr(a, mode)(state), dtype='uint8')
+    return {'keys': keys, 'state': state, 'expected': expected}
+
+
+@pytest.fixture
+def aes_datas():
+    datas = np.load('tests/aes_data_tests.npz')
+    for k, v in datas.items():
+        setattr(datas, k, v)
+    return datas
+
+
+def test_key_expansion_raise_exception_if_key_isnt_array():
+    with pytest.raises(TypeError):
+        aes.key_expansion(key_cols='foo')
+    with pytest.raises(TypeError):
+        aes.key_expansion(key_cols=123456465)
+    with pytest.raises(TypeError):
+        aes.key_expansion(key_cols={'shape': 12})
+
+
+def test_key_expansion_raise_exception_if_key_isnt_int8_array():
+    with pytest.raises(ValueError):
+        key = np.random.random_sample((16, ))
+        aes.key_expansion(key_cols=key)
+
+
+def test_key_expansion_raise_exception_if_key_hasnt_a_valid_size():
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, size=(8,), dtype='uint8')
+        aes.key_expansion(key_cols=key)
+
+
+def test_key_expansion_raise_exception_if_col_in_or_col_out_is_not_int():
+    with pytest.raises(TypeError):
+        key = np.random.randint(0, 255, (16, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in='foo')
+    with pytest.raises(TypeError):
+        key = np.random.randint(0, 255, (24, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=0, col_out='foo')
+
+
+def test_key_expansion_raise_exception_if_col_in_or_col_out_is_negative():
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, (16, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=-2, col_out=40)
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, (24, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=0, col_out=-12)
+
+
+def test_key_expansion_raise_exception_if_col_out_is_greater_than_max_cols():
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, (16, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=0, col_out=50)
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, (24, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=0, col_out=60)
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, (32, ), dtype='uint8')
+        aes.key_expansion(key_cols=key, col_in=0, col_out=66)
+
+
+def test_key_expansion_bwd_128(aes_datas):
+    round_keys = aes_datas['128_key_schedule_output'].reshape(11 * 16)
+    for i in range(0, 11):
+        key_cols = round_keys[i * 16: (i + 1) * 16]
+        master = aes.key_expansion(key_cols=key_cols, col_in=i * 4, col_out=0)
+        assert np.array_equal(master[0], round_keys[:(i + 1) * 16])
+
+
+def test_key_expansion_bwd_192(aes_datas):
+    round_keys = aes_datas['192_key_schedule_output'].reshape(13 * 16)
+    for i in range(8, 0, -1):
+        key_cols = round_keys[16 + (i - 1) * 24: 16 + i * 24]
+        master = aes.key_expansion(key_cols=key_cols, col_in=int((16 + (i - 1) * 24) / 4), col_out=0)
+        assert np.array_equal(master[0], round_keys[:16 + i * 24])
+
+
+def test_key_expansion_bwd_256(aes_datas):
+    master = np.random.randint(0, 255, (32,), dtype='uint8')
+    round_keys = aes.key_expansion(key_cols=master, col_in=0, col_out=60)[0]
+    for i in range(7, 0, -1):
+        key_cols = round_keys[(i - 1) * 32: i * 32]
+        master = aes.key_expansion(key_cols=key_cols, col_in=int(((i - 1) * 32) / 4), col_out=0)
+        res = master[0].reshape((-1, 4))
+        exp = round_keys[:i * 32].reshape((-1, 4))
+        for i, w in enumerate(res):
+            assert w.tolist() == exp[i].tolist()
+    round_keys = aes_datas['256_key_schedule_output'].reshape(15 * 16)
+    for i in range(7, 0, -1):
+        key_cols = round_keys[(i - 1) * 32: i * 32]
+        master = aes.key_expansion(key_cols=key_cols, col_in=int(((i - 1) * 32) / 4), col_out=0)
+        assert np.array_equal(master[0], round_keys[:i * 32])
+
+
+def test_key_expansion_fwd_128(aes_datas):
+    master = aes_datas['128_key']
+    keys = aes.key_expansion(master, col_in=0)
+    assert np.array_equal(aes_datas['128_key_schedule_output'].reshape(176), keys[0])
+
+
+def test_key_expansion_fwd_192(aes_datas):
+    master = aes_datas['192_key']
+    keys = aes.key_expansion(master, col_in=0)
+    assert np.array_equal(aes_datas['192_key_schedule_output'].reshape(13 * 16), keys[0])
+
+
+def test_key_expansion_fwd_256(aes_datas):
+    master = aes_datas['256_key']
+    keys = aes.key_expansion(master, col_in=0)
+    assert np.array_equal(aes_datas['256_key_schedule_output'].reshape(15 * 16), keys[0])
+
+
+def test_key_schedule_returns_appropriate_keys_for_128_key(aes_datas):
+    output = aes.key_schedule(aes_datas['128_key'])
+    assert np.array_equal(
+        output,
+        aes_datas['128_key_schedule_output']
+    )
+    assert output.shape == (11, 16)
+    output = aes.key_schedule(np.random.randint(0, 255, (15, 16), dtype='uint8'))
+    assert output.shape == (15, 11, 16)
+
+
+def test_inv_key_schedule_returns_appropriate_keys(aes_datas):
+    round_keys = aes_datas['128_key_schedule_output']
+    for i, round_key in enumerate(round_keys):
+        res = aes.inv_key_schedule(round_key, i)
+        assert np.array_equal(round_keys, res)
+
+
+def test_key_schedule_returns_appropriate_keys_for_192_key(aes_datas):
+    output = aes.key_schedule(aes_datas['192_key'])
+    assert np.array_equal(
+        output,
+        aes_datas['192_key_schedule_output']
+    )
+    assert output.shape == (13, 16)
+    output = aes.key_schedule(np.random.randint(0, 255, (15, 24), dtype='uint8'))
+    assert output.shape == (15, 13, 16)
+
+
+def test_key_schedule_returns_appropriate_keys_for_256_key(aes_datas):
+    output = aes.key_schedule(aes_datas['256_key'])
+    assert np.array_equal(
+        output,
+        aes_datas['256_key_schedule_output']
+    )
+    assert output.shape == (15, 16)
+    output = aes.key_schedule(np.random.randint(0, 255, (15, 32), dtype='uint8'))
+    assert output.shape == (15, 15, 16)
+
+
+def test_key_schedule_raise_exception_if_key_isnt_array():
+    with pytest.raises(TypeError):
+        aes.key_schedule(key='foo')
+    with pytest.raises(TypeError):
+        aes.key_schedule(key=123456465)
+    with pytest.raises(TypeError):
+        aes.key_schedule(key={'shape': 12})
+
+
+def test_key_schedule_raise_exception_if_key_isnt_int8_array():
+    with pytest.raises(ValueError):
+        key = np.random.random_sample((16, ))
+        aes.key_schedule(key=key)
+
+
+def test_key_schedule_raise_exception_if_key_hasnt_a_valid_size():
+    with pytest.raises(ValueError):
+        key = np.random.randint(0, 255, size=(8,))
+        aes.key_schedule(key=key)
+
+
+def test_sub_bytes_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.sub_bytes(state='foo')
+    with pytest.raises(TypeError):
+        aes.sub_bytes(state=12)
+
+
+def test_sub_bytes_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.sub_bytes(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.sub_bytes(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_sub_bytes_returns_correct_array(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_sub_bytes']
+    assert np.array_equal(
+        expected,
+        aes.sub_bytes(state=state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_inv_sub_bytes_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.inv_sub_bytes(state='foo')
+    with pytest.raises(TypeError):
+        aes.inv_sub_bytes(state=12)
+
+
+def test_inv_sub_bytes_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.inv_sub_bytes(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.inv_sub_bytes(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_inv_sub_bytes_returns_correct_array(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_inv_sub_bytes']
+    assert np.array_equal(
+        expected,
+        aes.inv_sub_bytes(state=state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_shift_rows_returns_correct_array(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_shift_rows']
+    assert np.array_equal(
+        expected,
+        aes.shift_rows(state=state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_shift_rows_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.shift_rows(state='foo')
+    with pytest.raises(TypeError):
+        aes.shift_rows(state=12)
+
+
+def test_shift_rows_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.shift_rows(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.shift_rows(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_inv_shift_rows_returns_correct_array(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_inv_shift_rows']
+    assert np.array_equal(
+        expected,
+        aes.inv_shift_rows(state=state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_inv_shift_rows_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.inv_shift_rows(state='foo')
+    with pytest.raises(TypeError):
+        aes.inv_shift_rows(state=12)
+
+
+def test_inv_shift_rows_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.inv_shift_rows(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.inv_shift_rows(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_mix_columns_returns_correct_array(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_mix_columns']
+    assert np.array_equal(
+        expected,
+        aes.mix_columns(state=state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_mix_columns_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.mix_columns(state='foo')
+    with pytest.raises(TypeError):
+        aes.mix_columns(state=12)
+
+
+def test_mix_columns_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.mix_columns(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.mix_columns(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_mix_column_returns_correct_column_vector(aes_datas):
+    state = aes_datas['input_vectors']
+    expected = aes_datas['expected_mix_column']
+    assert np.array_equal(
+        expected,
+        aes.mix_column(state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_mix_column_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.mix_column(vectors='foo')
+    with pytest.raises(TypeError):
+        aes.mix_column(vectors=12)
+
+
+def test_mix_column_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.mix_column(vectors=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.mix_column(vectors=np.random.randint(0, 255, (12, 4), dtype='uint16'))
+
+
+def test_inv_mix_column_returns_correct_column_vector(aes_datas):
+    state = aes_datas['input_vectors']
+    expected = aes_datas['expected_inv_mix_column']
+    assert np.array_equal(
+        expected,
+        aes.inv_mix_column(state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_inv_mix_column_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.inv_mix_column(vectors='foo')
+    with pytest.raises(TypeError):
+        aes.inv_mix_column(vectors=12)
+
+
+def test_inv_mix_column_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.inv_mix_column(vectors=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.inv_mix_column(vectors=np.random.randint(0, 255, (12, 4), dtype='uint16'))
+
+
+def test_inv_mix_columns_returns_correct_column_vector(aes_datas):
+    state = aes_datas['input_state']
+    expected = aes_datas['expected_inv_mix_columns']
+    assert np.array_equal(
+        expected,
+        aes.inv_mix_columns(state)
+    )
+    assert expected.shape == state.shape
+
+
+def test_inv_mix_columns_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.inv_mix_columns(state='foo')
+    with pytest.raises(TypeError):
+        aes.inv_mix_columns(state=12)
+
+
+def test_inv_mix_columns_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.inv_mix_columns(state=np.random.randint(0, 255, (12, 12), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.inv_mix_columns(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
+
+
+def test_add_round_key_returns_correct_result_array_batch_of_n_keys_and_n_rows_state(aes_datas):
+    state = aes_datas['input_state']
+    key = aes_datas['input_round_key']
+    expected = aes_datas['expected_add_round_key']
+    assert np.array_equal(
+        expected,
+        aes.add_round_key(state=state, keys=key)
+    )
+    assert expected.shape == state.shape
+
+
+def test_add_round_key_returns_correct_result_array_batch_of_1_key_and_n_rows_state(aes_datas):
+    state = aes_datas['input_state']
+    key = aes_datas['input_round_key'][0]
+    expected = aes_datas['expected_add_round_key_1_key']
+    assert np.array_equal(
+        expected,
+        aes.add_round_key(state=state, keys=key)
+    )
+    assert expected.shape == state.shape
+
+
+def test_add_round_key_returns_correct_result_array_batch_of_n_key_and_1_row_state(aes_datas):
+    state = aes_datas['input_state'][0]
+    key = aes_datas['input_round_key']
+    expected = aes_datas['expected_add_round_key_1_state']
+    assert np.array_equal(
+        expected,
+        aes.add_round_key(state=state, keys=key)
+    )
+
+
+def test_add_round_key_raises_exception_if_state_is_not_array():
+    with pytest.raises(TypeError):
+        aes.add_round_key(state='foo', keys=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.add_round_key(state=12, keys=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_add_round_key_raises_exception_if_state_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.add_round_key(state=np.random.randint(0, 255, (12, 12), dtype='uint8'), keys=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.add_round_key(state=np.random.randint(0, 255, (12, 16), dtype='uint16'), keys=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_add_round_key_raises_exception_if_key_is_not_array():
+    with pytest.raises(TypeError):
+        aes.add_round_key(keys='foo', state=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.add_round_key(keys=12, state=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_add_round_key_raises_exception_if_key_is_not_a_correct_array():
+    with pytest.raises(ValueError):
+        aes.add_round_key(keys=np.random.randint(0, 255, (12, 12), dtype='uint8'), state=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.add_round_key(keys=np.random.randint(0, 255, (12, 16), dtype='uint16'), state=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_add_round_key_raises_exception_if_key_and_state_dims_are_incompatible():
+    with pytest.raises(ValueError):
+        aes.add_round_key(keys=np.random.randint(0, 255, (12, 16), dtype='uint8'), state=np.random.randint(0, 255, (10, 16), dtype='uint8'))
+
+
+def test_inv_add_round_key_is_the_same_function_than_add_round_key():
+    assert aes.inv_add_round_key == aes.add_round_key
+
+
+def test_encrypt_raises_exception_if_plaintext_or_key_is_not_a_byte_array_of_appropriate_length():
+    with pytest.raises(TypeError):
+        aes.encrypt(plaintext='foo', key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.encrypt(plaintext=12, key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=np.random.randint(0, 255, (12), dtype='uint8'), key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=np.random.randint(0, 255, (16), dtype='uint16'), key=np.random.randint(0, 255, (16), dtype='uint8'))
+
+    with pytest.raises(TypeError):
+        aes.encrypt(key='foo', plaintext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.encrypt(key=12, plaintext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.encrypt(key=np.random.randint(0, 255, (12), dtype='uint8'), plaintext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.encrypt(key=np.random.randint(0, 255, (16), dtype='uint16'), plaintext=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_encrypt_raises_exception_if_plaintext_and_keys_multiple_are_incompatible():
+    with pytest.raises(ValueError):
+        aes.encrypt(
+            plaintext=np.random.randint(0, 255, (10, 16), dtype='uint8'),
+            key=np.random.randint(0, 255, (9, 16), dtype='uint8')
+        )
+
+    with pytest.raises(ValueError):
+        aes.encrypt(
+            plaintext=np.random.randint(0, 255, (2, 10, 16), dtype='uint8'),
+            key=np.random.randint(0, 255, (16), dtype='uint8')
+        )
+
+
+def test_full_encrypt(encrypt_cases):
+    assert np.array_equal(
+        encrypt_cases['expected'],
+        aes.encrypt(plaintext=encrypt_cases['state'], key=encrypt_cases['keys'])
+    )
+
+
+def test_full_decrypt(decrypt_cases):
+    assert np.array_equal(
+        decrypt_cases['expected'],
+        aes.decrypt(ciphertext=decrypt_cases['state'], key=decrypt_cases['keys'])
+    )
+
+
+def test_simple_encrypt_with_128_key(aes_datas):
+    key = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+    expected_cipher = aes_datas['128_ciphertext']
+    cipher = aes.encrypt(key=key, plaintext=plain)
+    assert np.array_equal(expected_cipher, cipher)
+
+
+def test_decrypt_raises_exception_if_ciphertext_or_key_is_not_a_byte_array_of_appropriate_length():
+    with pytest.raises(TypeError):
+        aes.decrypt(ciphertext='foo', key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.decrypt(ciphertext=12, key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.decrypt(ciphertext=np.random.randint(0, 255, (12), dtype='uint8'), key=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.decrypt(ciphertext=np.random.randint(0, 255, (16), dtype='uint16'), key=np.random.randint(0, 255, (16), dtype='uint8'))
+
+    with pytest.raises(TypeError):
+        aes.decrypt(key='foo', ciphertext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(TypeError):
+        aes.decrypt(key=12, ciphertext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.decrypt(key=np.random.randint(0, 255, (12), dtype='uint8'), ciphertext=np.random.randint(0, 255, (16), dtype='uint8'))
+    with pytest.raises(ValueError):
+        aes.decrypt(key=np.random.randint(0, 255, (16), dtype='uint16'), ciphertext=np.random.randint(0, 255, (16), dtype='uint8'))
+
+
+def test_decrypt_raises_exception_if_ciphertext_and_keys_multiple_are_incompatible():
+    with pytest.raises(ValueError):
+        aes.decrypt(
+            ciphertext=np.random.randint(0, 255, (10, 16), dtype='uint8'),
+            key=np.random.randint(0, 255, (9, 16), dtype='uint8')
+        )
+
+    with pytest.raises(ValueError):
+        aes.decrypt(
+            ciphertext=np.random.randint(0, 255, (2, 10, 16), dtype='uint8'),
+            key=np.random.randint(0, 255, (16), dtype='uint8')
+        )
+
+
+def test_simple_decrypt_with_128_key(aes_datas):
+    key = aes_datas['128_key']
+    cipher = aes_datas['128_ciphertext']
+    expected_plain = aes_datas['plaintext']
+    plain = aes.decrypt(key=key, ciphertext=cipher)
+    assert np.array_equal(expected_plain, plain)
+
+
+def test_encrypt_stop_at_intermediate_value(aes_datas):
+    int_values = aes_datas['128_encrypt_intermediate_outputs']
+    key = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+    for _round, vals in enumerate(int_values):
+        for step, expected in enumerate(vals):
+            value = aes.encrypt(plaintext=plain, key=key, at_round=_round, after_step=step)
+            assert np.array_equal(expected, value)
+
+
+def test_decrypt_stop_at_intermediate_value(aes_datas):
+    int_values = aes_datas['128_decrypt_intermediate_outputs']
+    key = aes_datas['128_key']
+    cipher = aes_datas['128_ciphertext']
+    for _round, vals in enumerate(int_values):
+        for step, expected in enumerate(vals):
+            value = aes.decrypt(ciphertext=cipher, key=key, at_round=_round, after_step=step)
+            assert np.array_equal(expected, value)
+
+
+def test_encrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
+    key = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(TypeError):
+        aes.encrypt(plaintext=plain, key=key, at_round='foo')
+    with pytest.raises(TypeError):
+        aes.encrypt(plaintext=plain, key=key, after_step='foo')
+
+
+def test_decrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
+    key = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(TypeError):
+        aes.decrypt(plain, key=key, at_round='foo')
+    with pytest.raises(TypeError):
+        aes.decrypt(plain, key=key, after_step='foo')
+
+
+def test_encrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
+    key_128 = aes_datas['128_key']
+    key_192 = aes_datas['192_key']
+    key_256 = aes_datas['256_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_128, at_round=-1)
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_128, at_round=12)
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_192, at_round=14)
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_256, at_round=17)
+
+
+def test_decrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
+    key_128 = aes_datas['128_key']
+    key_192 = aes_datas['192_key']
+    key_256 = aes_datas['256_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_128, at_round=-1)
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_128, at_round=12)
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_192, at_round=14)
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_256, at_round=17)
+
+
+def test_encrypt_raises_exception_if_step_is_incorrect(aes_datas):
+    key_128 = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_128, after_step=-1)
+    with pytest.raises(ValueError):
+        aes.encrypt(plaintext=plain, key=key_128, after_step=4)
+
+
+def test_decrypt_raises_exception_if_step_is_incorrect(aes_datas):
+    key_128 = aes_datas['128_key']
+    plain = aes_datas['plaintext']
+
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_128, after_step=-1)
+    with pytest.raises(ValueError):
+        aes.decrypt(plain, key=key_128, after_step=4)
