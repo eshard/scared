@@ -119,7 +119,7 @@ class BaseAnalysis:
 
         batch_size = self._compute_batch_size(container.batch_size)
         for batch in container.batches(batch_size=batch_size):
-            self.process(batch, frame=container.frame)
+            self.process(batch)
             self.compute_convergence()
         self._final_compute()
 
@@ -132,15 +132,15 @@ class BaseAnalysis:
         """
         return self.model(self.selection_function(**metadata))
 
-    def process(self, traces_batch, frame=...):
+    def process(self, traces_batch):
         """Process and update the current state with traces batch.
 
         Intermediate leakage values are computed, and state is updated.
         This method is used internally by `run`, but can also be used to have a finer control on the process.
 
         Args:
-            traces_batch (:class:`estraces.Trace`): collection of `estraces.Trace` instance?
-            frame (default=...): frame of traces samples to use.
+            traces_batch: :class:`TraceHeaderSet` (or wrapped equivalent) instance. It must provides a samples and
+                a metadatas property.
 
         """
         intermediate_values = self.compute_intermediate_values(traces_batch.metadatas)
@@ -150,7 +150,7 @@ class BaseAnalysis:
 
         self.update(
             data=intermediate_values,
-            traces=traces_batch.samples[:, frame]
+            traces=traces_batch.samples
         )
 
     def compute_convergence(self):

@@ -48,7 +48,8 @@ def test_container_provides_iterator_on_traces_objects(thss):
     container = scared.Container(ths)
     assert isinstance(container.batches(), Iterable)
     for batch in container.batches():
-        assert isinstance(batch, scared.traces.TraceHeaderSet)
+        assert batch.samples is not None
+        assert batch.metadatas is not None
         assert len(batch) in (sizes[1], LAST_BATCH_SIZE)
 
 
@@ -96,3 +97,56 @@ def test_container_trace_size_use_frame(ths):
 
     cont = scared.Container(ths, frame=1)
     assert cont.trace_size == 1
+
+
+def test_container_raises_error_if_bad_preprocesses(ths):
+    with pytest.raises(TypeError):
+        scared.Container(ths, preprocesses='foo')
+    with pytest.raises(TypeError):
+        scared.Container(ths, preprocesses=['foo', 123])
+    with pytest.raises(TypeError):
+        scared.Container(ths, preprocesses=134)
+
+
+def test_container_with_one_preprocess(ths):
+    @scared.preprocess
+    def square(traces):
+        return traces ** 2
+
+    c = scared.Container(ths, preprocesses=square)
+    b = c.batches(batch_size=10)[0]
+    assert np.array_equal(b.samples, square(ths.samples[:10, :]))
+
+
+def test_container_with_multiple_preprocess(ths):
+    @scared.preprocess
+    def square(traces):
+        return traces ** 2
+
+    @scared.preprocess
+    def minus_2(traces):
+        return (traces - 2).astype(traces.dtype)
+
+    c = scared.Container(ths, preprocesses=[square, minus_2])
+    b = c.batches(batch_size=10)[0]
+    assert np.array_equal(b.samples, minus_2(square(ths.samples[:10, :])))
+
+
+def test_container_with_frame(ths):
+    c = scared.Container(ths, frame=slice(None, 20))
+    b = c.batches(batch_size=10)[0]
+    assert np.array_equal(b.samples, ths.samples[:10, :20])
+
+
+def test_container_with_multiple_preprocess_and_frame(ths):
+    @scared.preprocess
+    def square(traces):
+        return traces ** 2
+
+    @scared.preprocess
+    def minus_2(traces):
+        return (traces - 2).astype(traces.dtype)
+
+    c = scared.Container(ths, preprocesses=[square, minus_2], frame=slice(10, 30))
+    b = c.batches(batch_size=10)[2]
+    assert np.array_equal(b.samples, minus_2(square(ths.samples[20:30, 10:30])))

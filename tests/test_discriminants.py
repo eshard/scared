@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 
-def test_discriminant_raises_exception_if_compute_returns_data_with_incorrect_type():
+def test_discriminant_raises_exception_if_call_returns_data_with_incorrect_type():
     @scared.discriminant
     def d(data, axis):
         return "foo"
@@ -17,7 +17,7 @@ def test_discriminant_raises_exception_if_compute_returns_data_with_incorrect_ty
         d(np.random.randint(0, 255, (500, 16), dtype='uint8'))
 
 
-def test_discriminant_raises_exception_if_compute_returns_data_with_incorrect_shape():
+def test_discriminant_raises_exception_if_call_returns_data_with_incorrect_shape():
     @scared.discriminant
     def d(data, axis):
         return data
