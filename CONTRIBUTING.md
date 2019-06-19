@@ -1,21 +1,22 @@
 <!-- TOC -->
 
-- [Contributing to scared](#contributing-to-scared)
-  - [Code of conduct](#code-of-conduct)
-  - [Contribution Suitability](#contribution-suitability)
-  - [Bug reports](#bug-reports)
-  - [Feature Requests](#feature-requests)
-  - [Documentation contributions](#documentation-contributions)
-  - [Code contributions](#code-contributions)
-    - [Steps for Submitting Code](#steps-for-submitting-code)
-    - [Code Review](#code-review)
-    - [New Contributors](#new-contributors)
-    - [Get Early Feedback](#get-early-feedback)
-    - [Python development guidelines](#python-development-guidelines)
-      - [Python version](#python-version)
-      - [Test suite](#test-suite)
-      - [Code style and formatting](#code-style-and-formatting)
-      - [Docstrings](#docstrings)
+- [Contributing to scared](#Contributing-to-scared)
+  - [Code of conduct](#Code-of-conduct)
+  - [Contribution Suitability](#Contribution-Suitability)
+  - [Bug reports](#Bug-reports)
+  - [Feature Requests](#Feature-Requests)
+  - [Documentation contributions](#Documentation-contributions)
+  - [Code contributions](#Code-contributions)
+    - [Steps for Submitting Code](#Steps-for-Submitting-Code)
+      - [Merge requestion approval check-list](#Merge-requestion-approval-check-list)
+    - [Code Review](#Code-Review)
+    - [New Contributors](#New-Contributors)
+    - [Get Early Feedback](#Get-Early-Feedback)
+    - [Python development guidelines](#Python-development-guidelines)
+      - [Python version](#Python-version)
+      - [Test suite](#Test-suite)
+      - [Code style and formatting](#Code-style-and-formatting)
+      - [Docstrings](#Docstrings)
 
 <!-- /TOC -->
 
@@ -70,6 +71,17 @@ When contributing code, you’ll want to follow this checklist:
 - Make your change. Add you to the AUTHORS file.
 - Run the entire test suite again, confirming that all tests pass including the ones you just added.
 - Send a Gitlab Merge Request to the main repository’s master branch. Gitlab Merge Requests are the expected method of code collaboration on this project.
+
+#### Merge requestion approval check-list
+
+For your merge reques to be reviewed and eventually merged into master, please use the following check-list:
+
+- [ ] Related issue, documented and qualified
+- [ ] The development is finished (pipeline passing) and include new or modified tests
+- [ ] Docstrings have been updated if needed
+- [ ] Documentation is updated if relevant
+- [ ] A commit message following [conventional commit](https://www.conventionalcommits.org/) is proposed by the submitter for merge message in the master
+- [ ] Approval by one of the maintainer is obtained
 
 The following sub-sections go into more detail on some of the points above.
 
