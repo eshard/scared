@@ -1,7 +1,7 @@
 import logging
 import numpy as _np
 import inspect
-from ._utils import _is_bytes_array
+from .._utils import _is_bytes_array
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +90,15 @@ def attack_selection_function(function=None, guesses=None, words=None):
 def reverse_selection_function(function=None, words=None):
     """Decorator that wraps provided selection function as a reverse selection function."""
     return selection_function(function, words=words)
+
+
+class _AttackSelectionFunctionWrapped(_AttackSelectionFunction):
+
+    def __init__(self, function, guesses, words, target_tag=None, target_name=None):
+        super().__init__(function=function, words=words, guesses=guesses)
+        self.target_tag = target_tag
+        self.target_name = 'data'
+
+    def __call__(self, **kwargs):
+        kwargs[self.target_name] = kwargs[self.target_tag]
+        return super().__call__(**kwargs)
