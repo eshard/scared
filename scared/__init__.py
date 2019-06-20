@@ -14,7 +14,7 @@ from .distinguishers import (  # noqa: F401
     CPADistinguisherMixin
 )
 from .analysis import BaseAnalysis, CPAAnalysis, DPAAnalysis  # noqa:F401
-from .preprocesses import preprocess, PreprocessError  # noqa:F401
+from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import container as _container
 
 Container = _container.Container
