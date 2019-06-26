@@ -1,4 +1,4 @@
-from .context import scared
+from ..context import scared
 import pytest
 import numpy as np
 
@@ -72,3 +72,54 @@ def test_preprocess_applied():
     data = np.random.randint(0, 255, (500, 2000), dtype='uint8')
     res = square(data)
     assert np.array_equal(res, data ** 2)
+
+
+def test_preprocess_subclass_raises_exception_if_callable_missing():
+    class TPrepro(scared.Preprocess):
+        pass
+    with pytest.raises(TypeError):
+        TPrepro()
+
+
+def test_preprocess_subclass_applied():
+    class Square(scared.Preprocess):
+
+        def __call__(self, traces):
+            return traces ** 2
+    square = Square()
+    data = np.random.randint(0, 255, (500, 2000), dtype='uint8')
+    res = square(data)
+    assert np.array_equal(res, data ** 2)
+
+
+def test_preprocess_subclass_call_raise_exception_if_preprocess_output_have_incorrect_type():
+    class Wrong(scared.Preprocess):
+        def __call__(self, traces):
+            return "foo"
+    wrong = Wrong()
+    with pytest.raises(scared.PreprocessError):
+        wrong(np.array([[1, 2], [3, 4]]))
+
+    class Wrong(scared.Preprocess):
+        def __call__(self, traces):
+            return 123
+    wrong = Wrong()
+
+    with pytest.raises(scared.PreprocessError):
+        wrong(np.array([[1, 2], [3, 4]]))
+
+    class Wrong(scared.Preprocess):
+        def __call__(self, traces):
+            return traces.sum(axis=0)
+    wrong = Wrong()
+
+    with pytest.raises(scared.PreprocessError):
+        wrong(np.array([[1, 2], [3, 4]]))
+
+    class Wrong(scared.Preprocess):
+        def __call__(self, traces):
+            return traces.swapaxes(0, 1)
+    wrong = Wrong()
+
+    with pytest.raises(scared.PreprocessError):
+        wrong(np.array([[1, 2, 3], [3, 4, 5]]))

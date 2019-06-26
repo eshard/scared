@@ -1,35 +1,12 @@
-import functools
+from ._base import Preprocess, preprocess, PreprocessError
 import numpy as _np
 
 
-class PreprocessError(Exception):
-    """Error related to function decorated with preprocess."""
-
-    pass
-
-
-def preprocess(function):
-    """Decorator to ensure that the given function proceeds to basic verification suitable for samples preprocessing.
-
-    A preprocess function must expect one argument traces, which is expected to be a 2 dimension Numpy array.
-    It must returns a 2 dimensions Numpy array, with first dimension unchanged (number of traces processed).
-
-    """
-    @functools.wraps(function)
-    def _(traces):
-        if not isinstance(traces, _np.ndarray):
-            raise TypeError(f'preprocess expect Numpy ndarray, not {type(traces)}.')
-        if traces.ndim != 2:
-            raise ValueError(f'preprocess expect 2 dimension nparray, not {traces.ndim} dimensions array.')
-        result = function(traces)
-        if not isinstance(result, _np.ndarray):
-            raise PreprocessError(f'Preprocess {function} does not returns correct typed results, but {type(result)}.')
-        if result.ndim != 2:
-            raise PreprocessError(f'Preprocess {function} returns array of dimension {result.ndim}, instead of 2.')
-        if result.shape[0] != traces.shape[0]:
-            raise PreprocessError(f'Preprocess {function} modifies number of traces dimension.')
-        return result
-    return _
+def _center(traces, mean):
+    try:
+        return traces - mean
+    except ValueError:
+        raise PreprocessError(f'Incompatible shapes between traces {traces.shape} and mean {mean.shape}.')
 
 
 @preprocess
@@ -78,13 +55,6 @@ def fft_modulus(traces):
     return _np.abs(_np.fft.fft(traces))[:, :length]
 
 
-def _center(traces, mean):
-    try:
-        return traces - mean
-    except ValueError:
-        raise PreprocessError(f'Incompatible shapes between traces {traces.shape} and mean {mean.shape}.')
-
-
 @preprocess
 def center(traces):
     """Returns traces centered around the mean of all traces.
@@ -101,7 +71,7 @@ def center(traces):
 
 @preprocess
 def standardize(traces):
-    """Returns traces centered around the mean of all traces, and normalized on the standard of all traces.
+    """Returns traces centered and normalized on the standard of all traces.
 
     Args:
         traces (numpy.ndarray): a 2 dimensional numpy array.
@@ -113,7 +83,7 @@ def standardize(traces):
     return center(traces) / _np.nanstd(traces, axis=0)
 
 
-def standardize_on(mean=None, std=None):
+class StandardizeOn(Preprocess):
     """Returns a preprocess to compute standardization around provided mean and std values.
 
     If mean (resp. std) is not provided, the preprocess will use the mean (resp. std) value processed on traces.
@@ -126,17 +96,21 @@ def standardize_on(mean=None, std=None):
         (callable): preprocess function to compute standardization of traces around mean and std.
 
     """
-    def _(traces):
-        _mean = mean if mean is not None else _np.nanmean(traces, axis=0)
-        _std = std if std is not None else _np.nanstd(traces, axis=0)
+
+    def __init__(self, mean=None, std=None):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, traces):
+        _mean = self.mean if self.mean is not None else _np.nanmean(traces, axis=0)
+        _std = self.std if self.std is not None else _np.nanstd(traces, axis=0)
         try:
             return (traces - _mean) / _std
         except ValueError:
             raise PreprocessError(f'Incompatible shapes between traces {traces.shape} and mean {_mean.shape} and/or std {_std.shape}.')
-    return preprocess(_)
 
 
-def center_on(mean):
+class CenterOn(Preprocess):
     """Returns a preprocess to compute centering traces around provided mean.
 
     Args:
@@ -146,6 +120,11 @@ def center_on(mean):
         (callable): preprocess function to compute center of traces around mean.
 
     """
-    def _(traces):
-        return _center(traces, mean)
-    return preprocess(_)
+
+    def __init__(self, mean):
+        self.mean = mean
+
+    def __call__(self, traces):
+        print(self)
+        print(type(self))
+        return _center(traces, self.mean)
