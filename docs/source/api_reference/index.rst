@@ -11,5 +11,7 @@ API reference documentation
    Discriminant <discriminants.rst>
    Distinguishers mixins <distinguishers.rst>
    Models <models.rst>
+   Preprocesses <preprocesses.rst>
    Selection function <selection_functions.rst>
    Targets <targets.rst>
+   T-test <ttest.rst>

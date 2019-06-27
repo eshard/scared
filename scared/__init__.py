@@ -13,12 +13,12 @@ from .distinguishers import (  # noqa: F401
     CPADistinguisher, DistinguisherMixin, DPADistinguisherMixin,
     CPADistinguisherMixin
 )
+from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
 from .analysis import BaseAnalysis, CPAAnalysis, DPAAnalysis  # noqa:F401
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import container as _container
 
 Container = _container.Container
-
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 # Always display DeprecationWarning by default.
