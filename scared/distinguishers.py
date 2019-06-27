@@ -15,7 +15,7 @@ class DistinguisherMixin(abc.ABC):
         - `update` takes traces and intermediate values data and update the state of the distinguisher.
         - `compute` returns the result of the distinguisher applied on the current state
 
-    This abstrace class defines three private methods that must be implemented by each distinguisher mixin:
+    This abstract class defines three private methods that must be implemented by each distinguisher mixin:
         - `_initialize` which is called on first `update` call and can be leverage to complete process init.
         - `_update` which implements the specific of the distinguisher update process.
         - `_compute` which implements the specific of the distinguisher compute process.
