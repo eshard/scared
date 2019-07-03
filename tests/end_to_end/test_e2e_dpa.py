@@ -10,18 +10,11 @@ def test_dpa_on_dpa_v2():
     ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_dpa_e2e.ets')
     expected_key = aes.key_schedule(key=ths[0].key)[-1]
 
-    @scared.attack_selection_function
-    def delta_last_two_rounds(ciphertext, guesses):
-        res = np.empty((ciphertext.shape[0], len(guesses), ciphertext.shape[1]), dtype='uint8')
-        for guess in guesses:
-            s = aes.inv_sub_bytes(state=np.bitwise_xor(ciphertext, guess))
-            res[:, guess, :] = np.bitwise_xor(aes.shift_rows(ciphertext), s)
-        return res
-
+    sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds()
     container = scared.Container(ths)
 
     att = scared.DPAAnalysis(
-        selection_function=delta_last_two_rounds,
+        selection_function=sf,
         model=scared.Monobit(7),
         discriminant=scared.maxabs,
     )
@@ -31,7 +24,7 @@ def test_dpa_on_dpa_v2():
     max_score = np.copy(att.scores)
 
     for b in bit_list:
-        att = scared.DPAAnalysis(selection_function=delta_last_two_rounds, model=scared.Monobit(b), discriminant=scared.maxabs)
+        att = scared.DPAAnalysis(selection_function=sf, model=scared.Monobit(b), discriminant=scared.maxabs)
         att.run(container)
         max_score = np.maximum(max_score, att.scores)
     att.scores = max_score

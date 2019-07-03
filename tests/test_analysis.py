@@ -12,8 +12,13 @@ def ths():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
-@pytest.fixture(params=[scared.CPAAnalysis, scared.DPAAnalysis])
+@pytest.fixture(params=[scared.CPAAnalysis, scared.DPAAnalysis, scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis])
 def analysis_class(request):
+    return request.param
+
+
+@pytest.fixture(params=[scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis])
+def partitioned_klass(request):
     return request.param
 
 
@@ -330,3 +335,19 @@ def test_analysis_raise_exception_if_convergence_step_is_not_positive_integer(sf
             discriminant=scared.nanmax,
             convergence_step=-12
         )
+
+
+def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partitioned_klass):
+    with pytest.raises(TypeError):
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions='foo')
+    with pytest.raises(TypeError):
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions={})
+    with pytest.raises(TypeError):
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=[1, 23])
+    with pytest.raises(ValueError):
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.array([1.2, 3]))
+
+
+def test_partitioned_analysis_set_partition(sf, partitioned_klass):
+    a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.arange(9))
+    assert np.array_equal(np.arange(9), a.partitions)
