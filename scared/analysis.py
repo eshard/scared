@@ -191,3 +191,21 @@ class DPAAnalysis(BaseAnalysis, distinguishers.DPADistinguisherMixin):
 
         if not isinstance(self.model, models.Monobit):
             raise distinguishers.DistinguisherError(f'DPA analysis can be processed only with Monobit model, not {type(self.model)}.')
+
+
+class BasePartitionedAnalysis(BaseAnalysis):
+    def __init__(self, partitions=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        distinguishers.partitioned._set_partitions(self, partitions)
+
+
+class ANOVAAnalysis(BasePartitionedAnalysis, distinguishers.ANOVADistinguisherMixin):
+    __doc__ = distinguishers.ANOVADistinguisherMixin.__doc__ + BaseAnalysis.__doc__
+
+
+class NICVAnalysis(BasePartitionedAnalysis, distinguishers.NICVDistinguisherMixin):
+    __doc__ = distinguishers.NICVDistinguisherMixin.__doc__ + BaseAnalysis.__doc__
+
+
+class SNRAnalysis(BasePartitionedAnalysis, distinguishers.SNRDistinguisherMixin):
+    __doc__ = distinguishers.SNRDistinguisherMixin.__doc__ + BaseAnalysis.__doc__

@@ -55,7 +55,7 @@ def _cases(key_size, mult_keys, mult_state, mode='encrypt'):
 
 @pytest.fixture
 def aes_datas():
-    datas = np.load('tests/aes_data_tests.npz')
+    datas = np.load('tests/samples/aes_data_tests.npz')
     for k, v in datas.items():
         setattr(datas, k, v)
     return datas

@@ -5,16 +5,18 @@ import logging
 
 import estraces as traces  # noqa: F401
 
-from .selection_functions import selection_function, attack_selection_function, reverse_selection_function  # noqa: F401
+from .selection_functions.base import selection_function, attack_selection_function, reverse_selection_function  # noqa: F401
 from .models import HammingWeight, Value, Monobit, Model  # noqa: F401
 from .discriminants import discriminant, nanmax, maxabs, opposite_min, nansum, abssum  # noqa: F401
 from .distinguishers import (  # noqa: F401
-    Distinguisher, DistinguisherError, DPADistinguisher,
-    CPADistinguisher, DistinguisherMixin, DPADistinguisherMixin,
-    CPADistinguisherMixin
+    DistinguisherError, Distinguisher, DistinguisherMixin,
+    DPADistinguisherMixin, DPADistinguisher,
+    CPADistinguisherMixin, CPAAlternativeDistinguisherMixin, CPADistinguisher, CPAAlternativeDistinguisher,
+    PartitionedDistinguisherMixin, PartitionedDistinguisher, ANOVADistinguisherMixin, ANOVADistinguisher,
+    NICVDistinguisherMixin, NICVDistinguisher, SNRDistinguisherMixin, SNRDistinguisher
 )
 from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
-from .analysis import BaseAnalysis, CPAAnalysis, DPAAnalysis  # noqa:F401
+from .analysis import BaseAnalysis, CPAAnalysis, DPAAnalysis, ANOVAAnalysis, NICVAnalysis, SNRAnalysis, BasePartitionedAnalysis  # noqa:F401
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import container as _container
 

@@ -1,4 +1,4 @@
-from ..selection_functions import _decorated_selection_function, _AttackSelectionFunctionWrapped
+from ..base import _decorated_selection_function, _AttackSelectionFunctionWrapped
 from ... import aes
 import numpy as _np
 
