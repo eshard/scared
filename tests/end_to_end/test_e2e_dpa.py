@@ -13,7 +13,7 @@ def test_dpa_on_dpa_v2():
     # One byte is not correctly retrieved with this configuration.
     expected_key[13] = 252
 
-    sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds()
+    sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths)
 
     att = scared.DPAAnalysis(

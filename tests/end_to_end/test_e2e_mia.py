@@ -12,7 +12,7 @@ def test_mia_on_dpa_v2():
     expected_key = aes.key_schedule(key=ths[0].key)[-1]
     # MIA with this configuration doesn't retrieve the good value for the first byte of the key.
     expected_key[0] = 22
-    sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds()
+    sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths[:15000])
     att = scared.MIAAnalysis(
         selection_function=sf,
