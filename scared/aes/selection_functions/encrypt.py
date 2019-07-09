@@ -1,5 +1,5 @@
-from ..base import _decorated_selection_function, _AttackSelectionFunctionWrapped
-from ... import aes
+from scared.selection_functions.base import _decorated_selection_function, _AttackSelectionFunctionWrapped
+from scared.aes import base as aes
 import numpy as _np
 
 
@@ -28,7 +28,7 @@ def _delta_last_rounds(data, guesses):
     ).swapaxes(0, 1)
 
 
-def first_add_round_key(guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
+class FirstAddRoundKey:
     """Build an attack selection function which computes intermediate values after AES encrypt round key operation at first round, for guesses values.
 
     Args:
@@ -38,12 +38,13 @@ def first_add_round_key(guesses=_np.arange(256, dtype='uint8'), words=None, plai
             values from the metadata dict when selection function is called.
 
     """
-    sf = _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses)
-    sf.target_tag = plaintext_tag
-    return sf
+
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
+        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses, target_tag=plaintext_tag)
+        # self.target_tag = plaintext_tag
 
 
-def last_add_round_key(guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+class LastAddRoundKey:
     """Build an attack selection function which computes intermediate values after AES encrypt round key operation at last round, for guesses values.
 
     Args:
@@ -53,12 +54,12 @@ def last_add_round_key(guesses=_np.arange(256, dtype='uint8'), words=None, ciphe
             values from the metadata dict when selection function is called.
 
     """
-    sf = _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses)
-    sf.target_tag = ciphertext_tag
-    return sf
+
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses, target_tag=ciphertext_tag)
 
 
-def first_sub_bytes(guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
+class FirstSubBytes:
     """Build an attack selection function which computes intermediate values after AES encrypt sub bytes (S-box) operation at first round, for guesses values.
 
     Args:
@@ -68,12 +69,12 @@ def first_sub_bytes(guesses=_np.arange(256, dtype='uint8'), words=None, plaintex
             values from the metadata dict when selection function is called.
 
     """
-    sf = _decorated_selection_function(_AttackSelectionFunctionWrapped, _sub_bytes, words=words, guesses=guesses)
-    sf.target_tag = plaintext_tag
-    return sf
+
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
+        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _sub_bytes, words=words, guesses=guesses, target_tag=plaintext_tag)
 
 
-def last_sub_bytes(guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+class LastSubBytes:
     """Build an attack selection function which computes intermediate values after AES encrypt sub bytes (S-box) operation at last round, for guesses values.
 
     Args:
@@ -83,12 +84,12 @@ def last_sub_bytes(guesses=_np.arange(256, dtype='uint8'), words=None, ciphertex
             values from the metadata dict when selection function is called.
 
     """
-    sf = _decorated_selection_function(_AttackSelectionFunctionWrapped, _inv_sub_bytes, words=words, guesses=guesses)
-    sf.target_tag = ciphertext_tag
-    return sf
+
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _inv_sub_bytes, words=words, guesses=guesses, target_tag=ciphertext_tag)
 
 
-def delta_r_last_rounds(guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+class DeltaRLastRounds:
     """Build an attack selection function which computes delta intermediate values between AES encrypt last two rounds, for guesses values.
 
     Args:
@@ -97,6 +98,6 @@ def delta_r_last_rounds(guesses=_np.arange(256, dtype='uint8'), words=None, ciph
         ciphertext_tag (str, default='ciphertext'): tag (key value) of the ciphertext metadata to use to retrieve ciphertext
             values from the metadata dict when selection function is called.
     """
-    sf = _decorated_selection_function(_AttackSelectionFunctionWrapped, _delta_last_rounds, words=words, guesses=guesses)
-    sf.target_tag = ciphertext_tag
-    return sf
+
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
+        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _delta_last_rounds, words=words, guesses=guesses, target_tag=ciphertext_tag)

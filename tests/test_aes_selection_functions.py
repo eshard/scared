@@ -1,10 +1,10 @@
 from .context import scared  # noqa: F401
-from scared import selection_functions, aes
+from scared import aes, selection_functions
 import numpy as np
 
 
 def test_aes_encrypt_first_round_key_with_default_arguments():
-    sf = scared.selection_functions.aes.encrypt.first_add_round_key()
+    sf = aes.selection_functions.encrypt.FirstAddRoundKey()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'plaintext'
@@ -17,7 +17,7 @@ def test_aes_encrypt_first_round_key_with_default_arguments():
 
 
 def test_aes_encrypt_first_round_key_with_alternative_args():
-    sf = scared.selection_functions.aes.encrypt.first_add_round_key(
+    sf = aes.selection_functions.encrypt.FirstAddRoundKey(
         plaintext_tag='plain',
         words=6,
         guesses=np.arange(16, dtype='uint8')
@@ -34,7 +34,7 @@ def test_aes_encrypt_first_round_key_with_alternative_args():
 
 
 def test_aes_encrypt_last_round_key_with_default_arguments():
-    sf = scared.selection_functions.aes.encrypt.last_add_round_key()
+    sf = aes.selection_functions.encrypt.LastAddRoundKey()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -47,7 +47,7 @@ def test_aes_encrypt_last_round_key_with_default_arguments():
 
 
 def test_aes_encrypt_last_round_key_with_alternative_args():
-    sf = scared.selection_functions.aes.encrypt.last_add_round_key(
+    sf = aes.selection_functions.encrypt.LastAddRoundKey(
         ciphertext_tag='nop',
         words=6,
         guesses=np.arange(16, dtype='uint8')
@@ -64,7 +64,7 @@ def test_aes_encrypt_last_round_key_with_alternative_args():
 
 
 def test_aes_encrypt_first_sub_bytes_with_default_arguments():
-    sf = scared.selection_functions.aes.encrypt.first_sub_bytes()
+    sf = aes.selection_functions.encrypt.FirstSubBytes()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'plaintext'
@@ -78,7 +78,7 @@ def test_aes_encrypt_first_sub_bytes_with_default_arguments():
 
 
 def test_aes_encrypt_first_sub_bytes_with_alternative_args():
-    sf = scared.selection_functions.aes.encrypt.first_sub_bytes(
+    sf = aes.selection_functions.encrypt.FirstSubBytes(
         plaintext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
@@ -96,7 +96,7 @@ def test_aes_encrypt_first_sub_bytes_with_alternative_args():
 
 
 def test_aes_encrypt_last_sub_bytes_with_default_arguments():
-    sf = scared.selection_functions.aes.encrypt.last_sub_bytes()
+    sf = aes.selection_functions.encrypt.LastSubBytes()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -110,7 +110,7 @@ def test_aes_encrypt_last_sub_bytes_with_default_arguments():
 
 
 def test_aes_encrypt_last_sub_bytes_with_alternative_args():
-    sf = scared.selection_functions.aes.encrypt.last_sub_bytes(
+    sf = aes.selection_functions.encrypt.LastSubBytes(
         ciphertext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
@@ -128,7 +128,7 @@ def test_aes_encrypt_last_sub_bytes_with_alternative_args():
 
 
 def test_aes_encrypt_delta_r_last_rounds_with_default_arguments():
-    sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds()
+    sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -143,7 +143,7 @@ def test_aes_encrypt_delta_r_last_rounds_with_default_arguments():
 
 
 def test_aes_encrypt_delta_r_last_rounds_with_alternative_args():
-    sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds(
+    sf = aes.selection_functions.encrypt.DeltaRLastRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
@@ -162,7 +162,7 @@ def test_aes_encrypt_delta_r_last_rounds_with_alternative_args():
 
 
 def test_aes_decrypt_first_round_key_with_default_arguments():
-    sf = scared.selection_functions.aes.decrypt.first_add_round_key()
+    sf = aes.selection_functions.decrypt.FirstAddRoundKey()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -175,7 +175,7 @@ def test_aes_decrypt_first_round_key_with_default_arguments():
 
 
 def test_aes_decrypt_first_round_key_with_alternative_args():
-    sf = scared.selection_functions.aes.decrypt.first_add_round_key(
+    sf = aes.selection_functions.decrypt.FirstAddRoundKey(
         ciphertext_tag='cif',
         words=6,
         guesses=np.arange(16, dtype='uint8')
@@ -192,7 +192,7 @@ def test_aes_decrypt_first_round_key_with_alternative_args():
 
 
 def test_aes_decrypt_last_round_key_with_default_arguments():
-    sf = scared.selection_functions.aes.decrypt.last_add_round_key()
+    sf = aes.selection_functions.decrypt.LastAddRoundKey()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'plaintext'
@@ -205,7 +205,7 @@ def test_aes_decrypt_last_round_key_with_default_arguments():
 
 
 def test_aes_decrypt_last_round_key_with_alternative_args():
-    sf = scared.selection_functions.aes.decrypt.last_add_round_key(
+    sf = aes.selection_functions.decrypt.LastAddRoundKey(
         plaintext_tag='nop',
         words=6,
         guesses=np.arange(16, dtype='uint8')
@@ -222,7 +222,7 @@ def test_aes_decrypt_last_round_key_with_alternative_args():
 
 
 def test_aes_decrypt_first_sub_bytes_with_default_arguments():
-    sf = scared.selection_functions.aes.decrypt.first_sub_bytes()
+    sf = aes.selection_functions.decrypt.FirstSubBytes()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -236,7 +236,7 @@ def test_aes_decrypt_first_sub_bytes_with_default_arguments():
 
 
 def test_aes_decrypt_first_sub_bytes_with_alternative_args():
-    sf = scared.selection_functions.aes.decrypt.first_sub_bytes(
+    sf = aes.selection_functions.decrypt.FirstSubBytes(
         ciphertext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
@@ -254,7 +254,7 @@ def test_aes_decrypt_first_sub_bytes_with_alternative_args():
 
 
 def test_aes_decrypt_last_sub_bytes_with_default_arguments():
-    sf = scared.selection_functions.aes.decrypt.last_sub_bytes()
+    sf = aes.selection_functions.decrypt.LastSubBytes()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'plaintext'
@@ -268,7 +268,7 @@ def test_aes_decrypt_last_sub_bytes_with_default_arguments():
 
 
 def test_aes_decrypt_last_sub_bytes_with_alternative_args():
-    sf = scared.selection_functions.aes.decrypt.last_sub_bytes(
+    sf = aes.selection_functions.decrypt.LastSubBytes(
         plaintext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
@@ -286,7 +286,7 @@ def test_aes_decrypt_last_sub_bytes_with_alternative_args():
 
 
 def test_aes_decrypt_delta_r_first_rounds_with_default_arguments():
-    sf = scared.selection_functions.aes.decrypt.delta_r_first_rounds()
+    sf = aes.selection_functions.decrypt.DeltaRFirstRounds()
     assert sf.guesses.tolist() == list(range(256))
     assert sf.words is Ellipsis
     assert sf.target_tag == 'ciphertext'
@@ -301,7 +301,7 @@ def test_aes_decrypt_delta_r_first_rounds_with_default_arguments():
 
 
 def test_aes_decrypt_delta_r_first_rounds_with_alternative_args():
-    sf = scared.selection_functions.aes.decrypt.delta_r_first_rounds(
+    sf = aes.selection_functions.decrypt.DeltaRFirstRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
         guesses=np.arange(16, dtype='uint8')
