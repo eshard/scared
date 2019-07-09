@@ -107,3 +107,8 @@ def test_difference_is_preprocess():
     p = scared.preprocesses.high_order.Difference(frame_1=50, distance=5)
     with pytest.raises(TypeError):
         p('foo')
+
+
+def test_raises_exception_with_improper_mode():
+    with pytest.raises(scared.PreprocessError):
+        scared.preprocesses.high_order.Difference(mode='wfor')

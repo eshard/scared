@@ -29,6 +29,8 @@ def _absolute(function):
 
 
 def _combination(operation, frame_1, frame_2=None, mode='full', distance=None):
+    if mode not in ['same', 'full']:
+        raise PreprocessError(f'Only same or full mode are available for combination preprocesses.')
     if distance is not None and (mode == 'same' or frame_2 is not None):
         raise PreprocessError(f'same mode or usage of two frames is incompatible with use of distance.')
     if mode == 'same' and frame_2 is None:

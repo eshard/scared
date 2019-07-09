@@ -116,3 +116,8 @@ def test_centered_product_frame_with_given_mean(traces):
 
     result = scared.preprocesses.high_order.CenteredProduct(mean=mean, frame_1=frame, distance=10)(traces)
     assert np.array_equal(expected, result)
+
+
+def test_raises_exception_with_improper_mode():
+    with pytest.raises(scared.PreprocessError):
+        scared.preprocesses.high_order.CenteredProduct(mode='wfor')
