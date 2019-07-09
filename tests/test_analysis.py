@@ -12,12 +12,12 @@ def ths():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
-@pytest.fixture(params=[scared.CPAAnalysis, scared.DPAAnalysis, scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis])
+@pytest.fixture(params=[scared.CPAAnalysis, scared.DPAAnalysis, scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis, scared.MIAAnalysis])
 def analysis_class(request):
     return request.param
 
 
-@pytest.fixture(params=[scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis])
+@pytest.fixture(params=[scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis, scared.MIAAnalysis])
 def partitioned_klass(request):
     return request.param
 
@@ -351,3 +351,44 @@ def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partit
 def test_partitioned_analysis_set_partition(sf, partitioned_klass):
     a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.arange(9))
     assert np.array_equal(np.arange(9), a.partitions)
+
+
+def test_mia_analysis_raises_excerptions_if_incorrect_histos_parameters(sf):
+    with pytest.raises(TypeError):
+        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number='foo')
+    with pytest.raises(TypeError):
+        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number={})
+    with pytest.raises(TypeError):
+        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=[1, 23])
+    with pytest.raises(TypeError):
+        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=np.array([1.2, 3]))
+    with pytest.raises(TypeError):
+        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=38.45)
+
+
+_bin_edges_fail = {
+    'bin number': 12,
+    'np method': 'auto',
+    'No edges': None
+}
+
+
+@pytest.fixture(params=_bin_edges_fail.keys())
+def bin_edges_fail_key(request):
+    return request.param
+
+
+def test_mia_with_invalid_bin_edges_raises_exception(sf, bin_edges_fail_key):
+    bin_edges = _bin_edges_fail[bin_edges_fail_key]
+    with pytest.raises(TypeError):
+        d = scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d.bin_edges = bin_edges
+
+    with pytest.raises(TypeError):
+        d = scared.MIAAnalysis(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d.bin_edges = bin_edges
+
+
+def test_mia_bin_edges_init(sf):
+    a = scared.MIAAnalysis(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
+    assert np.array_equal(a.bin_edges, np.arange(258))

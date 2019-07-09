@@ -1,5 +1,8 @@
 from . import selection_functions as _sf, container as _container, models, distinguishers
 import numpy as _np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BaseAnalysis:
@@ -98,6 +101,7 @@ class BaseAnalysis:
         return base_batch_size
 
     def _final_compute(self):
+        logger.info(f'Starting final computing.')
         self.compute_results()
         if self.convergence_step and len(self._batches_processed) > 1:
             self._compute_convergence_traces()
@@ -118,10 +122,14 @@ class BaseAnalysis:
             raise TypeError(f'container should be a type Container, not {type(container)}.')
 
         batch_size = self._compute_batch_size(container.batch_size)
-        for batch in container.batches(batch_size=batch_size):
+        logger.info(f'Starting run on container {container}, with batch size {batch_size}.')
+        for i, batch in enumerate(container.batches(batch_size=batch_size)):
+            logger.info(f'Process batch number {i} starting.')
             self.process(batch)
             self.compute_convergence()
+        logger.info(f'Batches processing finished.')
         self._final_compute()
+        logger.info(f'Run on container {container} finished.')
 
     def compute_intermediate_values(self, metadata):
         """Compute intermediate leakage values for this instance from metadata.
@@ -130,6 +138,7 @@ class BaseAnalysis:
             metadata (mapping): a dict-like object containing the data to be used with selection function.
 
         """
+        logger.info(f'Computing intermediate values for metadata {metadata}.')
         return self.model(self.selection_function(**metadata))
 
     def process(self, traces_batch):
@@ -146,7 +155,10 @@ class BaseAnalysis:
         intermediate_values = self.compute_intermediate_values(traces_batch.metadatas)
 
         if self.convergence_traces is None and self.convergence_step:
+            logger.info(f'Initialize convergence traces.')
             self.convergence_traces = _np.empty(intermediate_values.shape[1:] + (0, ), dtype=self.precision)
+
+        logger.info(f'Will call distinguisher update with {traces_batch}.')
 
         self.update(
             data=intermediate_values,
@@ -159,6 +171,7 @@ class BaseAnalysis:
         This method is used internally by `run`, but can also be used to have a finer control on the process.
 
         """
+        logger.info(f'Compute convergence results.')
         if self.convergence_step:
             self._batches_processed.append(self.processed_traces)
             if self._batches_processed[-1] - self._batches_processed[0] >= self.convergence_step:
@@ -167,6 +180,7 @@ class BaseAnalysis:
                 self._compute_convergence_traces()
 
     def _compute_convergence_traces(self):
+        logger.info(f'Update convergence traces.')
         self.convergence_traces = _np.append(self.convergence_traces, self.scores[..., None], axis=-1)
 
     def compute_results(self):
@@ -175,8 +189,10 @@ class BaseAnalysis:
         This method is used internally by `run`, but can also be used to have a finer control on the process.
 
         """
+        logger.info(f'Computing results ...')
         self.results = self.compute()
         self.scores = self.discriminant(self.results)
+        logger.info(f'Results computed.')
 
 
 class CPAAnalysis(BaseAnalysis, distinguishers.CPADistinguisherMixin):
@@ -195,8 +211,8 @@ class DPAAnalysis(BaseAnalysis, distinguishers.DPADistinguisherMixin):
 
 class BasePartitionedAnalysis(BaseAnalysis):
     def __init__(self, partitions=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         distinguishers.partitioned._set_partitions(self, partitions)
+        return super().__init__(*args, **kwargs)
 
 
 class ANOVAAnalysis(BasePartitionedAnalysis, distinguishers.ANOVADistinguisherMixin):
@@ -209,3 +225,11 @@ class NICVAnalysis(BasePartitionedAnalysis, distinguishers.NICVDistinguisherMixi
 
 class SNRAnalysis(BasePartitionedAnalysis, distinguishers.SNRDistinguisherMixin):
     __doc__ = distinguishers.SNRDistinguisherMixin.__doc__ + BaseAnalysis.__doc__
+
+
+class MIAAnalysis(BasePartitionedAnalysis, distinguishers.MIADistinguisherMixin):
+    __doc__ = distinguishers.MIADistinguisherMixin.__doc__ + BaseAnalysis.__doc__
+
+    def __init__(self, bins_number=128, bin_edges=None, *args, **kwargs):
+        distinguishers.mia._set_histogram_parameters(self, bins_number=bins_number, bin_edges=bin_edges)
+        return super().__init__(*args, **kwargs)

@@ -7,3 +7,4 @@ from .partitioned import (  # noqa: F401
     SNRDistinguisher, SNRDistinguisherMixin,
     NICVDistinguisher, NICVDistinguisherMixin
 )
+from .mia import MIADistinguisher, MIADistinguisherMixin  # noqa: F401

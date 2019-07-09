@@ -1,5 +1,8 @@
 import abc
 import numpy as _np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DistinguisherError(Exception):
@@ -31,15 +34,18 @@ class DistinguisherMixin(abc.ABC):
         if traces.shape[0] != data.shape[0]:
             raise ValueError(f'traces and data must have the same first dimension, not {traces.shape[0]} for traces and {data.shape[0]} for data.')
 
+        logger.info(f'Start update of distinguisher {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
         o_shape = data.shape
         data = data.reshape((o_shape[0], -1))
         try:
             self._origin_shape
         except AttributeError:
+            logger.info(f'Initialize distinguisher state.')
             self._origin_shape = o_shape
             self._initialize(traces=traces, data=data)
 
         self.processed_traces += traces.shape[0]
+        logger.info(f'Will call _update traces.')
         self._update(traces=traces, data=data)
 
     @abc.abstractmethod

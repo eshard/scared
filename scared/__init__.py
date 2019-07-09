@@ -13,10 +13,15 @@ from .distinguishers import (  # noqa: F401
     DPADistinguisherMixin, DPADistinguisher,
     CPADistinguisherMixin, CPAAlternativeDistinguisherMixin, CPADistinguisher, CPAAlternativeDistinguisher,
     PartitionedDistinguisherMixin, PartitionedDistinguisher, ANOVADistinguisherMixin, ANOVADistinguisher,
-    NICVDistinguisherMixin, NICVDistinguisher, SNRDistinguisherMixin, SNRDistinguisher
+    NICVDistinguisherMixin, NICVDistinguisher, SNRDistinguisherMixin, SNRDistinguisher,
+    MIADistinguisher
 )
 from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
-from .analysis import BaseAnalysis, CPAAnalysis, DPAAnalysis, ANOVAAnalysis, NICVAnalysis, SNRAnalysis, BasePartitionedAnalysis  # noqa:F401
+from .analysis import (  # noqa:F401
+    BaseAnalysis, CPAAnalysis, DPAAnalysis,
+    ANOVAAnalysis, NICVAnalysis, SNRAnalysis,
+    BasePartitionedAnalysis, MIAAnalysis
+)
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import container as _container
 

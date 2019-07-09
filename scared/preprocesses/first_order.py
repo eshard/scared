@@ -125,6 +125,4 @@ class CenterOn(Preprocess):
         self.mean = mean
 
     def __call__(self, traces):
-        print(self)
-        print(type(self))
         return _center(traces, self.mean)
