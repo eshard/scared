@@ -62,6 +62,7 @@ deploy:conda:
     - conda config --add channels $ANACONDA_CHANNEL
     - anaconda login --username $ANACONDA_USERNAME --password $ANACONDA_PWD
     - anaconda upload out/linux-64/scared*.bz2 
+    - anaconda logout
   only:
     - tags
   when: manual
