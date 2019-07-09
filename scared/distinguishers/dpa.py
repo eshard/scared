@@ -1,5 +1,8 @@
 from .base import DistinguisherMixin, _StandaloneDistinguisher, DistinguisherError
 import numpy as _np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DPADistinguisherMixin(DistinguisherMixin):
@@ -30,11 +33,15 @@ class DPADistinguisherMixin(DistinguisherMixin):
     def _update(self, traces, data):
         if traces.shape[1] != self.accumulator_traces.shape[0]:
             raise DistinguisherError(f'traces have different size {traces.shape[1]} than already processed traces {self.accumulator_traces.shape[0]}.')
+
+        logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
+
         self.processed_ones += _np.sum(data, axis=0)
         traces = traces.astype(self.precision)
         data = data.astype(self.precision)
         self.accumulator_traces += _np.sum(traces, axis=0)
         self.accumulator_ones += _np.dot(data.T, traces)
+        logger.info(f'End updating accumulators for {self.__class__.__name__}.')
 
     def _compute(self):
         normalized_ones = (self.accumulator_ones.swapaxes(0, 1) / self.processed_ones).swapaxes(0, 1)

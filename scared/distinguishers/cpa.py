@@ -1,5 +1,8 @@
 from .base import _StandaloneDistinguisher, DistinguisherMixin, DistinguisherError
 import numpy as _np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CPADistinguisherMixin(DistinguisherMixin):
@@ -32,12 +35,14 @@ class CPADistinguisherMixin(DistinguisherMixin):
 
         _traces = traces.astype(self.precision)
         _data = data.astype(self.precision)
+        logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
 
         self.ey += _np.sum(_data, axis=0)
         self.ey2 += _np.sum(_data ** 2, axis=0)
         self.ex += _np.sum(_traces, axis=0)
         self.ex2 += _np.sum(_traces ** 2, axis=0)
         self.exy += _np.dot(_data.T, _traces)
+        logger.info(f'End updating accumulators for {self.__class__.__name__}.')
 
     def _compute(self):
         trace_size = self.ex.shape[0]

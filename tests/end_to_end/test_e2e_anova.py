@@ -7,10 +7,10 @@ import pytest
 @pytest.mark.end_to_end
 def test_anova_on_dpa_v2():
 
-    ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_cpa_e2e.ets')
+    ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_sub.ets')
     expected_key = aes.key_schedule(key=ths[0].key)[-1]
     sf = scared.selection_functions.aes.encrypt.delta_r_last_rounds()
-    container = scared.Container(ths)
+    container = scared.Container(ths[:15000])
     att = scared.ANOVAAnalysis(
         selection_function=sf,
         model=scared.HammingWeight(),
