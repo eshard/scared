@@ -13,6 +13,11 @@ def traces():
     return _read('centered_product_input.npz')
 
 
+def test_centered_product_with_no_frame(traces):
+    result = scared.preprocesses.high_order.CenteredProduct()(traces)
+    assert (500, 20100) == result.shape
+
+
 def test_centered_product_with_one_frame_and_default_values(traces):
     expected = _read('centered_product_result.npz')
     frame = slice(None, 50)

@@ -13,6 +13,11 @@ def traces():
     return _read('difference_input.npz')
 
 
+def test_difference_with_no_frame(traces):
+    result = scared.preprocesses.high_order.Difference()(traces)
+    assert (500, 20100) == result.shape
+
+
 def test_difference_with_one_frame_and_default_values(traces):
     expected = _read('difference_result.npz')
     frame = slice(None, 50)

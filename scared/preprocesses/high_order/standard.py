@@ -47,17 +47,10 @@ def _combination(operation, frame_1, frame_2=None, mode='full', distance=None):
 
 
 class Difference:
-    def __new__(cls, frame_1, frame_2=None, mode='full', distance=None):
-        return _combination(
-            _difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
-        )
-
-
-class Product:
-    """Product combination preprocess for High Order analysis.
+    """Difference combination preprocess for High Order analysis.
 
     Args:
-        frame_1 (slice or iterable): first traces frame that will be taken.
+        frame_1 (slice or iterable, default=...): first traces frame that will be taken.
         frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
         mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
             In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
@@ -69,7 +62,29 @@ class Product:
 
     """
 
-    def __new__(cls, frame_1, frame_2=None, mode='full', distance=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
+        return _combination(
+            _difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
+        )
+
+
+class Product:
+    """Product combination preprocess for High Order analysis.
+
+    Args:
+        frame_1 (slice or iterable, default=...): first traces frame that will be taken.
+        frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
+        mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
+            In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
+            The two frames needs to be provided and of the same length when using this mode.
+            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it provided,
+            otherwise with the frame between the current point position in `frame_1` and the end of the frame if `distance` is None,
+            else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
+        dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+
+    """
+
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
         return _combination(
             _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
         )
@@ -79,7 +94,7 @@ class CenteredProduct(Product):
     """Centered prodiuct combination preprocess for High Order analysis.
 
     Args:
-        frame_1 (slice or iterable): first traces frame that will be taken.
+        frame_1 (slice or iterable, default=...): first traces frame that will be taken.
         frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
         mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
             In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
@@ -91,7 +106,7 @@ class CenteredProduct(Product):
         mean (numpy.ndarray, default=None): a mean array with compatible size with traces. If it None, the mean of provided traces is computed.
     """
 
-    def __new__(cls, frame_1, frame_2=None, mode='full', distance=None, mean=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, mean=None):
         return _centered(
             _combination(
                 _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
@@ -102,7 +117,7 @@ class AbsoluteDifference:
     """Absolute difference combination preprocess for High Order analysis.
 
     Args:
-        frame_1 (slice or iterable): first traces frame that will be taken.
+        frame_1 (slice or iterable, default=...): first traces frame that will be taken.
         frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
         mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
             In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
@@ -114,7 +129,7 @@ class AbsoluteDifference:
 
     """
 
-    def __new__(cls, frame_1, frame_2=None, mode='full', distance=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
         return _absolute(
             _combination(_difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance)
         )
