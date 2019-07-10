@@ -13,6 +13,11 @@ def traces():
     return _read('product_input.npz')
 
 
+def test_product_with_no_frame(traces):
+    result = scared.preprocesses.high_order.Product()(traces)
+    assert (500, 20100) == result.shape
+
+
 def test_product_with_one_frame_and_default_values(traces):
     expected = _read('product_result.npz')
     frame = slice(None, 50)
@@ -107,3 +112,8 @@ def test_product_is_preprocess():
     p = scared.preprocesses.high_order.Product(frame_1=50, distance=5)
     with pytest.raises(TypeError):
         p('foo')
+
+
+def test_raises_exception_with_improper_mode():
+    with pytest.raises(scared.PreprocessError):
+        scared.preprocesses.high_order.Product(mode='wfor')

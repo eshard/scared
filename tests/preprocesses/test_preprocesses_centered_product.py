@@ -13,6 +13,11 @@ def traces():
     return _read('centered_product_input.npz')
 
 
+def test_centered_product_with_no_frame(traces):
+    result = scared.preprocesses.high_order.CenteredProduct()(traces)
+    assert (500, 20100) == result.shape
+
+
 def test_centered_product_with_one_frame_and_default_values(traces):
     expected = _read('centered_product_result.npz')
     frame = slice(None, 50)
@@ -116,3 +121,8 @@ def test_centered_product_frame_with_given_mean(traces):
 
     result = scared.preprocesses.high_order.CenteredProduct(mean=mean, frame_1=frame, distance=10)(traces)
     assert np.array_equal(expected, result)
+
+
+def test_raises_exception_with_improper_mode():
+    with pytest.raises(scared.PreprocessError):
+        scared.preprocesses.high_order.CenteredProduct(mode='wfor')
