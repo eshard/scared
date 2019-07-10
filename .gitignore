@@ -62,3 +62,4 @@ docs/build/*
 out/*
 __pycache__/*
 .venv/*
+.devcontainer

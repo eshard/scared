@@ -20,7 +20,8 @@ from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  
 from .analysis import (  # noqa:F401
     BaseAnalysis, CPAAnalysis, DPAAnalysis,
     ANOVAAnalysis, NICVAnalysis, SNRAnalysis,
-    BasePartitionedAnalysis, MIAAnalysis
+    BasePartitionedAnalysis, MIAAnalysis,
+    _Analysis
 )
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import preprocesses  # noqa: F401

@@ -1,4 +1,5 @@
 from . import selection_functions as _sf, container as _container, models, distinguishers
+import inspect
 import numpy as _np
 import logging
 
@@ -233,3 +234,22 @@ class MIAAnalysis(BasePartitionedAnalysis, distinguishers.MIADistinguisherMixin)
     def __init__(self, bins_number=128, bin_edges=None, *args, **kwargs):
         distinguishers.mia._set_histogram_parameters(self, bins_number=bins_number, bin_edges=bin_edges)
         return super().__init__(*args, **kwargs)
+
+
+class _Analysis:
+    """Returns an analysis object created from a standalone distinguisher.
+
+    It has been implemented for backward compatibility with previous eshard libraries and is not intented as a public API.
+
+    """
+
+    def __new__(cls, distinguisher, *args, **kwargs):
+        klass = type.__new__(type, f'{distinguisher.__class__.__name__}Analysis', (BaseAnalysis, type(distinguisher).__bases__[1]), {})
+        obj = klass(*args, **kwargs)
+        init_args = inspect.getfullargspec(type(distinguisher)).args
+        values = inspect.getmembers(distinguisher)
+        for arg in init_args[1:]:
+            val = list(filter(lambda t: t[0] == arg, values))[0]
+            if val:
+                setattr(obj, arg, val[1])
+        return obj
