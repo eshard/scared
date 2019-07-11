@@ -7,17 +7,17 @@ class TTestContainer:
     """Wrapper container for trace header sets dedicated to TTest analysis.
 
     Args:
-        ths_fix, ths_random (:class:`TraceHeaderSet`): the two trace header set to use for the TTest.
+        ths_1, ths_2 (:class:`TraceHeaderSet`): the two trace header set to use for the TTest.
 
     Attributes:
         containers (list): list of two Container.
 
     """
 
-    def __init__(self, ths_fix, ths_random, frame=None, preprocesses=[]):
+    def __init__(self, ths_1, ths_2, frame=None, preprocesses=[]):
         self.containers = [
-            _container.Container(ths=ths_fix, frame=frame, preprocesses=preprocesses),
-            _container.Container(ths=ths_random, frame=frame, preprocesses=preprocesses)
+            _container.Container(ths=ths_1, frame=frame, preprocesses=preprocesses),
+            _container.Container(ths=ths_2, frame=frame, preprocesses=preprocesses)
         ]
 
 
