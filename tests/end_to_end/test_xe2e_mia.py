@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.mark.end_to_end
-@pytest.mark.skip
+@pytest.mark.xfail(raises=MemoryError)
 def test_mia_on_dpa_v2():
 
     ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_sub.ets')
@@ -13,8 +13,8 @@ def test_mia_on_dpa_v2():
     # MIA with this configuration doesn't retrieve the good value for the first byte of the key.
     expected_key[0] = 22
     sf = aes.selection_functions.encrypt.DeltaRLastRounds()
-    container = scared.Container(ths[:15000])
-    att = scared.MIAAnalysis(
+    container = scared.Container(ths)
+    att = scared.MIAAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs,

@@ -7,12 +7,22 @@ Targets API reference
 A(dvanced)E(ncryption)S(ystem) module
 -------------------------------------
 
-.. automodule:: scared.aes
+.. automodule:: scared.aes.base
     :members:
 
 
 AES Selection functions
 -----------------------
 
-.. automodule:: scared.aes.selection_functions
+Encrypt
+.......
+
+.. automodule:: scared.aes.selection_functions.encrypt
+    :members:
+
+
+Decrypt
+.......
+
+.. automodule:: scared.aes.selection_functions.decrypt
     :members:

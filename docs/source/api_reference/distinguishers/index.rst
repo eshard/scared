@@ -8,3 +8,4 @@ Distinguishers mixins API reference
    DPA <dpa.rst>
    CPA <cpa.rst>
    Partitioned traces <partitioned.rst>
+   MIA <mia.rst>

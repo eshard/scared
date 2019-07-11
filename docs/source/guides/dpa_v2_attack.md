@@ -88,7 +88,7 @@ def first_sub_bytes(plain, guesses):
 Second, we can create the CAP attack object, passing it our selection function, a leakage model, and a discriminant function to compute key candidates scores.
 
 ```python
-cpa_analysis = scared.CPAAnalysis(
+cpa_analysis = scared.CPAAttack(
     selection_function=first_sub_bytes,
     model=scared.HammingWeight(),
     discriminant=scared.maxabs
@@ -141,7 +141,7 @@ last_rounds_container = scared.Container(ths[:15000], frame=slice(2340, 2395))
 We can now create our new CPA analysis. Additionnaly, we use a 500 convergence step, so that we will be able to see how the result depends on the number of traces processed.
 
 ```python
-cpa_analysis = scared.CPAAnalysis(
+cpa_analysis = scared.CPAAttack(
     selection_function=delta_last_two_rounds,
     model=scared.HammingWeight(),
     discriminant=scared.maxabs,
@@ -195,7 +195,7 @@ We will proceed to the same analysis than before on the last two rounds, but thi
 First, we will use a monobit leakage model on the bit 7:
 
 ```python
-dpa_analysis = scared.DPAAnalysis(
+dpa_analysis = scared.DPAAttack(
     selection_function=delta_last_two_rounds,
     model=scared.Monobit(7),
     discriminant=scared.maxabs
@@ -226,7 +226,7 @@ max_scores = np.copy(dpa_analysis.scores)
 
 for b in range(7):
     print("Bit ", b)
-    dpa_analysis = scared.DPAAnalysis(
+    dpa_analysis = scared.DPAAttack(
         selection_function=delta_last_two_rounds,
         model=scared.Monobit(b),
         discriminant=scared.maxabs

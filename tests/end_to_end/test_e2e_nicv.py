@@ -11,7 +11,7 @@ def test_nicv_on_dpa_v2():
     expected_key = aes.key_schedule(key=ths[0].key)[-1]
     sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths[:15000])
-    att = scared.NICVAnalysis(
+    att = scared.NICVAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs,

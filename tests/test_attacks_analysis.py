@@ -12,12 +12,12 @@ def ths():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
-@pytest.fixture(params=[scared.CPAAnalysis, scared.DPAAnalysis, scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis, scared.MIAAnalysis])
-def analysis_class(request):
+@pytest.fixture(params=[scared.CPAAttack, scared.DPAAttack, scared.ANOVAAttack, scared.NICVAttack, scared.SNRAttack, scared.MIAAttack])
+def attack_class(request):
     return request.param
 
 
-@pytest.fixture(params=[scared.ANOVAAnalysis, scared.NICVAnalysis, scared.SNRAnalysis, scared.MIAAnalysis])
+@pytest.fixture(params=[scared.ANOVAAttack, scared.NICVAttack, scared.SNRAttack, scared.MIAAttack])
 def partitioned_klass(request):
     return request.param
 
@@ -55,7 +55,7 @@ class DumbDistinguisherMixin(scared.DistinguisherMixin):
             return np.sum(np.array(self.data[:-1]), axis=0) + np.sum(np.array(self.data[-1]), axis=0)
 
 
-class DumbAnalysis(scared.BaseAnalysis, DumbDistinguisherMixin):
+class DumbAttack(scared.BaseAttack, DumbDistinguisherMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,34 +64,34 @@ class DumbAnalysis(scared.BaseAnalysis, DumbDistinguisherMixin):
         self.processed_traces = 0
 
 
-def test_analysis_run_raises_exceptions_if_ths_container_is_not_a_container(analysis_class, sf):
+def test_analysis_run_raises_exceptions_if_ths_container_is_not_a_container(attack_class, sf):
     with pytest.raises(TypeError):
-        a = analysis_class(
+        a = attack_class(
             selection_function=sf,
             model=scared.Monobit(4),
             discriminant=scared.maxabs)
         a.run('foo')
 
 
-def test_analysis_object_raises_exceptions_if_sf_is_not_a_selection_function(analysis_class):
+def test_analysis_object_raises_exceptions_if_sf_is_not_a_selection_function(attack_class):
     with pytest.raises(TypeError):
-        analysis_class(
+        attack_class(
             selection_function='foo',
             model=scared.HammingWeight(),
             discriminant=scared.maxabs)
 
 
-def test_analysis_object_raises_exceptions_if_model_is_not_a_proper_model_instance(analysis_class, sf):
+def test_analysis_object_raises_exceptions_if_model_is_not_a_proper_model_instance(attack_class, sf):
     with pytest.raises(TypeError):
-        analysis_class(
+        attack_class(
             selection_function=sf,
             model='foo',
             discriminant=scared.maxabs)
 
 
-def test_analysis_object_raises_exceptions_if_discriminant_is_not_a_callable(analysis_class, sf):
+def test_analysis_object_raises_exceptions_if_discriminant_is_not_a_callable(attack_class, sf):
     with pytest.raises(TypeError):
-        analysis_class(
+        attack_class(
             selection_function=sf,
             model=scared.HammingWeight(),
             discriminant='foof')
@@ -99,14 +99,14 @@ def test_analysis_object_raises_exceptions_if_discriminant_is_not_a_callable(ana
 
 def test_base_analysis_cant_be_used_without_subclassing_a_distinguisher_mixin(sf):
     with pytest.raises(NotImplementedError):
-        scared.BaseAnalysis(
+        scared.BaseAttack(
             selection_function=sf,
             model=scared.HammingWeight(),
             discriminant=scared.maxabs)
 
 
 def test_analysis_object_compute_intermediate_values(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.nanmax
@@ -121,7 +121,7 @@ def test_analysis_object_compute_intermediate_values(sf, container):
 
 
 def test_analysis_object_process_traces_batch(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax
@@ -136,7 +136,7 @@ def test_analysis_object_process_traces_batch(sf, container):
 
 
 def test_analysis_object_compute_results(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax
@@ -151,7 +151,7 @@ def test_analysis_object_compute_results(sf, container):
 
 
 def test_analysis_object_run_method(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax
@@ -164,7 +164,7 @@ def test_analysis_object_run_method(sf, container):
 
 def test_dpa_analysis_raise_exception_if_init_with_not_monobit_model(sf):
     with pytest.raises(scared.distinguishers.DistinguisherError):
-        scared.DPAAnalysis(
+        scared.DPAAttack(
             model=scared.Value(),
             selection_function=sf,
             discriminant=scared.nanmax
@@ -172,7 +172,7 @@ def test_dpa_analysis_raise_exception_if_init_with_not_monobit_model(sf):
 
 
 def test_analysis_object_run_method_with_frame(sf, ths):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax
@@ -189,7 +189,7 @@ def test_analysis_object_run_method_with_frame(sf, ths):
 
 
 def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_between_two_process(sf, container):
-    analysis = scared.DPAAnalysis(
+    analysis = scared.DPAAttack(
         selection_function=sf,
         model=scared.Monobit(3),
         discriminant=scared.nanmax
@@ -201,7 +201,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
     with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
-    analysis = scared.CPAAnalysis(
+    analysis = scared.CPAAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.nanmax
@@ -216,7 +216,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
 
 
 def test_analysis_object_run_method_with_convergence_traces(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -229,7 +229,7 @@ def test_analysis_object_run_method_with_convergence_traces(sf, container):
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -244,7 +244,7 @@ def test_analysis_object_run_method_with_convergence_traces(sf, container):
 
 
 def test_analysis_object_run_method_with_convergence_step_higher_than_number_of_traces(sf, container):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -259,7 +259,7 @@ def test_analysis_object_run_method_with_convergence_step_higher_than_number_of_
 
 
 def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size(sf):
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -276,7 +276,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -288,7 +288,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -300,7 +300,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
-    analysis = DumbAnalysis(
+    analysis = DumbAttack(
         selection_function=sf,
         model=scared.Monobit(5),
         discriminant=scared.nanmax,
@@ -313,23 +313,23 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
 
-def test_analysis_raise_exception_if_convergence_step_is_not_positive_integer(sf, analysis_class):
+def test_analysis_raise_exception_if_convergence_step_is_not_positive_integer(sf, attack_class):
     with pytest.raises(TypeError):
-        analysis_class(
+        attack_class(
             selection_function=sf,
             model=scared.Monobit(5),
             discriminant=scared.nanmax,
             convergence_step='foo'
         )
     with pytest.raises(ValueError):
-        analysis_class(
+        attack_class(
             selection_function=sf,
             model=scared.Monobit(5),
             discriminant=scared.nanmax,
             convergence_step=0
         )
     with pytest.raises(ValueError):
-        analysis_class(
+        attack_class(
             selection_function=sf,
             model=scared.Monobit(5),
             discriminant=scared.nanmax,
@@ -355,15 +355,15 @@ def test_partitioned_analysis_set_partition(sf, partitioned_klass):
 
 def test_mia_analysis_raises_excerptions_if_incorrect_histos_parameters(sf):
     with pytest.raises(TypeError):
-        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number='foo')
+        scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number='foo')
     with pytest.raises(TypeError):
-        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number={})
+        scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number={})
     with pytest.raises(TypeError):
-        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=[1, 23])
+        scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=[1, 23])
     with pytest.raises(TypeError):
-        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=np.array([1.2, 3]))
+        scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=np.array([1.2, 3]))
     with pytest.raises(TypeError):
-        scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=38.45)
+        scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=38.45)
 
 
 _bin_edges_fail = {
@@ -381,27 +381,22 @@ def bin_edges_fail_key(request):
 def test_mia_with_invalid_bin_edges_raises_exception(sf, bin_edges_fail_key):
     bin_edges = _bin_edges_fail[bin_edges_fail_key]
     with pytest.raises(TypeError):
-        d = scared.MIAAnalysis(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d = scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
 
     with pytest.raises(TypeError):
-        d = scared.MIAAnalysis(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d = scared.MIAAttack(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
 
 
 def test_mia_bin_edges_init(sf):
-    a = scared.MIAAnalysis(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
+    a = scared.MIAAttack(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
     assert np.array_equal(a.bin_edges, np.arange(258))
 
 
-def test_analysis_created_with_standalone_distinguisher(sf, ):
-    samples = np.random.randint(0, 255, (600, 600), dtype='uint8')
-    plaintext = np.random.randint(0, 255, (600, 16), dtype='uint8')
-    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
-    container = scared.Container(ths)
-
+def test_analysis_created_with_standalone_distinguisher(sf, container):
     d = scared.CPADistinguisher()
-    analysis = scared._Analysis(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=300)
+    analysis = scared._Attack(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=150)
 
     analysis.run(container)
     assert (256, 16, 2) == analysis.convergence_traces.shape
@@ -410,7 +405,7 @@ def test_analysis_created_with_standalone_distinguisher(sf, ):
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
 
     d = scared.ANOVADistinguisher(precision='float64', partitions=np.arange(2))
-    analysis = scared._Analysis(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=300)
+    analysis = scared._Attack(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=150)
     analysis.run(container)
     assert analysis.precision == 'float64'
     assert np.array_equal(analysis.partitions, np.arange(2))
