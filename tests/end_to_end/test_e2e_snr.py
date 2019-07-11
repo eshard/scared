@@ -13,7 +13,7 @@ def test_snr_on_dpa_v2():
     expected_key[0] = 22
     sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths[:15000])
-    att = scared.SNRAnalysis(
+    att = scared.SNRAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs,

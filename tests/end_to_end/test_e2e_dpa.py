@@ -16,7 +16,7 @@ def test_dpa_on_dpa_v2():
     sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths)
 
-    att = scared.DPAAnalysis(
+    att = scared.DPAAttack(
         selection_function=sf,
         model=scared.Monobit(7),
         discriminant=scared.maxabs,
@@ -27,7 +27,7 @@ def test_dpa_on_dpa_v2():
     max_score = np.copy(att.scores)
 
     for b in bit_list:
-        att = scared.DPAAnalysis(selection_function=sf, model=scared.Monobit(b), discriminant=scared.maxabs)
+        att = scared.DPAAttack(selection_function=sf, model=scared.Monobit(b), discriminant=scared.maxabs)
         att.run(container)
         max_score = np.maximum(max_score, att.scores)
     att.scores = max_score

@@ -18,10 +18,14 @@ from .distinguishers import (  # noqa: F401
 )
 from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
 from .analysis import (  # noqa:F401
-    BaseAnalysis, CPAAnalysis, DPAAnalysis,
-    ANOVAAnalysis, NICVAnalysis, SNRAnalysis,
-    BasePartitionedAnalysis, MIAAnalysis,
-    _Analysis
+    BaseAttack, CPAAttack, DPAAttack,
+    ANOVAAttack, NICVAttack, SNRAttack,
+    BasePartitionedAttack, MIAAttack,
+    _Attack,
+    BaseReverse, CPAReverse, DPAReverse,
+    ANOVAReverse, NICVReverse, SNRReverse,
+    BasePartitionedReverse, MIAReverse,
+    _Reverse
 )
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import preprocesses  # noqa: F401

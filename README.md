@@ -40,7 +40,7 @@ def first_sub_bytes(plaintext, guesses):
     return res
 
 # Create an analysis CPA
-a = scared.CPAAnalysis(
+a = scared.CPAAttack(
         selection_function=first_sub_bytes,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs)

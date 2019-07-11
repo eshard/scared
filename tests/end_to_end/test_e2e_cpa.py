@@ -11,7 +11,7 @@ def test_cpa_on_dpa_v2():
     expected_key = aes.key_schedule(key=ths[0].key)[-1]
     sf = aes.selection_functions.encrypt.DeltaRLastRounds()
     container = scared.Container(ths)
-    att = scared.CPAAnalysis(
+    att = scared.CPAAttack(
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs,
