@@ -21,6 +21,11 @@ def test_attack_selection_function_raises_exception_if_guesses_is_not_a_bytes_ar
         scared.attack_selection_function(function=default_sf, guesses=[])
 
 
+def test_attack_selection_function_accept_range_guesses():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
+    assert np.array_equal(sf.guesses, np.arange(128, dtype='uint8'))
+
+
 def test_attack_selection_function_guesses_default_value():
     sf = scared.attack_selection_function(function=default_sf)
     assert np.array_equal(sf.guesses, np.arange(256, dtype='uint8'))
@@ -146,6 +151,12 @@ def test_selection_function_init_raises_exception_with_improper_words():
         scared.reverse_selection_function(function=default_sf, words=np.array([1.2, 3.0]))
     with pytest.raises(TypeError):
         scared.reverse_selection_function(function=default_sf, words=12.0)
+
+
+def test_selection_function_accepts_list_for_words():
+    sf = scared.selection_function(function=default_sf, words=[1, 2, 4])
+    assert isinstance(sf.words, np.ndarray)
+    assert np.array_equal(sf.words, np.array([1, 2, 4], dtype='uint8'))
 
 
 def test_selection_function_computes_intermediate_datas_with_words_selection():
