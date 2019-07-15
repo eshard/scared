@@ -22,7 +22,7 @@ requirements:
     - python
     - numpy
     - estraces
-
+    - psutil
 about:
   home: https://gitlab.com/eshard/scared
   license: GNU LGPL V3

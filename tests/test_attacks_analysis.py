@@ -2,6 +2,7 @@ from .context import scared  # noqa: F401
 import pytest
 import numpy as np
 import warnings
+import psutil
 
 
 @pytest.fixture
@@ -148,6 +149,103 @@ def test_analysis_object_compute_results(sf, container):
     assert (256, 16, 200) == analysis.results.shape
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(np.nanmax(analysis.results, axis=-1), analysis.scores)
+
+
+def test_cpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.CPAAttack(
+        selection_function=sf,
+        model=scared.Monobit(5),
+        discriminant=scared.nanmax
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 2))
+    print(trace_size)
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
+
+
+def test_dpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.DPAAttack(
+        selection_function=sf,
+        model=scared.Monobit(5),
+        discriminant=scared.nanmax
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 2))
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
+
+
+def test_anova_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.ANOVAAttack(
+        selection_function=sf,
+        model=scared.Monobit(5),
+        discriminant=scared.nanmax
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 3 * 2))
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
+
+
+def test_nicv_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.NICVAttack(
+        selection_function=sf,
+        model=scared.Monobit(5),
+        discriminant=scared.nanmax
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 3 * 2))
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
+
+
+def test_snr_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.SNRAttack(
+        selection_function=sf,
+        model=scared.Monobit(5),
+        discriminant=scared.nanmax
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 3 * 2))
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
+
+
+def test_mia_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
+    analysis = scared.MIAAttack(
+        selection_function=sf,
+        model=scared.HammingWeight(),
+        discriminant=scared.nanmax,
+    )
+    available_memory = psutil.virtual_memory().available
+    trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 3 * 9 * 128))
+    samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
+    plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    with pytest.raises(MemoryError):
+        analysis.run(container)
 
 
 def test_analysis_object_run_method(sf, container):

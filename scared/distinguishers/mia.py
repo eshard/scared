@@ -16,6 +16,9 @@ def _is_valid_bin_edges(bin_edges):
 class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
     """This partitioned distinguisher mixin applies a mutual information computation."""
 
+    def _memory_usage_coefficient(self, trace_size):
+        return 3 * len(self.partitions) * self.bins_number * trace_size
+
     @property
     def bin_edges(self):
         return self._bin_edges

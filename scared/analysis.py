@@ -58,6 +58,7 @@ class _BaseAnalysis:
 
         batch_size = self._compute_batch_size(container.batch_size)
         logger.info(f'Starting run on container {container}, with batch size {batch_size}.')
+
         for i, batch in enumerate(container.batches(batch_size=batch_size)):
             logger.info(f'Process batch number {i} starting.')
             self.process(batch)
@@ -93,7 +94,6 @@ class _BaseAnalysis:
         intermediate_values = self.compute_intermediate_values(traces_batch.metadatas)
 
         logger.info(f'Will call distinguisher update with {traces_batch}.')
-
         self.update(
             data=intermediate_values,
             traces=traces_batch.samples

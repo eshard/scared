@@ -6,6 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
+
+    def _memory_usage_coefficient(self, trace_size):
+        return 3 * len(self.partitions) * trace_size
+
     def _initialize(self, traces, data):
         maxdata = _np.nanmax(data)
         if self.partitions is None:
