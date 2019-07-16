@@ -61,13 +61,28 @@ class SelectionFunction:
 
 class _AttackSelectionFunction(SelectionFunction):
 
-    def __init__(self, function, guesses, words):
+    def __init__(self, function, guesses, words, expected_key_function=None):
         super().__init__(function=function, words=words)
         if isinstance(guesses, range):
             guesses = _np.array(guesses, dtype='uint8')
         _is_bytes_array(guesses)
         self.guesses = guesses
         self._base_kwargs['guesses'] = guesses
+
+        if expected_key_function is not None and not callable(expected_key_function):
+            raise TypeError(f'Expected key function must be a callable, not {type(expected_key_function)}.')
+        self.expected_key_function = expected_key_function
+
+    def compute_expected_key(self, **kwargs):
+        if self.expected_key_function:
+            kargs = {}
+            for name, arg in inspect.signature(self.expected_key_function).parameters.items():
+                try:
+                    kargs[name] = kwargs[name]
+                except KeyError as e:
+                    raise SelectionFunctionError(f'Missing key values in metadata {list(kwargs.keys())} for expected argument {e} of compute expected function {self}.')
+
+            return self.expected_key_function(**kargs)
 
 
 def _decorated_selection_function(klass, function, **kwargs):
@@ -81,21 +96,42 @@ def _decorated_selection_function(klass, function, **kwargs):
 
 
 def selection_function(function=None, words=None):
-    """Decorator that wraps the provided function as a selection function."""
+    """Decorator that wraps the provided function as a selection function.
+
+    Args:
+        function (callable): the attack selection function callable.
+        words (ndarray, slice, list, default=None): words subselection used by the selection function.
+
+    """
     return _decorated_selection_function(SelectionFunction, function, words=words)
 
 
-def attack_selection_function(function=None, guesses=range(256), words=None):
+def attack_selection_function(function=None, guesses=range(256), words=None, expected_key_function=None):
     """Decorator that wraps provided selection function as an attack selection function.
 
     Attack selection function must accepts a guesses parameter.
 
+    Args:
+        function (callable): the attack selection function callable.
+        guesses (ndarray or range, default=range(256)): guesses values to be used by the selection function.
+        words (ndarray, slice, list, default=None): words subselection used by the selection function.
+        expected_key_function (callable, default=None): callable to compute the corresponding expected key value for this selection function.
+
+    Methods:
+        compute_expected_key: returns the result of expected_key_function, if available.
+
     """
-    return _decorated_selection_function(_AttackSelectionFunction, function, words=words, guesses=guesses)
+    return _decorated_selection_function(_AttackSelectionFunction, function, words=words, guesses=guesses, expected_key_function=expected_key_function)
 
 
 def reverse_selection_function(function=None, words=None):
-    """Decorator that wraps provided selection function as a reverse selection function."""
+    """Decorator that wraps provided selection function as a reverse selection function.
+
+    Args:
+        function (callable): the attack selection function callable.
+        words (ndarray, slice, list, default=None): words subselection used by the selection function.
+
+    """
     return selection_function(function, words=words)
 
 
