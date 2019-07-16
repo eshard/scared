@@ -58,11 +58,13 @@ class _BaseAnalysis:
 
         batch_size = self._compute_batch_size(container.batch_size)
         logger.info(f'Starting run on container {container}, with batch size {batch_size}.')
-
+        batches = list(container.batches(batch_size=batch_size))
+        logger.info(f'Number of iterations for this run: {len(batches)}', {'nb_iterations': len(batches)})
         for i, batch in enumerate(container.batches(batch_size=batch_size)):
             logger.info(f'Process batch number {i} starting.')
             self.process(batch)
             self._batch_loop_compute()
+            logger.info(f'Process batch {i} iteration finished.')
         logger.info(f'Batches processing finished.')
         self._final_compute()
         logger.info(f'Run on container {container} finished.')

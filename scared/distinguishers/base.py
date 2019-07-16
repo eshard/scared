@@ -41,10 +41,10 @@ class DistinguisherMixin(abc.ABC):
         try:
             self._origin_shape
         except AttributeError:
-            logger.info(f'Initialize distinguisher state.')
+            logger.debug(f'Initialize distinguisher state.')
             self._origin_shape = o_shape
             mem = psutil.virtual_memory().available / 2 ** 30
-            logger.info(f'Memory usage before compute {mem} GB.')
+            logger.debug(f'Memory usage before compute {mem} GB.')
             self._initialize(traces=traces, data=data)
 
         self._check(traces=traces, data=data)
@@ -63,7 +63,7 @@ class DistinguisherMixin(abc.ABC):
 
     def compute(self):
         mem = psutil.virtual_memory().available / 2 ** 30
-        logger.info(f'Memory usage before compute {mem} GB.')
+        logger.debug(f'Memory usage before compute {mem} GB.')
         try:
             assert self.processed_traces > 0
         except (AttributeError, AssertionError):
@@ -81,7 +81,7 @@ class DistinguisherMixin(abc.ABC):
             dtype_size = _np.dtype(self.precision).itemsize
             needed_mem = dtype_size * data_dim * self._memory_usage_coefficient(trace_size=traces.shape[1]) / 2 ** 30
             available_mem = psutil.virtual_memory().available / 2 ** 30
-            logger.info(f'Needed memory estimated to {needed_mem} GB, for available {available_mem}.')
+            logger.debug(f'Needed memory estimated to {needed_mem} GB, for available {available_mem}.')
             self._is_checked = True
             if needed_mem > 0.9 * available_mem:
                 raise MemoryError(
