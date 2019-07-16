@@ -80,7 +80,9 @@ class _AttackSelectionFunction(SelectionFunction):
                 try:
                     kargs[name] = kwargs[name]
                 except KeyError as e:
-                    raise SelectionFunctionError(f'Missing key values in metadata {list(kwargs.keys())} for expected argument {e} of compute expected function {self}.')
+                    raise SelectionFunctionError(
+                        f'Missing key values in metadata {list(kwargs.keys())} for expected argument {e} of compute expected function {self}.'
+                    )
 
             return self.expected_key_function(**kargs)
 
@@ -137,11 +139,17 @@ def reverse_selection_function(function=None, words=None):
 
 class _AttackSelectionFunctionWrapped(_AttackSelectionFunction):
 
-    def __init__(self, function, guesses, words, target_tag=None, target_name='data'):
-        super().__init__(function=function, words=words, guesses=guesses)
+    def __init__(self, function, guesses, words, expected_key_function=None, target_tag=None, key_tag=None, target_name='data', key_name='key'):
+        super().__init__(function=function, words=words, guesses=guesses, expected_key_function=expected_key_function)
         self.target_tag = target_tag
         self.target_name = target_name
+        self.key_name = key_name
+        self.key_tag = key_tag
 
     def __call__(self, **kwargs):
         kwargs[self.target_name] = kwargs[self.target_tag]
         return super().__call__(**kwargs)
+
+    def compute_expected_key(self, **kwargs):
+        kwargs[self.key_name] = kwargs[self.key_tag]
+        return super().compute_expected_key(**kwargs)
