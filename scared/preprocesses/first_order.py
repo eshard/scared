@@ -3,6 +3,8 @@ import numpy as _np
 
 
 def _center(traces, mean):
+    if mean is None:
+        return center(traces)
     try:
         return traces - mean
     except ValueError:

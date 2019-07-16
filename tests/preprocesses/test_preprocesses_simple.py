@@ -53,6 +53,13 @@ def test_center_on_given_mean(traces):
     assert np.array_equal(expected, result)
 
 
+def test_center_on_given_mean_works_if_mean_is_none(traces):
+    given_mean = None
+    expected = traces - np.nanmean(traces, axis=0)
+    result = scared.preprocesses.CenterOn(mean=given_mean)(traces)
+    assert np.array_equal(expected, result)
+
+
 def test_center_on_is_a_preprocess():
     with pytest.raises(ValueError):
         scared.preprocesses.CenterOn(mean=np.random.random((500, 2000, 20)))(np.random.random((50, 2000, 20)))

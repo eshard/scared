@@ -1,6 +1,9 @@
 from . import distinguishers
 from . import container as _container
 import numpy as _np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TTestContainer:
@@ -65,10 +68,14 @@ class TTestAnalysis:
         if not isinstance(ttest_container, TTestContainer):
             raise TypeError(f'ttest_container should be a type TTestContainer, not {type(ttest_container)}.')
 
+        nb_iterations = sum([max(int(len(cont._ths) / cont.batch_size), 1) for cont in ttest_container.containers])
+        logger.info(f'Start run t-test on container {ttest_container}, with {nb_iterations} iterations', {'nb_iterations': nb_iterations})
         for i in range(2):
             container = ttest_container.containers[i]
+            logger.info(f'Start processing t-test on ths number {i}.')
             for batch in container.batches():
                 self.accumulators[i].update(batch.samples)
+                logger.info(f't-test iteration finished.')
             self.accumulators[i].compute()
 
         self._compute()
