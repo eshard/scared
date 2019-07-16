@@ -45,19 +45,19 @@ def test_selection_function_call_raises_exception_if_missing_kwargs():
     @scared.selection_function
     def sf(plain):
         return plain
-    with pytest.raises(TypeError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(keys=np.random.randint(0, 255, (16), dtype='uint8'))
 
     @scared.attack_selection_function
     def sf(plain, guesses):
         return plain
-    with pytest.raises(TypeError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(keys=np.random.randint(0, 255, (16), dtype='uint8'))
 
     @scared.reverse_selection_function
     def sf(plain, guesses):
         return plain
-    with pytest.raises(TypeError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(keys=np.random.randint(0, 255, (16), dtype='uint8'))
 
 
@@ -108,7 +108,7 @@ def test_selection_function_raises_exceptions_if_intermediate_values_has_inconsi
             out[guess] = np.bitwise_xor(plaintext, guess)
         return out[:, 0]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(**datas)
 
     @scared.selection_function
@@ -117,7 +117,7 @@ def test_selection_function_raises_exceptions_if_intermediate_values_has_inconsi
         out[0] = np.bitwise_xor(plaintext, 0)
         return out[:, 0]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(**datas)
 
     @scared.reverse_selection_function
@@ -126,7 +126,7 @@ def test_selection_function_raises_exceptions_if_intermediate_values_has_inconsi
         out[0] = np.bitwise_xor(plaintext, 0)
         return out[:, 0]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(**datas)
 
 
@@ -202,7 +202,7 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
         for guess in guesses:
             out[guess] = np.bitwise_xor(plaintext, guess)
         return out.swapaxes(0, 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))
 
     @scared.selection_function(words=18)
@@ -210,7 +210,7 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
         out = np.empty(tuple([1, plaintext.shape[0], 16]), dtype='uint8')
         out[0] = np.bitwise_xor(plaintext, 0)
         return out.swapaxes(0, 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))
 
     @scared.reverse_selection_function(words=18)
@@ -218,5 +218,5 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
         out = np.empty(tuple([1, plaintext.shape[0], 16]), dtype='uint8')
         out[0] = np.bitwise_xor(plaintext, 0)
         return out.swapaxes(0, 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(scared.SelectionFunctionError):
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))

@@ -6,6 +6,10 @@ from .._utils import _is_bytes_array
 logger = logging.getLogger(__name__)
 
 
+class SelectionFunctionError(Exception):
+    pass
+
+
 class SelectionFunction:
     """Base class for selection function used by analysis framework for intermediate value computation.
 
@@ -40,18 +44,18 @@ class SelectionFunction:
             try:
                 self._base_kwargs[name] = kwargs[name]
                 self._ref_shape = kwargs[name].shape
-            except KeyError:
-                if arg.default is None:
-                    logger.info(f'Arg {name} has no value for this selection function.')
+            except KeyError as e:
+                if name not in self._base_kwargs:
+                    raise SelectionFunctionError(f'Missing values in metadata {list(kwargs.keys())} for expected argument {e} of selection function {self}.')
 
         values = self._function(**self._base_kwargs)
         if values.shape[0] != self._ref_shape[0]:
-            raise ValueError(f'Shape of selection function output should begin with {self._ref_shape[0]}, not {values.shape[0]}.')
+            raise SelectionFunctionError(f'Shape of selection function output should begin with {self._ref_shape[0]}, not {values.shape[0]}.')
         if self.words is not None:
             try:
                 values = values.swapaxes(0, -1)[self.words].swapaxes(0, -1)
             except IndexError:
-                raise ValueError(f'Words selection {self.words} can\'t be applied for this selection function with shape {values.shape}.')
+                raise SelectionFunctionError(f'Words selection {self.words} can\'t be applied for this selection function with shape {values.shape}.')
         return values
 
 
