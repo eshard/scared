@@ -13,6 +13,10 @@ class DumbDistinguisher(scared.Distinguisher):
     def _compute(self):
         pass
 
+    @property
+    def _distinguisher_str(self):
+        return 'DumbStandalone'
+
 
 def test_subclassing_distinguisher_without_appropriate_functions_raises_exceptions():
 
@@ -353,6 +357,10 @@ def test_cpa_update_method_converts_traces_and_data_properly():
 class DumbPartDistinguisher(scared.PartitionedDistinguisher):
     def _compute(self):
         pass
+
+    @property
+    def _distinguisher_str(self):
+        return 'DumbPart'
 
 
 def test_partitioned_distinguishers_analyses_raises_exception_if_incorrect_partition():

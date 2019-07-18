@@ -87,6 +87,10 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
         res = delta.sum(axis=1) * ratios
         return _np.sum(res, axis=1).swapaxes(0, 1)
 
+    @property
+    def _distinguisher_str(self):
+        return 'MIA'
+
 
 def _set_histogram_parameters(obj, bins_number, bin_edges):
     if not isinstance(bins_number, int):

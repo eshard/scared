@@ -55,6 +55,10 @@ class DumbDistinguisherMixin(scared.DistinguisherMixin):
         except Exception:
             return np.sum(np.array(self.data[:-1]), axis=0) + np.sum(np.array(self.data[-1]), axis=0)
 
+    @property
+    def _distinguisher_str(self):
+        return 'Dumb'
+
 
 class DumbAttack(scared.BaseAttack, DumbDistinguisherMixin):
 
@@ -71,6 +75,7 @@ def test_analysis_run_raises_exceptions_if_ths_container_is_not_a_container(atta
             selection_function=sf,
             model=scared.Monobit(4),
             discriminant=scared.maxabs)
+        assert isinstance(str(a), str)
         a.run('foo')
 
 
@@ -119,6 +124,7 @@ def test_analysis_object_compute_intermediate_values(sf, container):
     assert np.array_equal(
         expected, int_val
     )
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_process_traces_batch(sf, container):
@@ -134,6 +140,7 @@ def test_analysis_object_process_traces_batch(sf, container):
         analysis.data[0].reshape(-1, 256, 16),
         analysis.compute_intermediate_values(batches[0].metadatas)
     )
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_compute_results(sf, container):
@@ -149,6 +156,7 @@ def test_analysis_object_compute_results(sf, container):
     assert (256, 16, 200) == analysis.results.shape
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(np.nanmax(analysis.results, axis=-1), analysis.scores)
+    assert isinstance(str(analysis), str)
 
 
 def test_cpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_of_available_memory(sf):
@@ -159,11 +167,11 @@ def test_cpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     )
     available_memory = psutil.virtual_memory().available
     trace_size = int((available_memory * 0.95) / (analysis.precision.itemsize * 4096 * 2))
-    print(trace_size)
     samples = np.random.randint(0, 255, (200, trace_size), dtype='uint8')
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -180,6 +188,7 @@ def test_dpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -196,6 +205,7 @@ def test_anova_analysis_raises_exception_if_estimated_memory_usage_is_90_percent
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -212,6 +222,7 @@ def test_nicv_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -228,6 +239,7 @@ def test_snr_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -244,6 +256,7 @@ def test_mia_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     plaintext = np.random.randint(0, 255, (200, 16), dtype='uint8')
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
+    assert isinstance(str(analysis), str)
     with pytest.raises(MemoryError):
         analysis.run(container)
 
@@ -258,6 +271,7 @@ def test_analysis_object_run_method(sf, container):
     assert (256, 16, 200) == analysis.results.shape
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(np.nanmax(analysis.results, axis=-1), analysis.scores)
+    assert isinstance(str(analysis), str)
 
 
 def test_dpa_analysis_raise_exception_if_init_with_not_monobit_model(sf):
@@ -284,6 +298,7 @@ def test_analysis_object_run_method_with_frame(sf, ths):
     container.frame = slice(20, 30)
     analysis.run(container)
     assert (2, 200, 10) == np.array(analysis.traces).shape
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_between_two_process(sf, container):
@@ -296,6 +311,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
     container.frame = slice(20, 30)
     analysis.run(container)
     container.frame = slice(20, None)
+    assert isinstance(str(analysis), str)
     with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
@@ -309,6 +325,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
     container.frame = slice(10, 20)
     analysis.run(container)
     container.frame = slice(20, None)
+    assert isinstance(str(analysis), str)
     with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
@@ -326,6 +343,7 @@ def test_analysis_object_run_method_with_convergence_traces(sf, container):
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
     analysis = DumbAttack(
         selection_function=sf,
@@ -339,6 +357,7 @@ def test_analysis_object_run_method_with_convergence_traces(sf, container):
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_run_method_with_convergence_step_higher_than_number_of_traces(sf, container):
@@ -354,6 +373,7 @@ def test_analysis_object_run_method_with_convergence_step_higher_than_number_of_
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size(sf):
@@ -373,6 +393,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
     analysis = DumbAttack(
         selection_function=sf,
@@ -385,6 +406,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
     analysis = DumbAttack(
         selection_function=sf,
@@ -397,6 +419,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
     analysis = DumbAttack(
         selection_function=sf,
@@ -409,6 +432,7 @@ def test_analysis_object_run_method_with_convergence_step_larger_than_batch_size
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_raise_exception_if_convergence_step_is_not_positive_integer(sf, attack_class):
@@ -449,6 +473,7 @@ def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partit
 def test_partitioned_analysis_set_partition(sf, partitioned_klass):
     a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.arange(9))
     assert np.array_equal(np.arange(9), a.partitions)
+    assert isinstance(str(a), str)
 
 
 def test_mia_analysis_raises_excerptions_if_incorrect_histos_parameters(sf):
@@ -481,15 +506,18 @@ def test_mia_with_invalid_bin_edges_raises_exception(sf, bin_edges_fail_key):
     with pytest.raises(TypeError):
         d = scared.MIAAttack(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
+        assert isinstance(str(d), str)
 
     with pytest.raises(TypeError):
         d = scared.MIAAttack(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
+        assert isinstance(str(d), str)
 
 
 def test_mia_bin_edges_init(sf):
     a = scared.MIAAttack(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
     assert np.array_equal(a.bin_edges, np.arange(258))
+    assert isinstance(str(a), str)
 
 
 def test_analysis_created_with_standalone_distinguisher(sf, container):
@@ -501,6 +529,7 @@ def test_analysis_created_with_standalone_distinguisher(sf, container):
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(d), str)
 
     d = scared.ANOVADistinguisher(precision='float64', partitions=np.arange(2))
     analysis = scared._Attack(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=150)
@@ -511,3 +540,4 @@ def test_analysis_created_with_standalone_distinguisher(sf, container):
     assert (256, 16) == analysis.results.shape[0:2]
     assert (256, 16) == analysis.scores.shape
     assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
+    assert isinstance(str(d), str)

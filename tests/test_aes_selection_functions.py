@@ -18,6 +18,7 @@ def test_aes_encrypt_first_round_key_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_first_round_key_with_alternative_args():
@@ -40,6 +41,7 @@ def test_aes_encrypt_first_round_key_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_last_round_key_with_default_arguments():
@@ -57,6 +59,7 @@ def test_aes_encrypt_last_round_key_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_last_round_key_with_alternative_args():
@@ -79,6 +82,7 @@ def test_aes_encrypt_last_round_key_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_first_sub_bytes_with_default_arguments():
@@ -97,6 +101,7 @@ def test_aes_encrypt_first_sub_bytes_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_first_sub_bytes_with_alternative_args():
@@ -120,6 +125,7 @@ def test_aes_encrypt_first_sub_bytes_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_last_sub_bytes_with_default_arguments():
@@ -138,6 +144,7 @@ def test_aes_encrypt_last_sub_bytes_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_last_sub_bytes_with_alternative_args():
@@ -161,6 +168,7 @@ def test_aes_encrypt_last_sub_bytes_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_delta_r_last_rounds_with_default_arguments():
@@ -180,6 +188,7 @@ def test_aes_encrypt_delta_r_last_rounds_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_encrypt_delta_r_last_rounds_with_alternative_args():
@@ -203,6 +212,7 @@ def test_aes_encrypt_delta_r_last_rounds_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_first_round_key_with_default_arguments():
@@ -220,6 +230,7 @@ def test_aes_decrypt_first_round_key_with_default_arguments():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_first_round_key_with_alternative_args():
@@ -242,6 +253,7 @@ def test_aes_decrypt_first_round_key_with_alternative_args():
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_last_round_key_with_default_arguments():
@@ -259,6 +271,7 @@ def test_aes_decrypt_last_round_key_with_default_arguments():
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
     assert sf.key_tag == 'key'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_last_round_key_with_alternative_args():
@@ -281,6 +294,7 @@ def test_aes_decrypt_last_round_key_with_alternative_args():
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_first_sub_bytes_with_default_arguments():
@@ -299,6 +313,7 @@ def test_aes_decrypt_first_sub_bytes_with_default_arguments():
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
     assert sf.key_tag == 'key'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_first_sub_bytes_with_alternative_args():
@@ -322,6 +337,7 @@ def test_aes_decrypt_first_sub_bytes_with_alternative_args():
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_last_sub_bytes_with_default_arguments():
@@ -340,6 +356,7 @@ def test_aes_decrypt_last_sub_bytes_with_default_arguments():
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
     assert sf.key_tag == 'key'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_last_sub_bytes_with_alternative_args():
@@ -363,6 +380,7 @@ def test_aes_decrypt_last_sub_bytes_with_alternative_args():
     expected_key = aes.key_schedule(master_key)[0]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_delta_r_first_rounds_with_default_arguments():
@@ -382,6 +400,7 @@ def test_aes_decrypt_delta_r_first_rounds_with_default_arguments():
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(key=master_key))
     assert sf.key_tag == 'key'
+    assert isinstance(str(sf), str)
 
 
 def test_aes_decrypt_delta_r_first_rounds_with_alternative_args():
@@ -406,3 +425,4 @@ def test_aes_decrypt_delta_r_first_rounds_with_alternative_args():
     expected_key = aes.key_schedule(master_key)[-1]
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
+    assert isinstance(str(sf), str)

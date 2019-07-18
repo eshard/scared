@@ -221,6 +221,15 @@ class BaseAttack(_BaseAnalysis):
         self.scores = self.discriminant(self.results)
         logger.info(f'Scores computed.')
 
+    def __str__(self):
+        template_str = f'''Analysis informations:
+    {self.selection_function}
+    Distinguisher     : {self._distinguisher_str}
+    Model             : {self.model}
+    Discriminant      : {self.discriminant.__name__}
+           '''
+        return template_str
+
 
 class BaseReverse(_BaseAnalysis):
     """Base class for all reverse analysis processing objects.

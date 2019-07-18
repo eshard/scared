@@ -50,6 +50,10 @@ class DPADistinguisherMixin(DistinguisherMixin):
         normalized_zeros = (accumulator_zeros.swapaxes(0, 1) / processed_zeros).swapaxes(0, 1)
         return (normalized_ones - normalized_zeros)
 
+    @property
+    def _distinguisher_str(self):
+        return 'DPA'
+
 
 class DPADistinguisher(_StandaloneDistinguisher, DPADistinguisherMixin):
     """Standalone distinguisher class using DPA."""

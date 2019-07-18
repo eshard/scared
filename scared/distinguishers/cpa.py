@@ -56,6 +56,10 @@ class CPADistinguisherMixin(DistinguisherMixin):
             result[d] = tmp_result.astype(self.precision)
         return result
 
+    @property
+    def _distinguisher_str(self):
+        return 'CPA'
+
 
 class CPAAlternativeDistinguisherMixin(CPADistinguisherMixin):
     """Correlation Power Analysis using Pearson coefficients mixin.

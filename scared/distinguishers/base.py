@@ -91,6 +91,11 @@ class DistinguisherMixin(abc.ABC):
     def _memory_usage_coefficient(self, trace_size):
         return 2 * trace_size
 
+    @property
+    @abc.abstractmethod
+    def _distinguisher_str(self):
+        pass
+
 
 def _set_precision(obj, precision):
     try:

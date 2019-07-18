@@ -62,6 +62,9 @@ class Value(Model):
     def max_data_value(self):
         return 256
 
+    def __str__(self):
+        return 'Value'
+
 
 class Monobit(Model):
     """Monobit model leakage class.
@@ -93,6 +96,9 @@ class Monobit(Model):
     @property
     def max_data_value(self):
         return 1
+
+    def __str__(self):
+        return f'Monobit {self.bit}'
 
 
 class HammingWeight(Model):
@@ -141,3 +147,6 @@ class HammingWeight(Model):
     @property
     def max_data_value(self):
         return self.nb_words * 8
+
+    def __str__(self):
+        return f'Hamming Weight on {self.nb_words} word(s).'

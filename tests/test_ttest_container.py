@@ -63,6 +63,7 @@ def test_ttest_analysis_initialize_two_ttest_accumulator(ths_1, ths_2):
     assert analysis.accumulators[0].precision == 'float32'
     assert isinstance(analysis.accumulators[1], scared.TTestAccumulator)
     assert analysis.accumulators[1].precision == 'float32'
+    assert isinstance(str(analysis), str)
 
 
 def test_accumulator_update_raises_exception_if_invalid_traces():
@@ -108,7 +109,7 @@ def test_ttest_analysis_run(ths_1, ths_2):
     cont = scared.TTestContainer(ths_1, ths_2)
     analysis = scared.TTestAnalysis(precision='float64')
     analysis.run(cont)
-
+    assert isinstance(str(cont), str)
     t_1 = ths_1.samples[:].astype('float64')
     t_2 = ths_2.samples[:].astype('float64')
 
@@ -120,9 +121,11 @@ def test_ttest_analysis_run(ths_1, ths_2):
 
     assert analysis.result is not None
     assert np.array_equal(expected, analysis.result)
+    assert isinstance(str(analysis), str)
 
 
 def test_ttest_analysis_run_raises_exception_if_container_not_ttest_container():
     analysis = scared.TTestAnalysis(precision='float64')
     with pytest.raises(TypeError):
         analysis.run('foo')
+    assert isinstance(str(analysis), str)

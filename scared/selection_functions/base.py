@@ -58,6 +58,20 @@ class SelectionFunction:
                 raise SelectionFunctionError(f'Words selection {self.words} can\'t be applied for this selection function with shape {values.shape}.')
         return values
 
+    @property
+    def _words_str(self):
+        if not isinstance(self.words, Ellipsis.__class__):
+            return str(self.words)
+        return 'All'
+
+    def __str__(self):
+        template_str = f'''Selection function:
+        Function             : {self._function.__name__}
+        Function args        : {list(self._signature.parameters.keys())}
+        Words selection      : {self._words_str}
+        '''
+        return template_str
+
 
 class _AttackSelectionFunction(SelectionFunction):
 
@@ -85,6 +99,18 @@ class _AttackSelectionFunction(SelectionFunction):
                     )
 
             return self.expected_key_function(**kargs)
+
+    @property
+    def _guesses_str(self):
+        return f'{str(self.guesses)[:20]} ... {str(self.guesses)[-20:]}'.replace('\n', '')
+
+    def __str__(self):
+        res = super().__str__()
+        res += f'''Guesses              : {self._guesses_str}
+        Expected key function: {self.expected_key_function.__name__ if self.expected_key_function else '-'}
+        Expected key args    : {list(inspect.signature(self.expected_key_function).parameters.keys()) if self.expected_key_function else '-'}
+        '''
+        return res
 
 
 def _decorated_selection_function(klass, function, **kwargs):
