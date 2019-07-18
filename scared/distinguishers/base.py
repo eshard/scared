@@ -1,6 +1,7 @@
 import abc
 import numpy as _np
 import logging
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,13 @@ class DistinguisherMixin(abc.ABC):
         try:
             self._origin_shape
         except AttributeError:
-            logger.info(f'Initialize distinguisher state.')
+            logger.debug(f'Initialize distinguisher state.')
             self._origin_shape = o_shape
+            mem = psutil.virtual_memory().available / 2 ** 30
+            logger.debug(f'Memory usage before compute {mem} GB.')
             self._initialize(traces=traces, data=data)
+
+        self._check(traces=traces, data=data)
 
         self.processed_traces += traces.shape[0]
         logger.info(f'Will call _update traces.')
@@ -57,6 +62,8 @@ class DistinguisherMixin(abc.ABC):
         pass
 
     def compute(self):
+        mem = psutil.virtual_memory().available / 2 ** 30
+        logger.debug(f'Memory usage before compute {mem} GB.')
         try:
             assert self.processed_traces > 0
         except (AttributeError, AssertionError):
@@ -67,6 +74,22 @@ class DistinguisherMixin(abc.ABC):
     @abc.abstractmethod
     def _compute(self):
         pass
+
+    def _check(self, traces, data):
+        if not self._is_checked:
+            data_dim = data.shape[1]
+            dtype_size = _np.dtype(self.precision).itemsize
+            needed_mem = dtype_size * data_dim * self._memory_usage_coefficient(trace_size=traces.shape[1]) / 2 ** 30
+            available_mem = psutil.virtual_memory().available / 2 ** 30
+            logger.debug(f'Needed memory estimated to {needed_mem} GB, for available {available_mem}.')
+            self._is_checked = True
+            if needed_mem > 0.9 * available_mem:
+                raise MemoryError(
+                    f'This analysis will probably need more than 90% of your available memory - {available_mem} GB available against {needed_mem} GB needed.'
+                )
+
+    def _memory_usage_coefficient(self, trace_size):
+        return 2 * trace_size
 
 
 def _set_precision(obj, precision):
@@ -83,6 +106,7 @@ def _set_precision(obj, precision):
 def _initialize_distinguisher(obj, precision, processed_traces):
     _set_precision(obj, precision)
     obj.processed_traces = processed_traces
+    obj._is_checked = False
 
 
 class _StandaloneDistinguisher:

@@ -28,6 +28,14 @@ def _delta_last_rounds(data, guesses):
     ).swapaxes(0, 1)
 
 
+def _first_key(key):
+    return aes.key_schedule(key)[0]
+
+
+def _last_key(key):
+    return aes.key_schedule(key)[-1]
+
+
 class FirstAddRoundKey:
     """Build an attack selection function which computes intermediate values after AES encrypt round key operation at first round, for guesses values.
 
@@ -39,9 +47,15 @@ class FirstAddRoundKey:
 
     """
 
-    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
-        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses, target_tag=plaintext_tag)
-        # self.target_tag = plaintext_tag
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
+        return _decorated_selection_function(
+            _AttackSelectionFunctionWrapped,
+            _add_round_key,
+            expected_key_function=_first_key,
+            words=words,
+            guesses=guesses,
+            target_tag=plaintext_tag,
+            key_tag=key_tag)
 
 
 class LastAddRoundKey:
@@ -55,8 +69,15 @@ class LastAddRoundKey:
 
     """
 
-    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
-        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _add_round_key, words=words, guesses=guesses, target_tag=ciphertext_tag)
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
+        return _decorated_selection_function(
+            _AttackSelectionFunctionWrapped,
+            _add_round_key,
+            expected_key_function=_last_key,
+            words=words, guesses=guesses,
+            target_tag=ciphertext_tag,
+            key_tag=key_tag
+        )
 
 
 class FirstSubBytes:
@@ -70,8 +91,16 @@ class FirstSubBytes:
 
     """
 
-    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext'):
-        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _sub_bytes, words=words, guesses=guesses, target_tag=plaintext_tag)
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
+        return _decorated_selection_function(
+            _AttackSelectionFunctionWrapped,
+            _sub_bytes,
+            expected_key_function=_first_key,
+            words=words,
+            guesses=guesses,
+            target_tag=plaintext_tag,
+            key_tag=key_tag
+        )
 
 
 class LastSubBytes:
@@ -85,8 +114,16 @@ class LastSubBytes:
 
     """
 
-    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
-        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _inv_sub_bytes, words=words, guesses=guesses, target_tag=ciphertext_tag)
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
+        return _decorated_selection_function(
+            _AttackSelectionFunctionWrapped,
+            _inv_sub_bytes,
+            expected_key_function=_last_key,
+            words=words,
+            guesses=guesses,
+            target_tag=ciphertext_tag,
+            key_tag=key_tag
+        )
 
 
 class DeltaRLastRounds:
@@ -99,5 +136,13 @@ class DeltaRLastRounds:
             values from the metadata dict when selection function is called.
     """
 
-    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext'):
-        return _decorated_selection_function(_AttackSelectionFunctionWrapped, _delta_last_rounds, words=words, guesses=guesses, target_tag=ciphertext_tag)
+    def __new__(cls, guesses=_np.arange(256, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
+        return _decorated_selection_function(
+            _AttackSelectionFunctionWrapped,
+            _delta_last_rounds,
+            expected_key_function=_last_key,
+            words=words,
+            guesses=guesses,
+            target_tag=ciphertext_tag,
+            key_tag=key_tag
+        )
