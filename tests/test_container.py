@@ -47,6 +47,7 @@ def test_container_provides_iterator_on_traces_objects(thss):
     ths, sizes = thss
     container = scared.Container(ths)
     assert isinstance(container.batches(), Iterable)
+    assert isinstance(str(container), str)
     for batch in container.batches():
         assert batch.samples is not None
         assert batch.metadatas is not None
@@ -56,6 +57,7 @@ def test_container_provides_iterator_on_traces_objects(thss):
 def test_container_provides_trace_size_attribute(thss):
     ths, sizes = thss
     container = scared.Container(ths)
+    assert isinstance(str(container), str)
     assert container.trace_size == len(ths.samples[0, :])
 
 
@@ -64,6 +66,8 @@ def test_container_batches_accept_batch_size(thss):
     container = scared.Container(ths)
     n_batch = len(ths) // 2000
     last_batch = len(ths) - 2000 * n_batch
+    assert isinstance(str(container), str)
+
     for batch in container.batches(batch_size=2000):
         if len(ths) < 2000:
             assert len(batch) == len(ths)
@@ -91,12 +95,15 @@ def test_container_raises_exception_if_frame_param_has_improper_type(ths):
 def test_container_trace_size_use_frame(ths):
     cont = scared.Container(ths, frame=slice(None, 10))
     assert cont.trace_size == 10
+    assert isinstance(str(cont), str)
 
     cont = scared.Container(ths, frame=slice(None, 2000))
     assert cont.trace_size == 1000
+    assert isinstance(str(cont), str)
 
     cont = scared.Container(ths, frame=1)
     assert cont.trace_size == 1
+    assert isinstance(str(cont), str)
 
 
 def test_container_raises_error_if_bad_preprocesses(ths):
@@ -116,6 +123,7 @@ def test_container_with_one_preprocess(ths):
     c = scared.Container(ths, preprocesses=square)
     b = c.batches(batch_size=10)[0]
     assert np.array_equal(b.samples, square(ths.samples[:10, :]))
+    assert isinstance(str(c), str)
 
 
 def test_container_with_multiple_preprocess(ths):
@@ -130,12 +138,14 @@ def test_container_with_multiple_preprocess(ths):
     c = scared.Container(ths, preprocesses=[square, minus_2])
     b = c.batches(batch_size=10)[0]
     assert np.array_equal(b.samples, minus_2(square(ths.samples[:10, :])))
+    assert isinstance(str(c), str)
 
 
 def test_container_with_frame(ths):
     c = scared.Container(ths, frame=slice(None, 20))
     b = c.batches(batch_size=10)[0]
     assert np.array_equal(b.samples, ths.samples[:10, :20])
+    assert isinstance(str(c), str)
 
 
 def test_container_with_multiple_preprocess_and_frame(ths):
@@ -150,3 +160,4 @@ def test_container_with_multiple_preprocess_and_frame(ths):
     c = scared.Container(ths, preprocesses=[square, minus_2], frame=slice(10, 30))
     b = c.batches(batch_size=10)[2]
     assert np.array_equal(b.samples, minus_2(square(ths.samples[20:30, 10:30])))
+    assert isinstance(str(c), str)

@@ -145,6 +145,10 @@ class ANOVADistinguisherMixin(PartitionedDistinguisherMixin):
 
         return numerator / denominator
 
+    @property
+    def _distinguisher_str(self):
+        return 'ANOVA'
+
 
 class ANOVADistinguisher(PartitionedDistinguisherBase, ANOVADistinguisherMixin):
     __doc__ = PartitionedDistinguisherMixin.__doc__ + ANOVADistinguisherMixin.__doc__
@@ -164,6 +168,10 @@ class NICVDistinguisherMixin(PartitionedDistinguisherMixin):
 
         return numerator / denominator
 
+    @property
+    def _distinguisher_str(self):
+        return 'NICV'
+
 
 class NICVDistinguisher(PartitionedDistinguisherBase, NICVDistinguisherMixin):
     __doc__ = PartitionedDistinguisherMixin.__doc__ + NICVDistinguisherMixin.__doc__
@@ -181,6 +189,10 @@ class SNRDistinguisherMixin(PartitionedDistinguisherMixin):
         denominator = _np.sum(denominator, axis=1) / non_zero_indices.shape[0]
 
         return numerator / denominator
+
+    @property
+    def _distinguisher_str(self):
+        return 'SNR'
 
 
 class SNRDistinguisher(PartitionedDistinguisherBase, SNRDistinguisherMixin):

@@ -23,6 +23,13 @@ class TTestContainer:
             _container.Container(ths=ths_2, frame=frame, preprocesses=preprocesses)
         ]
 
+    def __str__(self):
+        return f'''Container for ths_1:
+    {self.containers[0]}
+Container for ths_2:
+    {self.containers[1]}
+        '''
+
 
 class TTestAnalysis:
     """TTest analysis class.
@@ -83,6 +90,9 @@ class TTestAnalysis:
     def _compute(self):
         accu_1, accu_2 = self.accumulators
         self.result = (accu_1.mean - accu_2.mean) / _np.sqrt(accu_1.var / accu_1.processed_traces + accu_2.var / accu_2.processed_traces)
+
+    def __str__(self):
+        return 't-Test analysis'
 
 
 class TTestAccumulator:

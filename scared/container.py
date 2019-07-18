@@ -1,4 +1,5 @@
 from scared import traces
+import numpy as _np
 
 
 class Container:
@@ -99,6 +100,25 @@ class Container:
             frame=self.frame,
             preprocesses=self.preprocesses
         )
+
+    @property
+    def _frame_str(self):
+        if isinstance(self.frame, _np.ndarray):
+            return f'{str(self.frame)[:20]} ... {str(self.frame)[-20:]}'.replace('\n', '')
+        elif self.frame == ...:
+            return 'All'
+        else:
+            return str(self.frame)
+
+    def __str__(self):
+        template_str = f'''Traces container:
+    Number of traces: {len(self._ths)}
+    Traces size     : {self._ths.samples.shape[1]}
+    Metadata        : {list(self._ths.metadatas.keys())}
+    Frame           : {self._frame_str}
+    Preprocesses    : {[p.__name__ for p in self.preprocesses] if len(self.preprocesses) > 0 else 'None'}
+        '''
+        return template_str
 
 
 class _TracesBatchWrapper:

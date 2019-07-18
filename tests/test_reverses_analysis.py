@@ -54,6 +54,10 @@ class DumbDistinguisherMixin(scared.DistinguisherMixin):
         except Exception:
             return np.sum(np.array(self.data[:-1]), axis=0) + np.sum(np.array(self.data[-1]), axis=0)
 
+    @property
+    def _distinguisher_str(self):
+        return 'Dumb'
+
 
 class DumbReverse(scared.BaseReverse, DumbDistinguisherMixin):
 
@@ -70,6 +74,7 @@ def test_analysis_run_raises_exceptions_if_ths_container_is_not_a_container(reve
             selection_function=sf,
             model=scared.Monobit(4))
         a.run('foo')
+        assert isinstance(str(a), str)
 
 
 def test_analysis_object_raises_exceptions_if_sf_is_not_a_selection_function(reverse_class):
@@ -105,6 +110,7 @@ def test_analysis_object_compute_intermediate_values(sf, container):
     assert np.array_equal(
         expected, int_val
     )
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_process_traces_batch(sf, container):
@@ -119,6 +125,7 @@ def test_analysis_object_process_traces_batch(sf, container):
         analysis.data[0].reshape(-1, 16),
         analysis.compute_intermediate_values(batches[0].metadatas)
     )
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_compute_results(sf, container):
@@ -131,6 +138,7 @@ def test_analysis_object_compute_results(sf, container):
     analysis.compute_results()
 
     assert (16, 200) == analysis.results.shape
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_object_run_method(sf, container):
@@ -140,6 +148,7 @@ def test_analysis_object_run_method(sf, container):
     )
     analysis.run(container)
     assert (16, 200) == analysis.results.shape
+    assert isinstance(str(analysis), str)
 
 
 def test_dpa_analysis_raise_exception_if_init_with_not_monobit_model(sf):
@@ -164,6 +173,7 @@ def test_analysis_object_run_method_with_frame(sf, ths):
     container.frame = slice(20, 30)
     analysis.run(container)
     assert (2, 200, 10) == np.array(analysis.traces).shape
+    assert isinstance(str(analysis), str)
 
 
 def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_between_two_process(sf, container):
@@ -175,6 +185,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
     container.frame = slice(20, 30)
     analysis.run(container)
     container.frame = slice(20, None)
+    assert isinstance(str(analysis), str)
     with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
@@ -182,7 +193,7 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
         selection_function=sf,
         model=scared.HammingWeight()
     )
-
+    assert isinstance(str(analysis), str)
     warnings.simplefilter('ignore', RuntimeWarning)
     container.frame = slice(10, 20)
     analysis.run(container)
@@ -205,6 +216,7 @@ def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partit
 def test_partitioned_analysis_set_partition(sf, partitioned_klass):
     a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.arange(9))
     assert np.array_equal(np.arange(9), a.partitions)
+    assert isinstance(str(a), str)
 
 
 def test_mia_analysis_raises_excerptions_if_incorrect_histos_parameters(sf):
@@ -237,15 +249,18 @@ def test_mia_with_invalid_bin_edges_raises_exception(sf, bin_edges_fail_key):
     with pytest.raises(TypeError):
         d = scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
+        assert isinstance(str(d), str)
 
     with pytest.raises(TypeError):
         d = scared.MIAReverse(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
         d.bin_edges = bin_edges
+        assert isinstance(str(d), str)
 
 
 def test_mia_bin_edges_init(sf):
     a = scared.MIAReverse(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
     assert np.array_equal(a.bin_edges, np.arange(258))
+    assert isinstance(str(a), str)
 
 
 def test_analysis_created_with_standalone_distinguisher(sf, container):
@@ -254,6 +269,7 @@ def test_analysis_created_with_standalone_distinguisher(sf, container):
 
     analysis.run(container)
     assert (16,) == analysis.results.shape[0:1]
+    assert isinstance(str(d), str)
 
     d = scared.ANOVADistinguisher(precision='float64', partitions=np.arange(2))
     analysis = scared._Reverse(distinguisher=d, selection_function=sf, model=scared.Monobit(4))
@@ -261,3 +277,4 @@ def test_analysis_created_with_standalone_distinguisher(sf, container):
     assert analysis.precision == 'float64'
     assert np.array_equal(analysis.partitions, np.arange(2))
     assert (16,) == analysis.results.shape[0:1]
+    assert isinstance(str(d), str)
