@@ -73,7 +73,7 @@ deploy:conda:
 pages:
   stage: build
   script:
-    - conda install python=3.6
+    - conda install python=3.6 psutil
     - pip install -e .
     - cd docs
     - ./build_doc.sh
