@@ -43,6 +43,7 @@ class DistinguisherMixin(abc.ABC):
         except AttributeError:
             logger.debug(f'Initialize distinguisher state.')
             self._origin_shape = o_shape
+            logger.debug(f'Origin shape {self._origin_shape}')
             mem = psutil.virtual_memory().available / 2 ** 30
             logger.debug(f'Memory usage before compute {mem} GB.')
             self._initialize(traces=traces, data=data)
@@ -69,7 +70,9 @@ class DistinguisherMixin(abc.ABC):
         except (AttributeError, AssertionError):
             raise DistinguisherError('Distinguisher has not been initialized, or no traces have been processed.\
                 Please initialize and update the distinguisher before trying to use compute function.')
-        return self._compute().reshape((self._origin_shape[1:] + (-1, )))
+        if len(self._origin_shape) > 2:
+            return self._compute().reshape((self._origin_shape[1:] + (-1, )))
+        return self._compute()
 
     @abc.abstractmethod
     def _compute(self):

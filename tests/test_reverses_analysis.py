@@ -49,10 +49,9 @@ class DumbDistinguisherMixin(scared.DistinguisherMixin):
         self.data.append(data)
 
     def _compute(self):
-        try:
-            return np.sum(np.array(self.data), axis=0)
-        except Exception:
-            return np.sum(np.array(self.data[:-1]), axis=0) + np.sum(np.array(self.data[-1]), axis=0)
+        tr = np.array(self.traces).sum(axis=0)
+        da = np.array(self.data).sum(axis=0)
+        return np.dot(da.T, tr)
 
     @property
     def _distinguisher_str(self):
@@ -137,7 +136,7 @@ def test_analysis_object_compute_results(sf, container):
     analysis.process(batches[0])
     analysis.compute_results()
 
-    assert (16, 200) == analysis.results.shape
+    assert (16, 33) == analysis.results.shape
     assert isinstance(str(analysis), str)
 
 
@@ -147,7 +146,7 @@ def test_analysis_object_run_method(sf, container):
         model=scared.Monobit(5)
     )
     analysis.run(container)
-    assert (16, 200) == analysis.results.shape
+    assert (16, 33) == analysis.results.shape
     assert isinstance(str(analysis), str)
 
 
@@ -204,32 +203,32 @@ def test_analysis_run_raise_exceptions_if_inconsistent_traces_size_are_used_betw
 
 def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partitioned_klass):
     with pytest.raises(TypeError):
-        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions='foo')
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), partitions='foo')
     with pytest.raises(TypeError):
-        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions={})
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), partitions={})
     with pytest.raises(TypeError):
-        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=[1, 23])
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), partitions=[1, 23])
     with pytest.raises(ValueError):
-        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.array([1.2, 3]))
+        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), partitions=np.array([1.2, 3]))
 
 
 def test_partitioned_analysis_set_partition(sf, partitioned_klass):
-    a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.arange(9))
+    a = partitioned_klass(selection_function=sf, model=scared.HammingWeight(), partitions=np.arange(9))
     assert np.array_equal(np.arange(9), a.partitions)
     assert isinstance(str(a), str)
 
 
-def test_mia_analysis_raises_excerptions_if_incorrect_histos_parameters(sf):
+def test_mia_analysis_raises_exceptions_if_incorrect_histos_parameters(sf):
     with pytest.raises(TypeError):
-        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number='foo')
+        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), bins_number='foo')
     with pytest.raises(TypeError):
-        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number={})
+        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), bins_number={})
     with pytest.raises(TypeError):
-        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=[1, 23])
+        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), bins_number=[1, 23])
     with pytest.raises(TypeError):
-        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=np.array([1.2, 3]))
+        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), bins_number=np.array([1.2, 3]))
     with pytest.raises(TypeError):
-        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, bins_number=38.45)
+        scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), bins_number=38.45)
 
 
 _bin_edges_fail = {
@@ -247,18 +246,18 @@ def bin_edges_fail_key(request):
 def test_mia_with_invalid_bin_edges_raises_exception(sf, bin_edges_fail_key):
     bin_edges = _bin_edges_fail[bin_edges_fail_key]
     with pytest.raises(TypeError):
-        d = scared.MIAReverse(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d = scared.MIAReverse(selection_function=sf, model=scared.HammingWeight())
         d.bin_edges = bin_edges
         assert isinstance(str(d), str)
 
     with pytest.raises(TypeError):
-        d = scared.MIAReverse(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+        d = scared.MIAReverse(bin_edges=bin_edges, selection_function=sf, model=scared.HammingWeight())
         d.bin_edges = bin_edges
         assert isinstance(str(d), str)
 
 
 def test_mia_bin_edges_init(sf):
-    a = scared.MIAReverse(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
+    a = scared.MIAReverse(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight())
     assert np.array_equal(a.bin_edges, np.arange(258))
     assert isinstance(str(a), str)
 

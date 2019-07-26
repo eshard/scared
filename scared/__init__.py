@@ -14,7 +14,7 @@ from .distinguishers import (  # noqa: F401
     CPADistinguisherMixin, CPAAlternativeDistinguisherMixin, CPADistinguisher, CPAAlternativeDistinguisher,
     PartitionedDistinguisherMixin, PartitionedDistinguisher, ANOVADistinguisherMixin, ANOVADistinguisher,
     NICVDistinguisherMixin, NICVDistinguisher, SNRDistinguisherMixin, SNRDistinguisher,
-    MIADistinguisher
+    MIADistinguisher, TemplateAttackDistinguisherMixin
 )
 from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
 from .analysis import (  # noqa:F401
@@ -25,7 +25,7 @@ from .analysis import (  # noqa:F401
     BaseReverse, CPAReverse, DPAReverse,
     ANOVAReverse, NICVReverse, SNRReverse,
     BasePartitionedReverse, MIAReverse,
-    _Reverse
+    _Reverse, TemplateAttack, TemplateDPAAttack
 )
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import preprocesses  # noqa: F401

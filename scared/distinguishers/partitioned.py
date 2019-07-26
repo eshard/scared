@@ -43,11 +43,18 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
             logger.info(f'Start processing partition {j} for boolean mask.')
             tmp_bool = data == partition
             bool_mask = _np.append(bool_mask, tmp_bool, axis=1)
-            self._accumulate_partition(partition_indice=j, partition_value=partition, part_bool=tmp_bool)
+            self._accumulate_partition(
+                partition_indice=j,
+                partition_value=partition,
+                part_bool=tmp_bool
+            )
 
         logger.info(f'Start accumulation of traces with boolean mask.')
         self._accumulate(traces, data, bool_mask)
         logger.info(f'End of accumualtions of traces for {self.__class__.__name__}.')
+
+    def _accumulate_partition(self, partition_indice, partition_value, part_bool):
+        pass
 
 
 class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
