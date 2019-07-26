@@ -8,3 +8,4 @@ from .partitioned import (  # noqa: F401
     NICVDistinguisher, NICVDistinguisherMixin
 )
 from .mia import MIADistinguisher, MIADistinguisherMixin  # noqa: F401
+from .template import TemplateAttackDistinguisherMixin, TemplateDPADistinguisherMixin, _TemplateBuildDistinguisherMixin  # noqa: F401

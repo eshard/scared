@@ -62,9 +62,6 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
             self.accumulators[s, :, :, :] += dot_prod.reshape(final_shape)
             logger.info(f'Dot product added to accumulators.')
 
-    def _accumulate_partition(self, partition_indice, partition_value, part_bool):
-        pass
-
     def _compute_pdf(self, array, axis):
         s = array.sum(axis=axis)
         s[s == 0] = 1
