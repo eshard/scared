@@ -28,7 +28,7 @@ Decrypt
     :members:
 
 
-D(ata)E(ncryption)S(tandatd) module
+D(ata)E(ncryption)S(tandard) module
 -------------------------------------
 
 .. automodule:: scared.des.base
