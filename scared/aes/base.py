@@ -225,7 +225,7 @@ def key_schedule(key):
         key (numpy.ndarray): numpy byte array (dtype uint8). Last dimension must be 16, 24, or 32 long, for resp. AES 128, 192 and 256 mode.
 
     Returns:
-        (numpy.ndarray): numpy byte array containing all round keys, with shape (number mailof keys, number of rounds, 16), or (number of rounds, 16) if
+        (numpy.ndarray): numpy byte array containing all round keys, with shape (number of keys, number of rounds, 16), or (number of rounds, 16) if
             only one key has been provided.
 
     Examples:
@@ -332,7 +332,7 @@ def _expand_backward(key_cols, bytes_key_length, cols_in, number_of_keys, col_in
 
 
 def sub_bytes(state):
-    """Computes AES sub bytes operation results on a 16 bytes words state.
+    """Compute AES sub bytes operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -346,7 +346,7 @@ def sub_bytes(state):
 
 
 def inv_sub_bytes(state):
-    """Computes AES inverse sub bytes operation results on a 16 bytes words state.
+    """Compute AES inverse sub bytes operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -360,7 +360,7 @@ def inv_sub_bytes(state):
 
 
 def shift_rows(state):
-    """Computes AES shift rows operation results on a 16 bytes words state.
+    """Compute AES shift rows operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -375,7 +375,7 @@ def shift_rows(state):
 
 
 def inv_shift_rows(state):
-    """Computes AES inverse shift rows operation results on a 16 bytes words state.
+    """Compute AES inverse shift rows operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -390,7 +390,7 @@ def inv_shift_rows(state):
 
 
 def mix_column(vectors):
-    """Computes AES mix column operation results on 4 bytes vectors.
+    """Compute AES mix column operation results on 4 bytes vectors.
 
     Args:
         state (numpy.ndarray): a uint8 array of 4 bytes vectors as last dimension.
@@ -416,7 +416,7 @@ def mix_column(vectors):
 
 
 def mix_columns(state):
-    """Computes AES mix columns operation results on a 16 bytes words state.
+    """Compute AES mix columns operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -435,7 +435,7 @@ def mix_columns(state):
 
 
 def inv_mix_column(vectors):
-    """Computes AES inverse mix column operation results on 4 bytes vectors.
+    """Compute AES inverse mix column operation results on 4 bytes vectors.
 
     Args:
         state (numpy.ndarray): a uint8 array of 4 bytes vectors as last dimension.
@@ -461,7 +461,7 @@ def inv_mix_column(vectors):
 
 
 def inv_mix_columns(state):
-    """Computes AES inverse mix columns operation results on a 16 bytes words state.
+    """Compute AES inverse mix columns operation results on a 16 bytes words state.
 
     Args:
         state (numpy.ndarray): a uint8 array of 16 bytes words as last dimension.
@@ -480,7 +480,7 @@ def inv_mix_columns(state):
 
 
 def add_round_key(state, keys):
-    """Computes AES final xor operation between a 16 bytes words state and a round keys array.
+    """Compute AES final xor operation between a 16 bytes words state and a round keys array.
 
     Depending on the shapes of state and keys, the result can be:
 
@@ -524,7 +524,7 @@ def encrypt(plaintext, key, at_round=None, after_step=Steps.ADD_ROUND_KEY):
     """Encrypt plaintext using AES with provided key.
 
     AES-128, AES-192 and AES-256 modes are supported, depending on the length of key.
-    Multiple parallel encryption is supported, with several mode:
+    Multiple parallel encryption is supported, with several modes:
 
         - multiple plaintexts with one key
         - one plaintext with multiple keys
@@ -551,6 +551,9 @@ def encrypt(plaintext, key, at_round=None, after_step=Steps.ADD_ROUND_KEY):
             - if N keys and N plaintexts are provided, result has a shape (N, 16), with N resulting encryptions of each plaintext with each key
                 of same index. Keys and plaintexts must have the same first dimension.
 
+    Raises:
+        TypeError and ValueError if ciphertext and key are not of the proper types or have incompatible shapes.
+
     """
     operations = [_ENC_FIRST_ROUND, _ENC_ROUND, _ENC_LAST_ROUND]
     return _parametric_cipher(state=plaintext, key=key, operations=operations, at_round=at_round, after_step=after_step)
@@ -560,7 +563,7 @@ def decrypt(ciphertext, key, at_round=None, after_step=InverseSteps.INV_SUB_BYTE
     """Decrypt ciphertext using AES with provided key.
 
     AES-128, AES-192 and AES-256 modes are supported, depending on the length of key.
-    Multiple parallel decryption is supported, with several mode:
+    Multiple parallel decryption is supported, with several modes:
 
         - multiple ciphertexts with one key
         - one ciphertext with multiple keys
