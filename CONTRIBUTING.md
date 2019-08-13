@@ -126,6 +126,17 @@ pytest
 Please refer to [Pytest documentation](https://docs.pytest.org/en/latest/contents.html).
 As far as possible, tests should reflects the organization of the source code. Create folders and keep everything as clean as possible.
 
+### Numpy compressed array files
+
+To save visual and disk space, some test modules use numpy compressed files ending with .npz to store array samples.
+
+You can put a new array into an existing file like this:
+```python
+my_dict = dict(numpy.load('tests/samples/the_appropriate_file.npz'))
+my_dict['my_new_array_name'] = my_new_numpy_array
+numpy.savez('tests/samples/the_appropriate_file.npz', **my_dict)
+```
+
 #### Code style and formatting
 
 The projects follow the Python standards defined by [PEP8](https://www.python.org/dev/peps/pep-0008/), with some exceptions. The maximum line length is 160 characters.

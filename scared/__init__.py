@@ -30,6 +30,7 @@ from .analysis import (  # noqa:F401
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from . import preprocesses  # noqa: F401
 from . import aes  # noqa: F401
+from . import des  # noqa: F401
 from . import container as _container
 
 Container = _container.Container

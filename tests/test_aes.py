@@ -15,16 +15,16 @@ number_of_keys = 20
 @pytest.fixture(params=_cases)
 def encrypt_cases(request):
     key_size, mult_keys, mult_state = request.param
-    return _cases(key_size, mult_keys, mult_state)
+    return _cases_cipher(key_size, mult_keys, mult_state)
 
 
 @pytest.fixture(params=_cases)
 def decrypt_cases(request):
     key_size, mult_keys, mult_state = request.param
-    return _cases(key_size, mult_keys, mult_state, mode='decrypt')
+    return _cases_cipher(key_size, mult_keys, mult_state, mode='decrypt')
 
 
-def _cases(key_size, mult_keys, mult_state, mode='encrypt'):
+def _cases_cipher(key_size, mult_keys, mult_state, mode='encrypt'):
     if mult_keys:
         keys = np.random.randint(0, 255, (number_of_keys, key_size), dtype='uint8')
         if mult_state:
@@ -54,11 +54,8 @@ def _cases(key_size, mult_keys, mult_state, mode='encrypt'):
 
 
 @pytest.fixture
-def aes_datas():
-    datas = np.load('tests/samples/aes_data_tests.npz')
-    for k, v in datas.items():
-        setattr(datas, k, v)
-    return datas
+def aes_data():
+    return np.load('tests/samples/aes_data_tests.npz')
 
 
 def test_key_expansion_raise_exception_if_key_isnt_array():
@@ -112,23 +109,23 @@ def test_key_expansion_raise_exception_if_col_out_is_greater_than_max_cols():
         aes.key_expansion(key_cols=key, col_in=0, col_out=66)
 
 
-def test_key_expansion_bwd_128(aes_datas):
-    round_keys = aes_datas['128_key_schedule_output'].reshape(11 * 16)
+def test_key_expansion_bwd_128(aes_data):
+    round_keys = aes_data['128_key_schedule_output'].reshape(11 * 16)
     for i in range(0, 11):
         key_cols = round_keys[i * 16: (i + 1) * 16]
         master = aes.key_expansion(key_cols=key_cols, col_in=i * 4, col_out=0)
         assert np.array_equal(master[0], round_keys[:(i + 1) * 16])
 
 
-def test_key_expansion_bwd_192(aes_datas):
-    round_keys = aes_datas['192_key_schedule_output'].reshape(13 * 16)
+def test_key_expansion_bwd_192(aes_data):
+    round_keys = aes_data['192_key_schedule_output'].reshape(13 * 16)
     for i in range(8, 0, -1):
         key_cols = round_keys[16 + (i - 1) * 24: 16 + i * 24]
         master = aes.key_expansion(key_cols=key_cols, col_in=int((16 + (i - 1) * 24) / 4), col_out=0)
         assert np.array_equal(master[0], round_keys[:16 + i * 24])
 
 
-def test_key_expansion_bwd_256(aes_datas):
+def test_key_expansion_bwd_256(aes_data):
     master = np.random.randint(0, 255, (32,), dtype='uint8')
     round_keys = aes.key_expansion(key_cols=master, col_in=0, col_out=60)[0]
     for i in range(7, 0, -1):
@@ -138,65 +135,65 @@ def test_key_expansion_bwd_256(aes_datas):
         exp = round_keys[:i * 32].reshape((-1, 4))
         for i, w in enumerate(res):
             assert w.tolist() == exp[i].tolist()
-    round_keys = aes_datas['256_key_schedule_output'].reshape(15 * 16)
+    round_keys = aes_data['256_key_schedule_output'].reshape(15 * 16)
     for i in range(7, 0, -1):
         key_cols = round_keys[(i - 1) * 32: i * 32]
         master = aes.key_expansion(key_cols=key_cols, col_in=int(((i - 1) * 32) / 4), col_out=0)
         assert np.array_equal(master[0], round_keys[:i * 32])
 
 
-def test_key_expansion_fwd_128(aes_datas):
-    master = aes_datas['128_key']
+def test_key_expansion_fwd_128(aes_data):
+    master = aes_data['128_key']
     keys = aes.key_expansion(master, col_in=0)
-    assert np.array_equal(aes_datas['128_key_schedule_output'].reshape(176), keys[0])
+    assert np.array_equal(aes_data['128_key_schedule_output'].reshape(176), keys[0])
 
 
-def test_key_expansion_fwd_192(aes_datas):
-    master = aes_datas['192_key']
+def test_key_expansion_fwd_192(aes_data):
+    master = aes_data['192_key']
     keys = aes.key_expansion(master, col_in=0)
-    assert np.array_equal(aes_datas['192_key_schedule_output'].reshape(13 * 16), keys[0])
+    assert np.array_equal(aes_data['192_key_schedule_output'].reshape(13 * 16), keys[0])
 
 
-def test_key_expansion_fwd_256(aes_datas):
-    master = aes_datas['256_key']
+def test_key_expansion_fwd_256(aes_data):
+    master = aes_data['256_key']
     keys = aes.key_expansion(master, col_in=0)
-    assert np.array_equal(aes_datas['256_key_schedule_output'].reshape(15 * 16), keys[0])
+    assert np.array_equal(aes_data['256_key_schedule_output'].reshape(15 * 16), keys[0])
 
 
-def test_key_schedule_returns_appropriate_keys_for_128_key(aes_datas):
-    output = aes.key_schedule(aes_datas['128_key'])
+def test_key_schedule_returns_appropriate_keys_for_128_key(aes_data):
+    output = aes.key_schedule(aes_data['128_key'])
     assert np.array_equal(
         output,
-        aes_datas['128_key_schedule_output']
+        aes_data['128_key_schedule_output']
     )
     assert output.shape == (11, 16)
     output = aes.key_schedule(np.random.randint(0, 255, (15, 16), dtype='uint8'))
     assert output.shape == (15, 11, 16)
 
 
-def test_inv_key_schedule_returns_appropriate_keys(aes_datas):
-    round_keys = aes_datas['128_key_schedule_output']
+def test_inv_key_schedule_returns_appropriate_keys(aes_data):
+    round_keys = aes_data['128_key_schedule_output']
     for i, round_key in enumerate(round_keys):
         res = aes.inv_key_schedule(round_key, i)
         assert np.array_equal(round_keys, res)
 
 
-def test_key_schedule_returns_appropriate_keys_for_192_key(aes_datas):
-    output = aes.key_schedule(aes_datas['192_key'])
+def test_key_schedule_returns_appropriate_keys_for_192_key(aes_data):
+    output = aes.key_schedule(aes_data['192_key'])
     assert np.array_equal(
         output,
-        aes_datas['192_key_schedule_output']
+        aes_data['192_key_schedule_output']
     )
     assert output.shape == (13, 16)
     output = aes.key_schedule(np.random.randint(0, 255, (15, 24), dtype='uint8'))
     assert output.shape == (15, 13, 16)
 
 
-def test_key_schedule_returns_appropriate_keys_for_256_key(aes_datas):
-    output = aes.key_schedule(aes_datas['256_key'])
+def test_key_schedule_returns_appropriate_keys_for_256_key(aes_data):
+    output = aes.key_schedule(aes_data['256_key'])
     assert np.array_equal(
         output,
-        aes_datas['256_key_schedule_output']
+        aes_data['256_key_schedule_output']
     )
     assert output.shape == (15, 16)
     output = aes.key_schedule(np.random.randint(0, 255, (15, 32), dtype='uint8'))
@@ -238,9 +235,9 @@ def test_sub_bytes_raises_exception_if_state_is_not_a_correct_array():
         aes.sub_bytes(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_sub_bytes_returns_correct_array(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_sub_bytes']
+def test_sub_bytes_returns_correct_array(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_sub_bytes']
     assert np.array_equal(
         expected,
         aes.sub_bytes(state=state)
@@ -262,9 +259,9 @@ def test_inv_sub_bytes_raises_exception_if_state_is_not_a_correct_array():
         aes.inv_sub_bytes(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_inv_sub_bytes_returns_correct_array(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_inv_sub_bytes']
+def test_inv_sub_bytes_returns_correct_array(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_inv_sub_bytes']
     assert np.array_equal(
         expected,
         aes.inv_sub_bytes(state=state)
@@ -272,9 +269,9 @@ def test_inv_sub_bytes_returns_correct_array(aes_datas):
     assert expected.shape == state.shape
 
 
-def test_shift_rows_returns_correct_array(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_shift_rows']
+def test_shift_rows_returns_correct_array(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_shift_rows']
     assert np.array_equal(
         expected,
         aes.shift_rows(state=state)
@@ -296,9 +293,9 @@ def test_shift_rows_raises_exception_if_state_is_not_a_correct_array():
         aes.shift_rows(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_inv_shift_rows_returns_correct_array(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_inv_shift_rows']
+def test_inv_shift_rows_returns_correct_array(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_inv_shift_rows']
     assert np.array_equal(
         expected,
         aes.inv_shift_rows(state=state)
@@ -320,9 +317,9 @@ def test_inv_shift_rows_raises_exception_if_state_is_not_a_correct_array():
         aes.inv_shift_rows(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_mix_columns_returns_correct_array(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_mix_columns']
+def test_mix_columns_returns_correct_array(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_mix_columns']
     assert np.array_equal(
         expected,
         aes.mix_columns(state=state)
@@ -344,9 +341,9 @@ def test_mix_columns_raises_exception_if_state_is_not_a_correct_array():
         aes.mix_columns(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_mix_column_returns_correct_column_vector(aes_datas):
-    state = aes_datas['input_vectors']
-    expected = aes_datas['expected_mix_column']
+def test_mix_column_returns_correct_column_vector(aes_data):
+    state = aes_data['input_vectors']
+    expected = aes_data['expected_mix_column']
     assert np.array_equal(
         expected,
         aes.mix_column(state)
@@ -368,9 +365,9 @@ def test_mix_column_raises_exception_if_state_is_not_a_correct_array():
         aes.mix_column(vectors=np.random.randint(0, 255, (12, 4), dtype='uint16'))
 
 
-def test_inv_mix_column_returns_correct_column_vector(aes_datas):
-    state = aes_datas['input_vectors']
-    expected = aes_datas['expected_inv_mix_column']
+def test_inv_mix_column_returns_correct_column_vector(aes_data):
+    state = aes_data['input_vectors']
+    expected = aes_data['expected_inv_mix_column']
     assert np.array_equal(
         expected,
         aes.inv_mix_column(state)
@@ -392,9 +389,9 @@ def test_inv_mix_column_raises_exception_if_state_is_not_a_correct_array():
         aes.inv_mix_column(vectors=np.random.randint(0, 255, (12, 4), dtype='uint16'))
 
 
-def test_inv_mix_columns_returns_correct_column_vector(aes_datas):
-    state = aes_datas['input_state']
-    expected = aes_datas['expected_inv_mix_columns']
+def test_inv_mix_columns_returns_correct_column_vector(aes_data):
+    state = aes_data['input_state']
+    expected = aes_data['expected_inv_mix_columns']
     assert np.array_equal(
         expected,
         aes.inv_mix_columns(state)
@@ -416,10 +413,10 @@ def test_inv_mix_columns_raises_exception_if_state_is_not_a_correct_array():
         aes.inv_mix_columns(state=np.random.randint(0, 255, (12, 16), dtype='uint16'))
 
 
-def test_add_round_key_returns_correct_result_array_batch_of_n_keys_and_n_rows_state(aes_datas):
-    state = aes_datas['input_state']
-    key = aes_datas['input_round_key']
-    expected = aes_datas['expected_add_round_key']
+def test_add_round_key_returns_correct_result_array_batch_of_n_keys_and_n_rows_state(aes_data):
+    state = aes_data['input_state']
+    key = aes_data['input_round_key']
+    expected = aes_data['expected_add_round_key']
     assert np.array_equal(
         expected,
         aes.add_round_key(state=state, keys=key)
@@ -427,10 +424,10 @@ def test_add_round_key_returns_correct_result_array_batch_of_n_keys_and_n_rows_s
     assert expected.shape == state.shape
 
 
-def test_add_round_key_returns_correct_result_array_batch_of_1_key_and_n_rows_state(aes_datas):
-    state = aes_datas['input_state']
-    key = aes_datas['input_round_key'][0]
-    expected = aes_datas['expected_add_round_key_1_key']
+def test_add_round_key_returns_correct_result_array_batch_of_1_key_and_n_rows_state(aes_data):
+    state = aes_data['input_state']
+    key = aes_data['input_round_key'][0]
+    expected = aes_data['expected_add_round_key_1_key']
     assert np.array_equal(
         expected,
         aes.add_round_key(state=state, keys=key)
@@ -438,10 +435,10 @@ def test_add_round_key_returns_correct_result_array_batch_of_1_key_and_n_rows_st
     assert expected.shape == state.shape
 
 
-def test_add_round_key_returns_correct_result_array_batch_of_n_key_and_1_row_state(aes_datas):
-    state = aes_datas['input_state'][0]
-    key = aes_datas['input_round_key']
-    expected = aes_datas['expected_add_round_key_1_state']
+def test_add_round_key_returns_correct_result_array_batch_of_n_key_and_1_row_state(aes_data):
+    state = aes_data['input_state'][0]
+    key = aes_data['input_round_key']
+    expected = aes_data['expected_add_round_key_1_state']
     assert np.array_equal(
         expected,
         aes.add_round_key(state=state, keys=key)
@@ -533,10 +530,10 @@ def test_full_decrypt(decrypt_cases):
     )
 
 
-def test_simple_encrypt_with_128_key(aes_datas):
-    key = aes_datas['128_key']
-    plain = aes_datas['plaintext']
-    expected_cipher = aes_datas['128_ciphertext']
+def test_simple_encrypt_with_128_key(aes_data):
+    key = aes_data['128_key']
+    plain = aes_data['plaintext']
+    expected_cipher = aes_data['128_ciphertext']
     cipher = aes.encrypt(key=key, plaintext=plain)
     assert np.array_equal(expected_cipher, cipher)
 
@@ -575,37 +572,37 @@ def test_decrypt_raises_exception_if_ciphertext_and_keys_multiple_are_incompatib
         )
 
 
-def test_simple_decrypt_with_128_key(aes_datas):
-    key = aes_datas['128_key']
-    cipher = aes_datas['128_ciphertext']
-    expected_plain = aes_datas['plaintext']
+def test_simple_decrypt_with_128_key(aes_data):
+    key = aes_data['128_key']
+    cipher = aes_data['128_ciphertext']
+    expected_plain = aes_data['plaintext']
     plain = aes.decrypt(key=key, ciphertext=cipher)
     assert np.array_equal(expected_plain, plain)
 
 
-def test_encrypt_stop_at_intermediate_value(aes_datas):
-    int_values = aes_datas['128_encrypt_intermediate_outputs']
-    key = aes_datas['128_key']
-    plain = aes_datas['plaintext']
+def test_encrypt_stop_at_intermediate_value(aes_data):
+    int_values = aes_data['128_encrypt_intermediate_outputs']
+    key = aes_data['128_key']
+    plain = aes_data['plaintext']
     for _round, vals in enumerate(int_values):
         for step, expected in enumerate(vals):
             value = aes.encrypt(plaintext=plain, key=key, at_round=_round, after_step=step)
             assert np.array_equal(expected, value)
 
 
-def test_decrypt_stop_at_intermediate_value(aes_datas):
-    int_values = aes_datas['128_decrypt_intermediate_outputs']
-    key = aes_datas['128_key']
-    cipher = aes_datas['128_ciphertext']
+def test_decrypt_stop_at_intermediate_value(aes_data):
+    int_values = aes_data['128_decrypt_intermediate_outputs']
+    key = aes_data['128_key']
+    cipher = aes_data['128_ciphertext']
     for _round, vals in enumerate(int_values):
         for step, expected in enumerate(vals):
             value = aes.decrypt(ciphertext=cipher, key=key, at_round=_round, after_step=step)
             assert np.array_equal(expected, value)
 
 
-def test_encrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
-    key = aes_datas['128_key']
-    plain = aes_datas['plaintext']
+def test_encrypt_raises_exception_if_improper_round_or_step_type(aes_data):
+    key = aes_data['128_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(TypeError):
         aes.encrypt(plaintext=plain, key=key, at_round='foo')
@@ -613,9 +610,9 @@ def test_encrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
         aes.encrypt(plaintext=plain, key=key, after_step='foo')
 
 
-def test_decrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
-    key = aes_datas['128_key']
-    plain = aes_datas['plaintext']
+def test_decrypt_raises_exception_if_improper_round_or_step_type(aes_data):
+    key = aes_data['128_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(TypeError):
         aes.decrypt(plain, key=key, at_round='foo')
@@ -623,11 +620,11 @@ def test_decrypt_raises_exception_if_improper_round_or_step_type(aes_datas):
         aes.decrypt(plain, key=key, after_step='foo')
 
 
-def test_encrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
-    key_128 = aes_datas['128_key']
-    key_192 = aes_datas['192_key']
-    key_256 = aes_datas['256_key']
-    plain = aes_datas['plaintext']
+def test_encrypt_raises_exception_if_round_is_negative_or_too_high(aes_data):
+    key_128 = aes_data['128_key']
+    key_192 = aes_data['192_key']
+    key_256 = aes_data['256_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(ValueError):
         aes.encrypt(plaintext=plain, key=key_128, at_round=-1)
@@ -639,11 +636,11 @@ def test_encrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
         aes.encrypt(plaintext=plain, key=key_256, at_round=17)
 
 
-def test_decrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
-    key_128 = aes_datas['128_key']
-    key_192 = aes_datas['192_key']
-    key_256 = aes_datas['256_key']
-    plain = aes_datas['plaintext']
+def test_decrypt_raises_exception_if_round_is_negative_or_too_high(aes_data):
+    key_128 = aes_data['128_key']
+    key_192 = aes_data['192_key']
+    key_256 = aes_data['256_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(ValueError):
         aes.decrypt(plain, key=key_128, at_round=-1)
@@ -655,9 +652,9 @@ def test_decrypt_raises_exception_if_round_is_negative_or_too_high(aes_datas):
         aes.decrypt(plain, key=key_256, at_round=17)
 
 
-def test_encrypt_raises_exception_if_step_is_incorrect(aes_datas):
-    key_128 = aes_datas['128_key']
-    plain = aes_datas['plaintext']
+def test_encrypt_raises_exception_if_step_is_incorrect(aes_data):
+    key_128 = aes_data['128_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(ValueError):
         aes.encrypt(plaintext=plain, key=key_128, after_step=-1)
@@ -665,9 +662,9 @@ def test_encrypt_raises_exception_if_step_is_incorrect(aes_datas):
         aes.encrypt(plaintext=plain, key=key_128, after_step=4)
 
 
-def test_decrypt_raises_exception_if_step_is_incorrect(aes_datas):
-    key_128 = aes_datas['128_key']
-    plain = aes_datas['plaintext']
+def test_decrypt_raises_exception_if_step_is_incorrect(aes_data):
+    key_128 = aes_data['128_key']
+    plain = aes_data['plaintext']
 
     with pytest.raises(ValueError):
         aes.decrypt(plain, key=key_128, after_step=-1)
