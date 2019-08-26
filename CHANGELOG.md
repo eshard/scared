@@ -1,4 +1,8 @@
-# scared library changelog
+## <small>0.6.2 (2019-08-26)</small>
+
+* fix: Update AES add round key selection functions to be work with non contiguous guesses ([246473b](https://gitlab.com/eshard/scared/commit/246473b))
+* fix: Update DES add round key function to work with non contiguous guesses ([022feb1](https://gitlab.com/eshard/scared/commit/022feb1))
+* doc: Improve API doc and DPA V2 guide documentation. ([f93de07](https://gitlab.com/eshard/scared/commit/f93de07))
 
 ## <small>0.6.1 (2019-08-22)</small>
 
