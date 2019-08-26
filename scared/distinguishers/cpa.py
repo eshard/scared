@@ -27,7 +27,7 @@ class CPADistinguisherMixin(DistinguisherMixin):
             self.ey2 = _np.zeros((data_words), dtype=self.precision)
             self.exy = _np.zeros((data_words, trace_size), dtype=self.precision)
         except (ValueError, MemoryError) as e:
-            raise type(e)(f'Trace size and data words are too large to proceed with accumulation for CPA {e}')
+            raise type(e)(f'Trace size and data words are too large to proceed with accumulation for CPA {e}.')
 
     def _update(self, traces, data):
         if traces.shape[1] != self.ex.shape[0]:
