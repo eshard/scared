@@ -22,22 +22,25 @@ def test_des_encrypt_first_round_key_with_default_arguments():
     assert isinstance(str(sf), str)
 
 
+_alt_guesses = np.array([2, 4, 5, 9], dtype='uint8')
+
+
 def test_des_encrypt_first_round_key_with_alternative_args():
     sf = des.selection_functions.encrypt.FirstAddRoundKey(
         plaintext_tag='plain',
         words=6,
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == 6
     assert sf.target_tag == 'plain'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.ADD_ROUND_KEY)
     assert np.array_equal(expected[:, :, 6], sf(plain=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -69,18 +72,18 @@ def test_des_encrypt_last_round_key_with_alternative_args():
     sf = des.selection_functions.encrypt.LastAddRoundKey(
         ciphertext_tag='nop',
         words=6,
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == 6
     assert sf.target_tag == 'nop'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.ADD_ROUND_KEY)
     assert np.array_equal(expected[:, :, 6], sf(nop=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -112,18 +115,18 @@ def test_des_encrypt_first_sboxes_with_alternative_args():
     sf = des.selection_functions.encrypt.FirstSboxes(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.SBOXES)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -155,18 +158,18 @@ def test_des_encrypt_last_sboxes_with_alternative_args():
     sf = des.selection_functions.encrypt.LastSboxes(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.SBOXES)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -198,18 +201,18 @@ def test_des_encrypt_feistelr_first_rounds_with_alternative_args():
     sf = des.selection_functions.encrypt.FeistelRFirstRounds(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -241,18 +244,18 @@ def test_des_encrypt_feistelr_last_rounds_with_alternative_args():
     sf = des.selection_functions.encrypt.FeistelRLastRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -284,18 +287,18 @@ def test_des_encrypt_delta_r_first_rounds_with_alternative_args():
     sf = des.selection_functions.encrypt.DeltaRFirstRounds(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_DELTA_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -327,17 +330,17 @@ def test_des_encrypt_delta_r_last_rounds_with_alternative_args():
     sf = des.selection_functions.encrypt.DeltaRLastRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_DELTA_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -369,18 +372,18 @@ def test_des_decrypt_first_round_key_with_alternative_args():
     sf = des.selection_functions.decrypt.FirstAddRoundKey(
         ciphertext_tag='cif',
         words=6,
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == 6
     assert sf.target_tag == 'cif'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.ADD_ROUND_KEY)
     assert np.array_equal(expected[:, :, 6], sf(cif=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -412,17 +415,17 @@ def test_des_decrypt_last_round_key_with_alternative_args():
     sf = des.selection_functions.decrypt.LastAddRoundKey(
         plaintext_tag='nop',
         words=6,
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == 6
     assert sf.target_tag == 'nop'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.ADD_ROUND_KEY)
     assert np.array_equal(expected[:, :, 6], sf(nop=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -455,17 +458,17 @@ def test_des_decrypt_first_sboxes_with_alternative_args():
     sf = des.selection_functions.decrypt.FirstSboxes(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.SBOXES)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -498,17 +501,17 @@ def test_des_decrypt_last_sboxes_with_alternative_args():
     sf = des.selection_functions.decrypt.LastSboxes(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.SBOXES)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -541,17 +544,17 @@ def test_des_decrypt_feistelr_first_rounds_with_alternative_args():
     sf = des.selection_functions.decrypt.FeistelRFirstRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -584,17 +587,17 @@ def test_des_decrypt_feistelr_last_rounds_with_alternative_args():
     sf = des.selection_functions.decrypt.FeistelRLastRounds(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -627,17 +630,17 @@ def test_des_decrypt_delta_r_first_rounds_with_alternative_args():
     sf = des.selection_functions.decrypt.DeltaRFirstRounds(
         ciphertext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_DELTA_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')
@@ -670,17 +673,17 @@ def test_des_decrypt_delta_r_last_rounds_with_alternative_args():
     sf = des.selection_functions.decrypt.DeltaRLastRounds(
         plaintext_tag='foo',
         words=slice(2, 8),
-        guesses=np.arange(16, dtype='uint8'),
+        guesses=_alt_guesses,
         key_tag='thekey'
     )
-    assert sf.guesses.tolist() == list(range(16))
+    assert sf.guesses.tolist() == _alt_guesses.tolist()
     assert sf.words == slice(2, 8, None)
     assert sf.target_tag == 'foo'
     assert isinstance(sf, selection_functions.SelectionFunction)
     data = np.random.randint(0, 255, (10, 8), dtype='uint8')
-    expected = np.empty((10, 16, 8), dtype='uint8')
-    for i in np.arange(16, dtype='uint8'):
-        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), i)
+    expected = np.empty((10, len(_alt_guesses), 8), dtype='uint8')
+    for i, guess in enumerate(_alt_guesses):
+        expanded_guess = np.bitwise_xor(np.zeros((128), dtype=np.uint8), guess)
         expected[:, i, :] = des.encrypt(data, expanded_guess, at_round=0, after_step=des.Steps.INV_PERMUTATION_P_DELTA_RIGHT)
     assert np.array_equal(expected[:, :, slice(2, 8)], sf(foo=data))
     master_key = np.random.randint(0, 255, (8,), dtype='uint8')

@@ -4,13 +4,13 @@ import numpy as _np
 
 
 def _des_function(data, guesses, at_round, after_step):
-    result = _np.empty((data.shape[0], len(guesses), data.shape[1]), dtype='uint8')
+    result = _np.empty((len(guesses), ) + data.shape, dtype='uint8')
     data = data.astype('uint8')
-    for guess in guesses:
+    for i, guess in enumerate(guesses):
         # expanded key with every byte to current key guess on 6-bit word
         current_expanded_key_guess = _np.bitwise_xor(_np.zeros((128), dtype=_np.uint8), guess)
-        result[:, guess, :] = des.encrypt(data, current_expanded_key_guess, at_round=at_round, after_step=after_step)
-    return result
+        result[i] = des.encrypt(data, current_expanded_key_guess, at_round=at_round, after_step=after_step)
+    return result.swapaxes(0, 1)
 
 
 def _add_round_key(data, guesses):
