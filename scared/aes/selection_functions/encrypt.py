@@ -4,11 +4,11 @@ import numpy as _np
 
 
 def _add_round_key(data, guesses):
-    res = _np.empty((data.shape[0], len(guesses), data.shape[1]), dtype='uint8')
+    res = _np.empty((len(guesses), ) + data.shape, dtype='uint8')
     data = data.astype('uint8')
-    for g in guesses:
-        res[:, g, :] = _np.bitwise_xor(data, g)
-    return res
+    for i, g in enumerate(guesses):
+        res[i] = _np.bitwise_xor(data, g)
+    return res.swapaxes(0, 1)
 
 
 def _sub_bytes(data, guesses):
