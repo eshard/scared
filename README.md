@@ -36,7 +36,7 @@ import scared
 def first_add_key(plaintext, guesses):
     res = np.empty((plaintext.shape[0], len(guesses), plaintext.shape[1]), dtype='uint8')
     for i, guess in enumerate(guesses):
-        res[:, guess, :] = np.bitwise_xor(plaintext, guess)
+        res[:, i, :] = np.bitwise_xor(plaintext, guess)
     return res
 
 # Create an analysis CPA
