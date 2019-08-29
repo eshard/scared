@@ -33,15 +33,15 @@ import scared
 
 # Define a selection function
 @scared.attack_selection_function
-def first_sub_bytes(plaintext, guesses):
+def first_add_key(plaintext, guesses):
     res = np.empty((plaintext.shape[0], len(guesses), plaintext.shape[1]), dtype='uint8')
-    for guess in guesses:
+    for i, guess in enumerate(guesses):
         res[:, guess, :] = np.bitwise_xor(plaintext, guess)
     return res
 
 # Create an analysis CPA
 a = scared.CPAAttack(
-        selection_function=first_sub_bytes,
+        selection_function=first_add_key,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs)
 
