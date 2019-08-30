@@ -233,3 +233,68 @@ def test_model_accepts_axis_parameters_with_default_value():
         [1, 5, 9, 13]], dtype='uint32').swapaxes(0, 1)
     res = scared.HammingWeight(2)(data, axis=0)
     assert np.array_equal(expected, res)
+
+
+def test_hamming_weight_uint8():
+    a = np.array([[3, 28, 89, 100, 89, 158, 199],
+                  [183, 46, 190, 184, 144, 163, 165],
+                  [80, 122, 200, 112, 86, 135, 243]], dtype='uint8')
+    b = np.array([[2, 3, 4, 3, 4, 5, 5],
+                  [6, 4, 6, 4, 2, 4, 4],
+                  [2, 5, 3, 3, 4, 4, 6]])
+    hw = scared.HammingWeight()
+    res = hw(a)
+    assert np.array_equal(res, b)
+
+
+def test_hamming_weight_uint16():
+    a = np.array([[49492, 35012, 17375, 58517, 7925, 37294, 1960],
+                  [12319, 21194, 3592, 62643, 7298, 52388, 17174],
+                  [5624, 52639, 16319, 28373, 20979, 33310, 30228]], dtype='uint16')
+    b = np.array([[6, 5, 10, 8, 10, 8, 6],
+                  [7, 7, 4, 10, 5, 7, 6],
+                  [8, 11, 13, 10, 9, 6, 7]])
+    hw = scared.HammingWeight(expected_dtype='uint16')
+    res = hw(a)
+    assert np.array_equal(res, b)
+
+
+def test_hamming_weight_uint32():
+    a = np.array([[3011812195, 566284227, 3180952330, 3224490982, 1398648567, 2997601074, 3466990530],
+                  [1745373437, 2305307499, 528675825, 3245007040, 3385056644, 1402421254, 890085974],
+                  [3910116154, 3106231214, 503027565, 263222377, 3958549359, 3780560129, 2475275928]], dtype='uint32')
+    b = np.array([[16, 14, 18, 15, 21, 16, 15],
+                  [13, 15, 18, 12, 16, 12, 14],
+                  [17, 17, 21, 15, 22, 13, 15]])
+    hw = scared.HammingWeight(expected_dtype='uint32')
+    res = hw(a)
+    assert np.array_equal(res, b)
+
+
+def test_hamming_weight_uint64():
+    a = np.array([[1110681567975564723, 2603173294400796779, 8824234896931680599, 2581838972723594911,
+                   6596729868911047227, 2074859436293001592, 11731185813118878444],
+                  [16879640904508054626, 16622460785862736051, 15934166478821968156, 6382170377471969988,
+                   14708844167980688964, 5124927357537709470, 8409390396293004342],
+                  [2595719322730764045, 6531922580352310653, 3061678657169528223, 8881635347030906723,
+                   4337229908681420868, 4353603953276958515, 6752076961829864544]], dtype='uint64')
+    b = np.array([[33, 27, 40, 32, 35, 28, 31],
+                  [30, 33, 34, 26, 25, 37, 25],
+                  [31, 33, 31, 30, 31, 38, 30]])
+    hw = scared.HammingWeight(expected_dtype='uint64')
+    res = hw(a)
+    assert np.array_equal(res, b)
+
+
+def test_hamming_weight_wrong_expected_dtype():
+    with pytest.raises(ValueError):
+        scared.HammingWeight(expected_dtype='coucou')
+
+
+def test_hamming_weight_uint16_with_wong_expected_dtype():
+    a = np.array([[49492, 35012, 17375, 58517, 7925, 37294, 1960],
+                  [12319, 21194, 3592, 62643, 7298, 52388, 17174],
+                  [5624, 52639, 16319, 28373, 20979, 33310, 30228]], dtype='uint16')
+    hw = scared.HammingWeight()
+    with pytest.raises(ValueError):
+        hw(a)
