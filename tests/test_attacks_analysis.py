@@ -518,26 +518,3 @@ def test_mia_bin_edges_init(sf):
     a = scared.MIAAttack(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
     assert np.array_equal(a.bin_edges, np.arange(258))
     assert isinstance(str(a), str)
-
-
-def test_analysis_created_with_standalone_distinguisher(sf, container):
-    d = scared.CPADistinguisher()
-    analysis = scared._Attack(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=150)
-
-    analysis.run(container)
-    assert (256, 16, 2) == analysis.convergence_traces.shape
-    assert (256, 16) == analysis.results.shape[0:2]
-    assert (256, 16) == analysis.scores.shape
-    assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
-    assert isinstance(str(d), str)
-
-    d = scared.ANOVADistinguisher(precision='float64', partitions=np.arange(2))
-    analysis = scared._Attack(distinguisher=d, selection_function=sf, discriminant=scared.maxabs, model=scared.Monobit(4), convergence_step=150)
-    analysis.run(container)
-    assert analysis.precision == 'float64'
-    assert np.array_equal(analysis.partitions, np.arange(2))
-    assert (256, 16, 2) == analysis.convergence_traces.shape
-    assert (256, 16) == analysis.results.shape[0:2]
-    assert (256, 16) == analysis.scores.shape
-    assert np.array_equal(analysis.scores, analysis.convergence_traces[:, :, -1])
-    assert isinstance(str(d), str)

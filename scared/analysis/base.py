@@ -250,40 +250,6 @@ class BaseReverse(_BaseAnalysis):
     pass
 
 
-class _MetaAnalysis:
-
-    def __new__(cls, distinguisher, *args, **kwargs):
-        klass = type.__new__(type, f'{distinguisher.__class__.__name__}Analysis', (cls._base_klass, type(distinguisher).__bases__[1]), {})
-        obj = klass(*args, **kwargs)
-        init_args = inspect.getfullargspec(type(distinguisher)).args
-        values = inspect.getmembers(distinguisher)
-        for arg in init_args[1:]:
-            val = list(filter(lambda t: t[0] == arg, values))[0]
-            if val:
-                setattr(obj, arg, val[1])
-        return obj
-
-
-class _Attack(_MetaAnalysis):
-    """Returns an analysis object created from a standalone distinguisher.
-
-    It has been implemented for backward compatibility with previous eshard libraries and is not intented as a public API.
-
-    """
-
-    _base_klass = BaseAttack
-
-
-class _Reverse(_MetaAnalysis):
-    """Returns an analysis object created from a standalone distinguisher.
-
-    It has been implemented for backward compatibility with previous eshard libraries and is not intented as a public API.
-
-    """
-
-    _base_klass = BaseReverse
-
-
 class BasePartitionedReverse(BaseReverse):
     def __init__(self, partitions=None, *args, **kwargs):
         distinguishers.partitioned._set_partitions(self, partitions)

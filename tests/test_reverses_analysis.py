@@ -260,20 +260,3 @@ def test_mia_bin_edges_init(sf):
     a = scared.MIAReverse(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight())
     assert np.array_equal(a.bin_edges, np.arange(258))
     assert isinstance(str(a), str)
-
-
-def test_analysis_created_with_standalone_distinguisher(sf, container):
-    d = scared.CPADistinguisher()
-    analysis = scared._Reverse(distinguisher=d, selection_function=sf, model=scared.Monobit(4))
-
-    analysis.run(container)
-    assert (16,) == analysis.results.shape[0:1]
-    assert isinstance(str(d), str)
-
-    d = scared.ANOVADistinguisher(precision='float64', partitions=np.arange(2))
-    analysis = scared._Reverse(distinguisher=d, selection_function=sf, model=scared.Monobit(4))
-    analysis.run(container)
-    assert analysis.precision == 'float64'
-    assert np.array_equal(analysis.partitions, np.arange(2))
-    assert (16,) == analysis.results.shape[0:1]
-    assert isinstance(str(d), str)
