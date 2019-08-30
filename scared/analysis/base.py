@@ -1,5 +1,4 @@
 from scared import selection_functions as _sf, container as _container, models, distinguishers
-import inspect
 import numpy as _np
 import logging
 

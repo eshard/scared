@@ -104,6 +104,7 @@ class CenteredProduct(Product):
             else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
         dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
         mean (numpy.ndarray, default=None): a mean array with compatible size with traces. If it None, the mean of provided traces is computed.
+
     """
 
     def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, mean=None):

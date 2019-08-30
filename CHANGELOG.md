@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.7.0 (2019-08-30)
+
+* fix: remove unused private APIs ([8fe310f](https://gitlab.com/eshard/scared/commit/8fe310f))
+* feat:HammingWeight computation optimization, about 15 time faster, and accept all unsigned integer d ([771d221](https://gitlab.com/eshard/scared/commit/771d221))
+
 ### <small>0.6.2 (2019-08-26)</small>
 
 * fix: Update AES add round key selection functions to be work with non contiguous guesses ([246473b](https://gitlab.com/eshard/scared/commit/246473b))
