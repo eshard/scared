@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.7.1 (2019-09-06)</small>
+
+* fix: container string representation now working with all kind of preprocesses ([38dd64d](https://gitlab.com/eshard/scared/commit/38dd64d))
+
 ### 0.7.0 (2019-08-30)
 
 * fix: remove unused private APIs ([8fe310f](https://gitlab.com/eshard/scared/commit/8fe310f))
