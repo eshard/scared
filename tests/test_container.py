@@ -161,3 +161,41 @@ def test_container_with_multiple_preprocess_and_frame(ths):
     b = c.batches(batch_size=10)[2]
     assert np.array_equal(b.samples, minus_2(square(ths.samples[20:30, 10:30])))
     assert isinstance(str(c), str)
+
+
+def test_container_str_with_preprocesses(ths):
+    # Test for issue https://gitlab.com/eshard/scared/issues/26
+    c = scared.Container(ths, preprocesses=scared.preprocesses.serialize_bit)
+    assert isinstance(str(c), str)
+
+    c = scared.Container(ths, preprocesses=scared.preprocesses.high_order.WindowFFT())
+    assert isinstance(str(c), str)
+
+    @scared.preprocess
+    def square(traces):
+        return traces ** 2
+
+    @scared.preprocess
+    def minus_2(traces):
+        return (traces - 2).astype(traces.dtype)
+
+    c = scared.Container(ths, preprocesses=[square, minus_2])
+    assert isinstance(str(c), str)
+
+    class Pow(scared.Preprocess):
+
+        def __init__(self, powe=1):
+            super().__init__()
+            self.pow = powe
+
+        def __call__(self, traces):
+            return traces ** self.pow
+
+        def __str__(self):
+            return f'Power {self.pow}'
+
+    power = Pow(4)
+
+    c = scared.Container(ths, preprocesses=[square, minus_2, power])
+    assert 'Power 4' == str(power)
+    assert isinstance(str(c), str)
