@@ -58,3 +58,10 @@ class Preprocess(metaclass=_MetaPreprocess):
     @abc.abstractmethod
     def __call__(self, traces):
         pass
+
+    @property
+    def __name__(self):
+        return str(self)
+
+    def __str__(self):
+        return self.__class__.__name__
