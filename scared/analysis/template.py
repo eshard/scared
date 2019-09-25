@@ -79,21 +79,21 @@ class TemplateAttack(BaseTemplateAttack, distinguishers.TemplateAttackDistinguis
         convergences_traces (:class:`numpy.ndarray`): array containing the `scores` values at each convergence step defined by `convergence_step`.
 
     Examples:
-        Instantiate by passing a container with building trace header set, a reverse selection function and a model.
+        Instantiate by passing a container with building trace header set, a reverse selection function and a model:
 
-            template = scared.TemplateAttack(
-                container_building=container,
-                reverse_selection_function=sf,
-                model=scared.Value()
-            )
+        >>> template = scared.TemplateAttack(
+        >>>     container_building=container,
+        >>>     reverse_selection_function=sf,
+        >>>     model=scared.Value()
+        >>> )
 
         Use `build` to build templates:
 
-            template.build()
+        >>> template.build()
 
         Use `run` with a trace header set container to process matching:
 
-            template.run(container)
+        >>> template.run(container)
 
     """
 
@@ -131,22 +131,22 @@ class TemplateDPAAttack(BaseTemplateAttack, distinguishers.TemplateDPADistinguis
         convergences_traces (:class:`numpy.ndarray`): array containing the `scores` values at each convergence step defined by `convergence_step`.
 
     Examples:
-        Instantiate by passing a container with building trace header set, a reverse selection function, an attack selection function and a model
+        Instantiate by passing a container with building trace header set, a reverse selection function, an attack selection function and a model:
 
-            template = scared.TemplateAttack(
-                container_building=container,
-                selection_function=asf,
-                reverse_selection_function=sf,
-                model=scared.Value(),
-            )
+        >>> template = scared.TemplateAttack(
+        >>>     container_building=container,
+        >>>     selection_function=asf,
+        >>>     reverse_selection_function=sf,
+        >>>     model=scared.Value(),
+        >>> )
 
         Use `build` to build templates:
 
-            template.build()
+        >>> template.build()
 
         Use `run` with a trace header set container to process matching:
 
-            template.run(container)
+        >>> template.run(container)
 
     """
 

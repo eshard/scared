@@ -69,7 +69,7 @@ class TTestAnalysis:
         Starting from the current state of this instance, the ttest containers are processed by batch.
 
         Args:
-            ttest_container (:class:`TTestContainer`): a :class:`TTestContainer`instance wrapping the trace header sets.
+            ttest_container (:class:`TTestContainer`): a :class:`TTestContainer` instance wrapping the trace header sets.
 
         """
         if not isinstance(ttest_container, TTestContainer):
@@ -99,15 +99,15 @@ class TTestAccumulator:
     """Accumulator class used for t-test analysis.
 
     Attributes:
-        - processed_traces (int): number of traces processed
-        - sum (:class:`numpy.ndarray): array containing sum of traces along first axis
-        - sum_squared (:class:`numpy.ndarray`): array containing sum of squared traces along first axis
-        - mean (:class:`numpy.ndarray`): array the mean of traces
-        - var (:class:`numpy.ndarray`): array containing variance of traces
+        processed_traces (int): number of traces processed
+        sum (:class:`numpy.ndarray`): array containing sum of traces along first axis
+        sum_squared (:class:`numpy.ndarray`): array containing sum of squared traces along first axis
+        mean (:class:`numpy.ndarray`): array the mean of traces
+        var (:class:`numpy.ndarray`): array containing variance of traces
 
     Methods:
-        - update(traces): given a traces array, update the sum and sum_squared attributes
-        - compute(): computes and stores the values of mean and var for the current values accumulated.
+        update(traces): given a traces array, update the sum and sum_squared attributes.
+        compute(): computes and stores the values of mean and var for the current values accumulated.
 
     """
 

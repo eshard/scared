@@ -16,15 +16,20 @@ requirements:
     - wheel
     - pip
     - setuptools
+    - {{ compiler('c') }}
   host:
     - python {{ python }}
+    - cython
     - estraces
+    - numpy
   run:
     - python
+    - cython
     - numpy
     - estraces
     - psutil
     - numba
+    - scipy
 about:
   home: https://gitlab.com/eshard/scared
   license: GNU LGPL V3

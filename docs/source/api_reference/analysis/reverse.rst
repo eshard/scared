@@ -26,3 +26,4 @@ Scared provides the following ready to use leakage detection classes.
 
 .. automodule:: scared.ttest
     :members:
+    :noindex:

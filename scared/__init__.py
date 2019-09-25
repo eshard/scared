@@ -27,7 +27,9 @@ from .analysis import (  # noqa:F401
     TemplateAttack, TemplateDPAAttack
 )
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
+from .synchronization import Synchronizer, ResynchroError, SynchronizerError  # noqa:F401
 from . import preprocesses  # noqa: F401
+from . import signal_processing  # noqa: F401
 from . import aes  # noqa: F401
 from . import des  # noqa: F401
 from . import container as _container
