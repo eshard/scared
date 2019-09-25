@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0 (2019-09-25)
+
+* feat: New signal processing functions + Synchronizer API added ([2272602](https://gitlab.com/eshard/scared/commit/2272602))
+
 ### <small>0.7.1 (2019-09-06)</small>
 
 * fix: container string representation now working with all kind of preprocesses ([38dd64d](https://gitlab.com/eshard/scared/commit/38dd64d))

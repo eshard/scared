@@ -1,6 +1,7 @@
 # Attack DPA Contest v2 with CPA and DPA
 
 In this guide, we will show how to attack the DPA V2 trace set with CPA and DPA method, with the help of the `scared` library.
+You can also launch a tutorial in [Binder from this repository](https://mybinder.org/v2/gl/eshard%2Fscared-notebooks/master).
 
 ## The DPA V2 trace set
 

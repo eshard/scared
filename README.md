@@ -58,6 +58,7 @@ a.run(container)
 ## Documentation
 
 To go further and learn all about scared, please go to [the full documentation](https://eshard.gitlab.io/scared).
+You can also have an interactive introduction to scared by launching these [notebooks with Binder](https://mybinder.org/v2/gl/eshard%2Fscared-notebooks/master).
 
 ## Contributing
 
