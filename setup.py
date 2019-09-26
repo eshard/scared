@@ -5,8 +5,12 @@ import sys
 from setuptools import setup
 from setuptools.command.test import test
 from distutils.core import Extension
-import numpy
-from Cython.Build import cythonize
+try:
+    import numpy
+    from Cython.Build import cythonize
+    CYTHON = True
+except Exception:
+    CYTHON = False
 
 
 class PyTest(test):
@@ -29,14 +33,17 @@ def generate_extensions():
     # If Cython is available and .pyx file is available, extension is built with the .pyx file
     # If Cython is not available or .pyx file is not available, extension is built with .c file
     # It means that for each .pyx module, the compiled .c file must be put in version control
-    file_ext = '.c'
-    extensions = [
-        Extension(
-            'scared.signal_processing._c_find_peaks', ['scared/signal_processing/_c_find_peaks' + file_ext],
-            include_dirs=[numpy.get_include()]
-        )
-    ]
-    return cythonize(extensions, compiler_directives={'always_allow_keywords': True})
+    if CYTHON:
+        file_ext = '.c'
+        extensions = [
+            Extension(
+                'scared.signal_processing._c_find_peaks', ['scared/signal_processing/_c_find_peaks' + file_ext],
+                include_dirs=[numpy.get_include()]
+            )
+        ]
+        return cythonize(extensions, compiler_directives={'always_allow_keywords': True})
+    else:
+        return []
 
 
 setup(
