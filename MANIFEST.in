@@ -1,1 +1,1 @@
-include setup.py README.md
+include setup.py README.md scared/signal_processing/_c_find_peaks*.so
