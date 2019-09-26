@@ -2,6 +2,7 @@
 
 cd $SRC_DIR
 
+$PYTHON setup.py build_ext --inplace
 $PYTHON setup.py sdist
 $PYTHON setup.py bdist_wheel
 
