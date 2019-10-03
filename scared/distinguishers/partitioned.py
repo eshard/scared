@@ -22,10 +22,7 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
             self.partitions = range(r)
         self._trace_length = traces.shape[1]
         self._data_words = data.shape[1]
-        try:
-            self._initialize_accumulators()
-        except MemoryError:
-            raise MemoryError(f'Trace size and data words are too large to proceed with accumulation.')
+        self._initialize_accumulators()
 
     def _update(self, traces, data):
         if traces.shape[1] != self._trace_length:

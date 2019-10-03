@@ -27,8 +27,10 @@ class DPADistinguisherMixin(DistinguisherMixin):
             self.accumulator_traces = _np.zeros((trace_size), dtype=self.precision)
             self.accumulator_ones = _np.zeros((data_words, trace_size), dtype=self.precision)
             self.processed_ones = _np.zeros((data_words), dtype='uint32')
-        except (ValueError, MemoryError) as e:
-            raise type(e)(f'Trace size and data words are too large to proceed with accumulation for DPA {e}')
+        except ValueError as e:
+            raise ValueError(f'Trace size and data words are too large to proceed with accumulation for DPA: {e}.')
+        except MemoryError as e:
+            raise MemoryError(f'Trace size and data words results in too large intermediate state to proceed with accumulation for DPA as {e}.')
 
     def _update(self, traces, data):
         if traces.shape[1] != self.accumulator_traces.shape[0]:

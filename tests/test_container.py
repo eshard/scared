@@ -1,6 +1,7 @@
 from .context import scared  # noqa: F401
 import pytest
 import numpy as np
+import time
 from collections.abc import Iterable
 
 
@@ -199,3 +200,20 @@ def test_container_str_with_preprocesses(ths):
     c = scared.Container(ths, preprocesses=[square, minus_2, power])
     assert 'Power 4' == str(power)
     assert isinstance(str(c), str)
+
+
+def test_performance_container_str():
+    shapes = [(100_000, 10_000), (10_000, 10_000), (1_000, 10_000), (100_000, 1_000), (10_000, 1_000), (1_000, 1_000)]
+    times = []
+    for shape in shapes:
+        samples = np.empty(shape, dtype='uint8')
+        plaintext = np.empty((shape[0], 16), dtype='uint8')
+        ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+        c = scared.Container(ths)
+
+        tic = time.time()
+        str(c)
+        toc = time.time()
+        times.append(toc - tic)
+
+    assert max(times) / min(times) < 10, 'str representation of container takes too much time'

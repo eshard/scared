@@ -114,7 +114,7 @@ class Container:
     def __str__(self):
         template_str = f'''Traces container:
     Number of traces: {len(self._ths)}
-    Traces size     : {self._ths.samples.shape[1]}
+    Traces size     : {len(self._ths.samples[0])}
     Metadata        : {list(self._ths.metadatas.keys())}
     Frame           : {self._frame_str}
     Preprocesses    : {[p.__name__ for p in self.preprocesses] if len(self.preprocesses) > 0 else 'None'}
