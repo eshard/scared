@@ -1,5 +1,9 @@
 # Changelog
 
+###  <small>0.7.2 (2019-10-03)</small>
+
+* Merge branch '31-slow-print-of-container-object' into 'master' ([ff97096](https://gitlab.com/eshard/scared/commit/ff97096)), closes [#31](https://gitlab.com/eshard/scared/issues/31)
+
 ### <small>0.7.1 (2019-09-06)</small>
 
 * fix: container string representation now working with all kind of preprocesses ([38dd64d](https://gitlab.com/eshard/scared/commit/38dd64d))
