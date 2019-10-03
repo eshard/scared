@@ -87,7 +87,7 @@ class DistinguisherMixin(abc.ABC):
             logger.debug(f'Needed memory estimated to {needed_mem} GB, for available {available_mem}.')
             self._is_checked = True
             if needed_mem > 0.9 * available_mem:
-                raise MemoryError(
+                raise DistinguisherError(
                     f'This analysis will probably need more than 90% of your available memory - {available_mem} GB available against {needed_mem} GB needed.'
                 )
 
