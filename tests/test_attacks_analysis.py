@@ -172,7 +172,7 @@ def test_cpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
@@ -189,7 +189,7 @@ def test_dpa_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
@@ -206,7 +206,7 @@ def test_anova_analysis_raises_exception_if_estimated_memory_usage_is_90_percent
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
@@ -223,7 +223,7 @@ def test_nicv_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
@@ -240,7 +240,7 @@ def test_snr_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
@@ -257,7 +257,7 @@ def test_mia_analysis_raises_exception_if_estimated_memory_usage_is_90_percent_o
     ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
     container = scared.Container(ths)
     assert isinstance(str(analysis), str)
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.DistinguisherError):
         analysis.run(container)
 
 
