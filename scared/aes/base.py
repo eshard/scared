@@ -608,7 +608,7 @@ def _parametric_cipher(state, key, operations, after_step, at_round=None, mode='
     if state.ndim == 1:
         out_state = _np.array([_np.copy(state) for i in range(round_keys.shape[0])], dtype='uint8')
     else:
-        out_state = _np.array([_np.copy(s) for s in state], dtype='uint8')
+        out_state = _np.array(state, dtype='uint8', copy=True)
 
     for i, _round_operations in enumerate(rounds):
         for step, operation in enumerate(_round_operations):
