@@ -1,5 +1,9 @@
 # Changelog
 
+###  <small>0.7.3 (2019-10-03)</small>
+
+* fix: optimization of AES and DES ciphers performance ([626ba4b](https://gitlab.com/eshard/scared/commit/626ba4b))
+
 ###  <small>0.7.2 (2019-10-03)</small>
 
 * Merge branch '31-slow-print-of-container-object' into 'master' ([ff97096](https://gitlab.com/eshard/scared/commit/ff97096)), closes [#31](https://gitlab.com/eshard/scared/issues/31)
