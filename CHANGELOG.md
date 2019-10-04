@@ -1,10 +1,14 @@
 # Changelog
 
-## 0.8.3 (2019-10-04)
+### <small>0.8.4 (2019-10-04)</small>
+
+* fix: optimization of AES and DES ciphers performance ([c080a56](https://gitlab.com/eshard/scared/commit/c080a56))
+
+### <small>0.8.3 (2019-10-04)</small>
 
 * fix: improve string representation performance of Container object ([7ce760f](https://gitlab.com/eshard/scared/commit/7ce760f))
 
-## 0.8.0 (2019-09-25)
+### 0.8.0 (2019-09-25)
 
 * feat: New signal processing functions + Synchronizer API added ([2272602](https://gitlab.com/eshard/scared/commit/2272602))
 
