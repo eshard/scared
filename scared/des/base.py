@@ -800,7 +800,7 @@ class _ParametricCipher():
         if state.ndim == 1:
             out_state = _np.array([_np.copy(state) for i in range(des_keys.shape[1])], dtype='uint8').reshape(-1, 8)
         else:
-            out_state = _np.array([_np.copy(s) for s in state], dtype='uint8')
+            out_state = _np.array(state, dtype='uint8', copy=True)
 
         self.total_words = _np.max([out_state.shape[0], des_keys.shape[1]])
         for des_number, des_rounds in enumerate(des_iterations):
