@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.3 (2019-10-04)
+
+* fix: improve string representation performance of Container object ([7ce760f](https://gitlab.com/eshard/scared/commit/7ce760f))
+
 ## 0.8.0 (2019-09-25)
 
 * feat: New signal processing functions + Synchronizer API added ([2272602](https://gitlab.com/eshard/scared/commit/2272602))
