@@ -287,9 +287,8 @@ def _expand_forward(key_cols, bytes_key_length, cols_in, number_of_keys, col_in,
     n_cols = col_out - col_in
 
     key = key_cols.reshape((-1, cols_in, 4))
-    expanded_key = _np.empty((number_of_keys, n_cols, 4), dtype='uint8')
+    expanded_key = _np.empty((number_of_keys, col_out, 4), dtype='uint8')
     final_shape = (number_of_keys, (n_cols * 4))
-
     for index, col in enumerate(cols_range):
         if index < cols_in:
             expanded_key[:, col] = key[:, index, :]
@@ -304,18 +303,16 @@ def _expand_forward(key_cols, bytes_key_length, cols_in, number_of_keys, col_in,
             )
         else:
             expanded_key[:, col] = _np.bitwise_xor(expanded_key[:, col - 1], expanded_key[:, col - cols_in])
-    return expanded_key.reshape(final_shape)
+    return expanded_key[:, col_in:].reshape(final_shape)
 
 
 def _expand_backward(key_cols, bytes_key_length, cols_in, number_of_keys, col_in, col_out):
-
     cols_range = range(col_in + cols_in - 1, col_out - 1, -1)
     n_cols = col_in - col_out + cols_in
 
     key = key_cols.reshape((-1, cols_in, 4))
-    expanded_key = _np.empty((number_of_keys, n_cols, 4), dtype='uint8')
+    expanded_key = _np.empty((number_of_keys, col_in + cols_in, 4), dtype='uint8')
     final_shape = (number_of_keys, (n_cols * 4))
-
     for index, col in enumerate(cols_range):
         if index < cols_in:
             expanded_key[:, col] = key[:, cols_in - index - 1, :]
@@ -328,7 +325,7 @@ def _expand_backward(key_cols, bytes_key_length, cols_in, number_of_keys, col_in
                 expanded_key[:, col + cols_in])
         else:
             expanded_key[:, col] = _np.bitwise_xor(expanded_key[:, col + cols_in], expanded_key[:, col + cols_in - 1])
-    return expanded_key.reshape(final_shape)
+    return expanded_key[:, col_out:].reshape(final_shape)
 
 
 def sub_bytes(state):
