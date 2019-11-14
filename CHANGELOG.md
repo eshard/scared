@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.5 (2019-11-14)</small>
+
+* fix: backward and forward AES key expansion works starting from any round ([a37072b](https://gitlab.com/eshard/scared/commit/a37072b))
+
 ### <small>0.8.4 (2019-10-04)</small>
 
 * fix: optimization of AES and DES ciphers performance ([c080a56](https://gitlab.com/eshard/scared/commit/c080a56))
