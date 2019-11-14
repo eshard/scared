@@ -142,6 +142,74 @@ def test_key_expansion_bwd_256(aes_data):
         assert np.array_equal(master[0], round_keys[:i * 32])
 
 
+@pytest.fixture(params=[(4, 16, 11), (6, 24, 12), (8, 32, 14)])
+def key_expansion_params(request):
+    return {
+        'cols_size': request.param[0],
+        'key': np.random.randint(0, 255, (request.param[1],), dtype='uint8'),
+        'rounds': range(0, request.param[2])
+    }
+
+
+def test_key_expansion_fwd_starting_from_any_intermediate_state(key_expansion_params):
+    key = key_expansion_params['key']
+    rounds = key_expansion_params['rounds']
+    cols_size = key_expansion_params['cols_size']
+    full_schedule = aes.key_schedule(key).reshape((-1, 4))
+    for intermediate_round in rounds:
+        schedule_part_1 = aes.key_expansion(
+            key,
+            col_out=cols_size + intermediate_round * 4
+        ).reshape((-1, 4))
+
+        assert np.array_equal(
+            schedule_part_1,
+            full_schedule[:cols_size + intermediate_round * 4]
+        )
+        sched_part_2 = aes.key_expansion(
+            schedule_part_1[len(schedule_part_1) - cols_size:].reshape(-1),
+            col_in=intermediate_round * 4,
+        ).reshape((-1, 4))
+        expected = full_schedule[intermediate_round * 4:]
+
+        for i, v in enumerate(sched_part_2):
+            assert np.array_equal(
+                v,
+                expected[i]
+            )
+
+
+def test_key_expansion_bwd_starting_from_any_intermediate_state(key_expansion_params):
+    key = key_expansion_params['key']
+    cols_size = key_expansion_params['cols_size']
+    rounds = range(key_expansion_params['rounds'].stop - 1, key_expansion_params['rounds'].start - 1, -1)
+    full_schedule = aes.key_schedule(key).reshape((-1, 4))
+    _in = len(full_schedule) - cols_size
+    key_base = full_schedule[_in:].reshape((cols_size * 4,))
+    for intermediate_round in rounds:
+        _out = _in - intermediate_round * 4
+        schedule_part_1 = aes.key_expansion(
+            key_base,
+            col_in=_in,
+            col_out=_out
+        ).reshape((-1, 4))
+        assert np.array_equal(
+            schedule_part_1,
+            full_schedule[_out:]
+        )
+        sched_part_2 = aes.key_expansion(
+            schedule_part_1[:cols_size].reshape(-1),
+            col_in=_out,
+            col_out=0
+        ).reshape((-1, 4))
+        expected = full_schedule[:_out + cols_size]
+        for i, v in enumerate(sched_part_2):
+            assert np.array_equal(
+                v,
+                expected[i]
+            )
+
+
 def test_key_expansion_fwd_128(aes_data):
     master = aes_data['128_key']
     keys = aes.key_expansion(master, col_in=0)
