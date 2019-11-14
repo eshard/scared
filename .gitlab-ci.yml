@@ -69,16 +69,3 @@ deploy:conda:
   artifacts:
     paths:
       - "out/*/*.tar.bz2"
-
-pages:
-  stage: build
-  script:
-    - conda install python=3.6 psutil
-    - pip install -e .
-    - cd docs
-    - ./build_doc.sh
-  artifacts:
-    paths:
-    - public
-  only:
-    - tags
