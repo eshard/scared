@@ -128,3 +128,13 @@ class CenterOn(Preprocess):
 
     def __call__(self, traces):
         return _center(traces, self.mean)
+
+
+class ToPower(Preprocess):
+    def __init__(self, power: int = 1):
+        if not isinstance(power, (int, float)):
+            raise ValueError(f'power must be an integer, not {type(power)}.')
+        self.power = power
+
+    def __call__(self, traces):
+        return traces ** self.power
