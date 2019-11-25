@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.6 (2019-11-25)</small>
+
+* fix: documentation, pypi source build and conda build now working for C extension ([29dfb27](https://gitlab.com/eshard/scared/commit/29dfb27))
+
 ### <small>0.8.5 (2019-11-14)</small>
 
 * fix: backward and forward AES key expansion works starting from any round ([a37072b](https://gitlab.com/eshard/scared/commit/a37072b))
