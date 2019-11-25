@@ -1,1 +1,1 @@
-include setup.py README.md scared/signal_processing/_c_find_peaks*.so
+include pyproject.toml setup.cfg setup.py README.md scared/signal_processing/_c_find_peaks.pyx scared/signal_processing/_c_find_peaks.c

@@ -8,28 +8,26 @@ source:
   path: ../
 
 build:
-  number: 0
-  noarch: python
+  number: 1
 
 requirements:
   build:
-    - wheel
-    - cython
-    - pip
-    - setuptools
     - {{ compiler('c') }}
   host:
     - python {{ python }}
-    - cython
-    - estraces
+    - setuptools>=40.0
+    - wheel
+    - pip
     - numpy
+    - cython
   run:
-    - python
+    - python {{python}}
     - numpy
     - estraces
     - psutil
     - numba
     - scipy
+    - cython
 about:
   home: https://gitlab.com/eshard/scared
   license: GNU LGPL V3

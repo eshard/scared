@@ -1,22 +1,26 @@
 <!-- TOC -->
 
-- [Contributing to scared](#Contributing-to-scared)
-  - [Code of conduct](#Code-of-conduct)
-  - [Contribution Suitability](#Contribution-Suitability)
-  - [Bug reports](#Bug-reports)
-  - [Feature Requests](#Feature-Requests)
-  - [Documentation contributions](#Documentation-contributions)
-  - [Code contributions](#Code-contributions)
-    - [Steps for Submitting Code](#Steps-for-Submitting-Code)
-      - [Merge requestion approval check-list](#Merge-requestion-approval-check-list)
-    - [Code Review](#Code-Review)
-    - [New Contributors](#New-Contributors)
-    - [Get Early Feedback](#Get-Early-Feedback)
-    - [Python development guidelines](#Python-development-guidelines)
-      - [Python version](#Python-version)
-      - [Test suite](#Test-suite)
-      - [Code style and formatting](#Code-style-and-formatting)
-      - [Docstrings](#Docstrings)
+- [Contributing to scared](#contributing-to-scared)
+  - [Code of conduct](#code-of-conduct)
+  - [Contribution Suitability](#contribution-suitability)
+  - [Bug reports](#bug-reports)
+  - [Feature Requests](#feature-requests)
+  - [Documentation contributions](#documentation-contributions)
+  - [Code contributions](#code-contributions)
+    - [Steps for Submitting Code](#steps-for-submitting-code)
+      - [Merge requestion approval check-list](#merge-requestion-approval-check-list)
+    - [Code Review](#code-review)
+    - [New Contributors](#new-contributors)
+    - [Get Early Feedback](#get-early-feedback)
+    - [Python development guidelines](#python-development-guidelines)
+      - [Requirements](#requirements)
+      - [Test suite](#test-suite)
+    - [Numpy compressed array files](#numpy-compressed-array-files)
+      - [Code style and formatting](#code-style-and-formatting)
+      - [Docstrings](#docstrings)
+    - [Build contributions](#build-contributions)
+      - [Building for Pypi](#building-for-pypi)
+      - [Building for Conda](#building-for-conda)
 
 <!-- /TOC -->
 
@@ -109,11 +113,22 @@ If you are contributing, do not feel the need to sit on your contribution until 
 
 ### Python development guidelines
 
-For code contributions, please follows these guidelines
+For code contributions, please follows these guidelines.
 
-#### Python version
+#### Requirements
 
-All developments should be compatible with **Python 3.6** and above.
+All developments should be compatible with **Python 3.6** and **3.7**.
+
+To develop, you'll need to support:
+
+- setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
+- a C compiler to compile C extension with Cython (see Cython documentation)
+
+To start runnning your test suite, you can install the library in development mode:
+
+```bash
+pip install -e .
+```
 
 #### Test suite
 
@@ -131,6 +146,7 @@ As far as possible, tests should reflects the organization of the source code. C
 To save visual and disk space, some test modules use numpy compressed files ending with .npz to store array samples.
 
 You can put a new array into an existing file like this:
+
 ```python
 my_dict = dict(numpy.load('tests/samples/the_appropriate_file.npz'))
 my_dict['my_new_array_name'] = my_new_numpy_array
@@ -155,3 +171,26 @@ We use the Google style guide conventions for docstrings, and the API documentat
 - [Google docstring examples](http://www.sphinx-doc.org/en/stable/ext/example_google.html) - Really complete examples
 - [Support of Google docstring in Sphinx](http://www.sphinx-doc.org/en/stable/ext/napoleon.html#docstring-sections), with the list supported section headers
 - [Python domain directives in Sphinx](http://www.sphinx-doc.org/en/1.7/domains.html?highlight=python%20domain#the-python-domain), to enhance API documentation with cross-linking
+
+### Build contributions
+
+If your platform has not already binaries available on Pypi or Conda, a great contribution can simply to build binaries for your platform.
+To do so, please create a dedicated merge request from the tag your are building for, and attach the resulting build files to it.
+You can then submit the merge request for review.
+
+#### Building for Pypi
+
+To build for Pypi, you will need to follow these instructions:
+
+- `pip install -U pip setuptools wheel numpy`
+- Run `python setup.py bdist_wheel` from the root folder
+- Get build files in `dist/` directory
+
+#### Building for Conda
+
+To build for Conda, you will need to create a dedicated conda environment for build:
+
+- `conda create -n buildenv python=3.6 conda-build conda-verify`
+- `conda config --add channels eshard`
+- Run `conda build --output_folder out .recipe` from the root source folder
+- Get build files in `out` sub directory

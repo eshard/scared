@@ -4,13 +4,10 @@ import sys
 
 from setuptools import setup
 from setuptools.command.test import test
-from distutils.core import Extension
-try:
-    import numpy
-    from Cython.Build import cythonize
-    CYTHON = True
-except Exception:
-    CYTHON = False
+from setuptools import Extension
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PyTest(test):
@@ -29,21 +26,24 @@ class PyTest(test):
 
 
 def generate_extensions():
-    # We have to handle the .pyx modules
-    # If Cython is available and .pyx file is available, extension is built with the .pyx file
-    # If Cython is not available or .pyx file is not available, extension is built with .c file
-    # It means that for each .pyx module, the compiled .c file must be put in version control
-    if CYTHON:
-        file_ext = '.c'
+    try:
+        import numpy
         extensions = [
             Extension(
-                'scared.signal_processing._c_find_peaks', ['scared/signal_processing/_c_find_peaks' + file_ext],
-                include_dirs=[numpy.get_include()]
+                'scared.signal_processing._c_find_peaks', ['scared/signal_processing/_c_find_peaks.pyx'],
+                include_dirs=[numpy.get_include()],
+                compiler_directives={'always_allow_keywords': True}
             )
         ]
-        return cythonize(extensions, compiler_directives={'always_allow_keywords': True})
-    else:
-        return []
+        return extensions
+    except ModuleNotFoundError as e:
+        logger.error(
+            '''Numpy is required to build or install scared.
+You can install numpy with pip if you are trying to build,
+or use "pip install ." instead of "python setup.py install"
+if you just want to use scared from local files.
+            ''')
+        raise e
 
 
 setup(
