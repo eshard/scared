@@ -10,8 +10,8 @@ lint:
   stage: lint
   script:
     - apt update && apt install -y gcc
-    - conda install python=3.6 psutil numpy cython
-    - pip install -e .
+    - conda install python=3.6 psutil
+    - pip install .
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
@@ -27,12 +27,10 @@ build:pypi:
   stage: build
   script:
     - apt update && apt install -y gcc
-    - conda install python=3.6 numpy cython numba
-    - pip install -U pip setuptools
-    - python setup.py build_ext --inplace
-    - python setup.py sdist
-  only:
-    - tags
+    - pip install -U pip setuptools numpy
+    - python setup.py sdist bdist_wheel
+  # only:
+  #   - tags
   artifacts:
     paths:
       - "dist/*"
@@ -51,11 +49,11 @@ build:conda:
   stage: build
   script:
     - apt update && apt install -y gcc
-    - conda install python=3.6 conda-build conda-verify
+    - conda install conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
     - conda build --output-folder out .recipe
-  only:
-    - tags
+  # only:
+  #   - tags
   artifacts:
     paths:
       - "out/*/*.tar.bz2"
