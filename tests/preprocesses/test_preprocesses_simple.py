@@ -113,3 +113,31 @@ def test_standardize_on_raises_exception_if_incompatible_shapes(traces):
 
     with pytest.raises(scared.PreprocessError):
         scared.preprocesses.StandardizeOn(std=wrong_std, mean=wrong_mean)(traces)
+
+
+def test_power_preprocess_raises_exception_if_power_not_a_number(traces):
+    with pytest.raises(ValueError):
+        scared.preprocesses.ToPower('foo')
+    with pytest.raises(ValueError):
+        scared.preprocesses.ToPower(power={"doo"})
+
+
+@pytest.fixture(params=range(0, 10))
+def powers(request):
+    return request.param / 2
+
+
+def test_power_preprocess(traces, powers):
+    p = scared.preprocesses.ToPower(powers)
+    assert p.power == powers
+    assert isinstance(p, scared.Preprocess)
+    expected = traces ** powers
+    data = p(traces)
+    assert np.allclose(expected, data, equal_nan=True)
+
+
+def test_power_preprocess_default_value(traces):
+    p = scared.preprocesses.ToPower()
+    assert isinstance(p, scared.Preprocess)
+    expected = traces ** 1
+    assert np.array_equal(expected, p(traces))
