@@ -243,8 +243,8 @@ def key_schedule(key):
 
 
 def inv_key_schedule(key, round_in=10):
-    master = key_expansion(key, col_in=round_in * 4, col_out=0)[0, :16]
-    return key_schedule(master)
+    masters = key_expansion(key, col_in=round_in * 4, col_out=0).swapaxes(0, -1)[:16].swapaxes(0, -1)
+    return key_schedule(masters)
 
 
 def key_expansion(key_cols, col_in=0, col_out=None):

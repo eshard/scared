@@ -243,6 +243,14 @@ def test_inv_key_schedule_returns_appropriate_keys(aes_data):
     round_keys = aes_data['128_key_schedule_output']
     for i, round_key in enumerate(round_keys):
         res = aes.inv_key_schedule(round_key, i)
+        assert np.array_equal(round_keys, res[0])
+
+
+def test_inv_key_schedule_with_multiple_keys_returns_appropriate_keys():
+    master_keys = np.random.randint(0, 255, (10, 16), dtype='uint8')
+    round_keys = aes.key_schedule(master_keys)
+    for i in range(round_keys.shape[1]):
+        res = aes.inv_key_schedule(round_keys[:, i, :], i)
         assert np.array_equal(round_keys, res)
 
 
