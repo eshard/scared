@@ -4,7 +4,7 @@ Targets API reference
 .. toctree::
    :maxdepth: 1
 
-A(dvanced)E(ncryption)S(ystem) module
+A(dvanced)E(ncryption)S(tandard) module
 -------------------------------------
 
 .. automodule:: scared.aes.base
