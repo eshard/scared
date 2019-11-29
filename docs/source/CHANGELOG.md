@@ -1,5 +1,25 @@
 # Changelog
 
+### <small>0.8.6 (2019-11-25)</small>
+
+* fix: documentation, pypi source build and conda build now working for C extension ([29dfb27](https://gitlab.com/eshard/scared/commit/29dfb27))
+
+### <small>0.8.5 (2019-11-14)</small>
+
+* fix: backward and forward AES key expansion works starting from any round ([a37072b](https://gitlab.com/eshard/scared/commit/a37072b))
+
+### <small>0.8.4 (2019-10-04)</small>
+
+* fix: optimization of AES and DES ciphers performance ([c080a56](https://gitlab.com/eshard/scared/commit/c080a56))
+
+### <small>0.8.3 (2019-10-04)</small>
+
+* fix: improve string representation performance of Container object ([7ce760f](https://gitlab.com/eshard/scared/commit/7ce760f))
+
+### 0.8.0 (2019-09-25)
+
+* feat: New signal processing functions + Synchronizer API added ([2272602](https://gitlab.com/eshard/scared/commit/2272602))
+
 ### <small>0.7.1 (2019-09-06)</small>
 
 * fix: container string representation now working with all kind of preprocesses ([38dd64d](https://gitlab.com/eshard/scared/commit/38dd64d))
