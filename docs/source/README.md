@@ -9,19 +9,32 @@ scared is a side-channel analysis framework.
 
 ## Getting started
 
-### Prerequisites
+### Pre-requisites
 
-You will need **Python 3.6+** to use and install scared. You can use pip (or any pip based tool like pipenv) or conda to install it.
+To use scared, you will need the the following Python **3.6** or **3.7**.
 
-### Installation
-
-To install scared, you can use pip (or pipenv, or any other pip based-tool) or conda:
+If your configuration has a binary build available ([see list here](#binary-builds-available)), you can just run:
 
 ```bash
-$ pip install scared
-# or with Conda
-$ conda install -c eshard scared
+pip install scared
 ```
+
+```bash
+conda install -c eshard scared
+```
+
+If your system isn't yet supported ([build contributions are welcome!](./CONTRIBUTING.md#building-for-conda)), or you want to build from source or develop, you'll also need:
+
+- setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
+- a C compiler to compile C extension
+
+To install from source, you just need to run:
+
+```bash
+pip install .
+```
+
+from the source folder.
 
 ### Make a first cool thing
 
@@ -58,6 +71,7 @@ a.run(container)
 ## Documentation
 
 To go further and learn all about scared, please go to [the full documentation](https://eshard.gitlab.io/scared).
+You can also have an interactive introduction to scared by launching these [notebooks with Binder](https://mybinder.org/v2/gl/eshard%2Fscared-notebooks/master).
 
 ## Contributing
 
@@ -75,3 +89,17 @@ If you wish to use this library in a commercial or industrial context, eshard pr
 ## Authors
 
 See [AUTHORS](AUTHORS.md) for the list of contributors to the project.
+
+## Binary builds available
+
+Binary builds (wheels on pypi and conda builds) are available for the following platforms and Python version.
+
+Platforms:
+
+- Linux x86 64
+- Macosx x86 64
+
+Python version:
+
+- 3.6
+- 3.7

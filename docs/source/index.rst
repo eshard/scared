@@ -9,13 +9,13 @@ Scared - The side-channel analysis framework
 .. toctree::
    :maxdepth: 1
 
-    Welcome to scared documentation <README.md>
+    Welcome to scared - Getting started <README.md>
     Practical guides <guides/index.rst>
+    Concepts <knowledge/index.rst>
     API reference <api_reference/index.rst>
     Contribute <CONTRIBUTING.md>
     Changelog <CHANGELOG.md>
     Authors <AUTHORS.md>
-    COMING SOON Scared fundamentals <fundamentals.md>
 
 Indices and tables
 ==================

@@ -29,8 +29,8 @@ build:pypi:
     - apt update && apt install -y gcc
     - pip install -U pip setuptools numpy
     - python setup.py sdist bdist_wheel
-  # only:
-  #   - tags
+  only:
+    - tags
   artifacts:
     paths:
       - "dist/*"
@@ -52,8 +52,8 @@ build:conda:
     - conda install conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
     - conda build --output-folder out .recipe
-  # only:
-  #   - tags
+  only:
+    - tags
   artifacts:
     paths:
       - "out/*/*.tar.bz2"
