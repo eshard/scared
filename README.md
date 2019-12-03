@@ -23,7 +23,7 @@ pip install scared
 conda install -c eshard scared
 ```
 
-If your system isn't yet supported ([build contributions are welcome!](./CONTRIBUTING.md#building-for-conda)), or you want to build from source or develop, you'll also need:
+If your system isn't yet supported ([build contributions are welcome!](./CONTRIBUTING.md#building-for-conda)), or you want to build from source, you'll also need:
 
 - setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
 - a C compiler to compile C extension
@@ -35,6 +35,8 @@ pip install .
 ```
 
 from the source folder.
+
+If you are planning to contribute, see [CONTRIBUTING.md](CONTRIBUTING.md) to install the library in development mode and run the test suite.
 
 ### Make a first cool thing
 
