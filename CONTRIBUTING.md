@@ -117,14 +117,14 @@ For code contributions, please follows these guidelines.
 
 #### Requirements
 
-All developments should be compatible with **Python 3.6** and **3.7**.
+All developments should be compatible with **Python 3.6+** versions.
 
-To develop, you'll need to support:
+To develop, you'll need to have:
 
 - setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
 - a C compiler to compile C extension with Cython (see Cython documentation)
 
-To start runnning your test suite, you can install the library in development mode:
+To start runnning your test suite, you must install the library in development mode:
 
 ```bash
 pip install -e .
