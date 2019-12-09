@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>0.8.6-doc</small> (2019-12-09)
+
+* maint: add instructions for python 3.8 support ([09c3609](https://gitlab.com/eshard/scared/commit/09c3609))
+* doc: improve README ([6b44dc5](https://gitlab.com/eshard/scared/commit/6b44dc5))
+
 ### <small>0.8.6 (2019-11-25)</small>
 
 * fix: documentation, pypi source build and conda build now working for C extension ([29dfb27](https://gitlab.com/eshard/scared/commit/29dfb27))
