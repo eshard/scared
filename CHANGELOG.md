@@ -1,6 +1,13 @@
 # Changelog
 
-## <small>0.8.6-doc</small> (2019-12-09)
+### <small>0.8.7 (2019-12-12)</small>
+
+* fix: container trace size and batch size depend on preprocesses ([8041375](https://gitlab.com/eshard/scared/commit/8041375))
+* maint: add instructions for python 3.8 support ([09c3609](https://gitlab.com/eshard/scared/commit/09c3609))
+* maint: update CHANGELOG ([b93442c](https://gitlab.com/eshard/scared/commit/b93442c))
+* doc: improve README ([6b44dc5](https://gitlab.com/eshard/scared/commit/6b44dc5))
+
+### <small>0.8.6-doc</small> (2019-12-09)
 
 * maint: add instructions for python 3.8 support ([09c3609](https://gitlab.com/eshard/scared/commit/09c3609))
 * doc: improve README ([6b44dc5](https://gitlab.com/eshard/scared/commit/6b44dc5))
