@@ -7,8 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../../'))
-
+sys.path.insert(0, os.path.abspa0.7
 
 # -- Project information -----------------------------------------------------
 
@@ -17,9 +16,9 @@ copyright = '2019, eshard'
 author = 'eshard'
 
 # The short X.Y version
-version = '0.7.5'
+version = '0.7.6'
 # The full verson, including alpha/beta/rc tags
-release = '0.7.5'
+release = '0.7.6'
 
 
 # -- General configuration ---------------------------------------------------
