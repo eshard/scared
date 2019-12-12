@@ -35,6 +35,14 @@ def ths():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
+@pytest.fixture
+def moderate_ths():
+    shape = (2000, 10000)
+    samples = np.random.randint(0, 255, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 255, (shape[0], 16), dtype='uint8')
+    return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+
+
 def test_container_raises_exception_if_ths_is_not_trace_header_set_compatible():
     with pytest.raises(TypeError):
         scared.Container(ths='foo')
@@ -82,6 +90,30 @@ def test_container_batches_raises_exception_if_batch_size_is_incorrect(ths):
         container.batches(batch_size='foo')
     with pytest.raises(ValueError):
         container.batches(batch_size=-12)
+
+
+def test_container_batch_size_with_frame(moderate_ths):
+    container = scared.Container(moderate_ths, frame=range(10))
+    assert container.trace_size == 10
+    assert container.batch_size == 25000
+
+
+def test_container_batch_size_with_preprocess(moderate_ths):
+    @scared.preprocess
+    def prep_reducing_size(traces):
+        return traces[:, :10]
+
+    container = scared.Container(moderate_ths, preprocesses=[prep_reducing_size])
+    assert container.trace_size == 10
+    assert container.batch_size == 2500
+
+    @scared.preprocess
+    def prep_expanding_size(traces):
+        return np.tile(traces, (20,))
+
+    container = scared.Container(moderate_ths, preprocesses=[prep_expanding_size])
+    assert container.trace_size == 20 * len(moderate_ths.samples[0])
+    assert container.batch_size == 100
 
 
 def test_container_raises_exception_if_frame_param_has_improper_type(ths):
