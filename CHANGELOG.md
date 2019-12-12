@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.7.5 (2019-12-12)</small>
+
+* fix: container trace size and batch size depend on preprocesses([a43fd10](https://gitlab.com/eshard/scared/commit/a43fd10)), closes [#39](https://gitlab.com/eshard/scared/issues/39)
+
 ### <small>0.7.4 (2019-11-14)</small>
 
 * fix: backward and forward AES key expansion works starting from any round ([b4c90b8](https://gitlab.com/eshard/scared/commit/b4c90b8)), closes [#34](https://gitlab.com/eshard/scared/issues/34)
