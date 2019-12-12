@@ -249,3 +249,20 @@ def test_performance_container_str():
         times.append(toc - tic)
 
     assert max(times) / min(times) < 10, 'str representation of container takes too much time'
+
+
+def test_performance_container_batch_size(moderate_ths):
+    shapes = [(100_000, 10_000), (10_000, 10_000), (1_000, 10_000)]
+    times = []
+    for shape in shapes:
+        samples = np.empty(shape, dtype='uint8')
+        plaintext = np.empty((shape[0], 16), dtype='uint8')
+        ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+        c = scared.Container(ths)
+
+        tic = time.time()
+        c.batch_size
+        toc = time.time()
+        times.append(toc - tic)
+
+    assert max(times) / min(times) < 5, 'batch_size computation takes too much time'

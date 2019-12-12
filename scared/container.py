@@ -39,7 +39,7 @@ class Container:
         """Effective trace size after all preprocessed applied."""
         if self._trace_size is None:
             try:
-                wrapper = _TracesBatchWrapper(self._ths, self.frame, self.preprocesses)
+                wrapper = _TracesBatchWrapper(self._ths[0:1], self.frame, self.preprocesses)
                 self._trace_size = len(wrapper.samples[0])
             except TypeError:
                 self._trace_size = 1
