@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.8 (2019-12-12)</small>
+
+* fix: avoid loading too much traces for trace_size computation ([88fd69c](https://gitlab.com/eshard/scared/commit/88fd69c))
+
 ### <small>0.8.7 (2019-12-12)</small>
 
 * fix: container trace size and batch size depend on preprocesses ([8041375](https://gitlab.com/eshard/scared/commit/8041375))

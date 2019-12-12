@@ -28,7 +28,7 @@ build:pypi:
   script:
     - apt update && apt install -y gcc
     - pip install -U pip setuptools numpy
-    - python setup.py sdist bdist_wheel
+    - python setup.py sdist
   only:
     - tags
   artifacts:
