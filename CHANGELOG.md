@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.9 (2019-12-13)</small>
+
+* fix: avoid iterable conversion to list ([0b9957d](https://gitlab.com/eshard/scared/commit/0b9957d))
+
 ### <small>0.8.8 (2019-12-12)</small>
 
 * fix: avoid loading too much traces for trace_size computation ([88fd69c](https://gitlab.com/eshard/scared/commit/88fd69c))
