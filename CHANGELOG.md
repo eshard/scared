@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.10 (2019-12-16)</small>
+
+* fix: put back private compute batch size method on container ([eeb7e12](https://gitlab.com/eshard/scared/commit/eeb7e12))
+
 ### <small>0.8.9 (2019-12-13)</small>
 
 * fix: avoid iterable conversion to list ([0b9957d](https://gitlab.com/eshard/scared/commit/0b9957d))
