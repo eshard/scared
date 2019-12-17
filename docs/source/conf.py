@@ -16,9 +16,9 @@ copyright = '2019, eshard'
 author = 'eshard'
 
 # The short X.Y version
-version = '0.7.7'
+version = '0.7.8'
 # The full verson, including alpha/beta/rc tags
-release = '0.7.7'
+release = '0.7.8'
 
 
 # -- General configuration ---------------------------------------------------
