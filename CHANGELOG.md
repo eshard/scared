@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.11 (2019-12-17)</small>
+
+* fix: compute batch size private method working statically ([2cc26d8](https://gitlab.com/eshard/scared/commit/2cc26d8))
+
 ### <small>0.8.10 (2019-12-16)</small>
 
 * fix: put back private compute batch size method on container ([eeb7e12](https://gitlab.com/eshard/scared/commit/eeb7e12))
