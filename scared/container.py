@@ -69,7 +69,10 @@ class Container:
             (50001, 250),
             (100001, 100)
         ]
-        input_size = len(self._ths[0].samples[self.frame])
+        try:
+            input_size = len(self._ths[0].samples[self.frame])
+        except AttributeError:
+            input_size = 0
         max_size = max(trace_size, input_size)
         for i in range(len(ref_sizes)):
             try:
