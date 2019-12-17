@@ -189,6 +189,14 @@ def test_container_with_frame_compute_batch_size(ths):
     assert np.array_equal(b.samples, ths.samples[:s, :20])
 
 
+def test_container_compute_batch_size_static_call(ths):
+    s = scared.Container._compute_batch_size({}, trace_size=len(ths.samples[0, :20]))
+    assert isinstance(s, int)
+    c = scared.Container(ths, frame=slice(None, 20))
+    b = c.batches(batch_size=s)[0]
+    assert np.array_equal(b.samples, ths.samples[:s, :20])
+
+
 def test_container_with_multiple_preprocess_and_frame(ths):
     @scared.preprocess
     def square(traces):
