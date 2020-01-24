@@ -18,6 +18,6 @@ Scared - The side-channel analysis framework
     Authors <AUTHORS.md>
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
