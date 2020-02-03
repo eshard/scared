@@ -24,4 +24,4 @@
 > If relevant, you can suggest fixes
 
 /label ~"type:: bug" "status:: needs triage"
-/assign @remihuguet 
+/assign @roman.mkrtchian 

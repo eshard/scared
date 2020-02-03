@@ -15,4 +15,4 @@
 ## Relevant screenshots/logs/whatever material useful
 
 /label ~"type:: docs" "status:: needs triage"
-/assign @remihuguet 
+/assign @roman.mkrtchian 
