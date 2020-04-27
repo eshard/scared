@@ -17,7 +17,7 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
 
     def _accumulate(self, traces, data, bool_mask):
         logger.debug('Accumulate build distinguisher')
-        self._counters = _np.sum(bool_mask, axis=0)
+        self._counters += _np.sum(bool_mask, axis=0)
         self._exi += _np.dot(bool_mask.T, traces)
         for i, p in enumerate(self.partitions):
             tmp = traces[bool_mask[:, i]]
