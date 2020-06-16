@@ -41,7 +41,7 @@ class DistinguisherMixin(abc.ABC):
         try:
             self._origin_shape
         except AttributeError:
-            logger.debug(f'Initialize distinguisher state.')
+            logger.debug('Initialize distinguisher state.')
             self._origin_shape = o_shape
             logger.debug(f'Origin shape {self._origin_shape}')
             mem = psutil.virtual_memory().available / 2 ** 30
@@ -51,7 +51,7 @@ class DistinguisherMixin(abc.ABC):
         self._check(traces=traces, data=data)
 
         self.processed_traces += traces.shape[0]
-        logger.info(f'Will call _update traces.')
+        logger.info('Will call _update traces.')
         self._update(traces=traces, data=data)
 
     @abc.abstractmethod

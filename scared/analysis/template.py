@@ -53,7 +53,7 @@ class BaseTemplateAttack(BasePartitionedAttack):
         distinguishers.partitioned._set_partitions(self, partitions)
 
         if not isinstance(container_building, _container.Container):
-            raise TypeError(f'TemplateAttack must be instantiated with a `Container` instance for building phase.')
+            raise TypeError('TemplateAttack must be instantiated with a `Container` instance for building phase.')
         self.container_building = container_building
 
         self._build_analysis = _TemplateBuildAnalysis(
