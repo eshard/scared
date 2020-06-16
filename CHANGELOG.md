@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.8.12 (2020-06-16)</small>
+
+* fix: fix bug in template distinguisher ([f62f2d7](https://gitlab.com/eshard/scared/commit/f62f2d7))
+
 ### <small>0.8.11 (2019-12-17)</small>
 
 * fix: compute batch size private method working statically ([2cc26d8](https://gitlab.com/eshard/scared/commit/2cc26d8))
