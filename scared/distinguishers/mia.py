@@ -39,14 +39,14 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
     def _accumulate(self, traces, data, bool_mask):
         logger.info(f'Start accumulation for {self.__class__.__name__}.')
         if self.bin_edges is None:
-            logger.info(f'Start setting y_window and bin_edges.')
+            logger.info('Start setting y_window and bin_edges.')
             self.y_window = (_np.min(traces), _np.max(traces))
             self.bin_edges = _np.linspace(*self.y_window, self.bins_number + 1)
-            logger.info(f'Bin edges set.')
+            logger.info('Bin edges set.')
 
         bool_mask = bool_mask.astype('uint8')
         final_shape = (self.bins_number, len(self.partitions), self._data_words)
-        logger.info(f'Will start loop on samples.')
+        logger.info('Will start loop on samples.')
         for s in range(self._trace_length):
             logger.info(f'Start processing histograms for samples {s}.')
             histos = _np.apply_along_axis(
@@ -54,13 +54,13 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
                 axis=-1,
                 arr=traces[:, s: s + 1]
             ).astype(self.precision)
-            logger.info(f'Histograms computed, add to accumulators.')
+            logger.info('Histograms computed, add to accumulators.')
             logger.info(f'Histo shape {histos.shape} and dtype {histos.dtype}.')
             logger.info(f'Mask shape {bool_mask.shape} and dtype {bool_mask.dtype}.')
             dot_prod = _np.dot(histos.T, bool_mask)
-            logger.info(f'Dot product computed.')
+            logger.info('Dot product computed.')
             self.accumulators[s, :, :, :] += dot_prod.reshape(final_shape)
-            logger.info(f'Dot product added to accumulators.')
+            logger.info('Dot product added to accumulators.')
 
     def _compute_pdf(self, array, axis):
         s = array.sum(axis=axis)

@@ -82,7 +82,7 @@ class TTestAnalysis:
             logger.info(f'Start processing t-test on ths number {i}.')
             for batch in container.batches():
                 self.accumulators[i].update(batch.samples)
-                logger.info(f't-test iteration finished.')
+                logger.info('t-test iteration finished.')
             self.accumulators[i].compute()
 
         self._compute()
