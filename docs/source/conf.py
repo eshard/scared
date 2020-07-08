@@ -31,6 +31,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
+    'recommonmark',
 ]
 html_theme = "sphinx_rtd_theme"
 
