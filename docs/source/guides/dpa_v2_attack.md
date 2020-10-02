@@ -9,8 +9,95 @@ For this example, we will use the [DPA Contest v2](http://www.dpacontest.org/v2/
 
 In particular, you must download the raw traces of the public database DPA_contest2_public_base_diff_vcc_a128_2009_12_23.tar.bz2 archive.
 
-Let's assume we have a part of 20 000 traces of this database ready to use in the folder `dpa_v2_files/`. We will now create a `TraceHeaderSet` to study and analyse the trace set.
+### Download and extract traces data
 
+If you want to download them, execute the following command lines. <br />
+⚠ **Warning:** **3.5**GB split in 4 files.
+
+```python
+!wget -O dpa_v2.tar.bz2.part0 http://www.dpacontest.org/v2/data/traces/DPA_contest2_public_base_diff_vcc_a128_2009_12_23.tar.bz2.part0
+!wget -O dpa_v2.tar.bz2.part1 http://www.dpacontest.org/v2/data/traces/DPA_contest2_public_base_diff_vcc_a128_2009_12_23.tar.bz2.part1
+!wget -O dpa_v2.tar.bz2.part2 http://www.dpacontest.org/v2/data/traces/DPA_contest2_public_base_diff_vcc_a128_2009_12_23.tar.bz2.part2
+!wget -O dpa_v2.tar.bz2.part3 http://www.dpacontest.org/v2/data/traces/DPA_contest2_public_base_diff_vcc_a128_2009_12_23.tar.bz2.part3
+```
+
+Once downloaded, the 4 archive parts must be merged as follow:
+
+```python
+# Merge archive parts
+!cat dpa_v2.tar.bz2.part{0..3} > dpa_v2.tar.bz2
+```
+
+We can then extract the archive:
+
+```python
+!tar -xjf dpa_v2.tar.bz2
+```
+
+The extraction process can take long.
+The traces will be extracted into the `DPA_contest2_public_base_diff_vcc_a128_2009_12_23` directory (created during extraction).
+
+### Convert traces
+
+After extracting the archive of the public base, we obtained 640,000 '.csv' traces files that correspond to 32 subsets of 20,000 traces.
+What changes among those 32 subsets are the key used for encryption.
+For each trace, a random plaintext was generated for encryption.
+
+Here is the kind of file we have:
+
+`./DPA_contest2_public_base_diff_vcc_a128_2009_12_23/wave_aist-aes-agilent_2009-12-31_01-33-21_n=29479_k=13198a2e03707344a4093822299f31d0_m=8d4207d890f562309724374abde6e569_c=1ed272974f92997d97e2b4f680fee68c.csv`
+
+Each trace file has a constant sized header of 24 lines (or 627 hexadecimal characters) containing all the acquisition information.
+The trace measurements values are listed right after the header.
+
+For instance, you could want to save disk space by converting your `.csv` traces files to the binary format and drop the header.
+As the metadata will be important to perform the side-channel analysis (plaintext, ciphertext), you must extract them from the filenames.
+
+```python
+import re # Regular expressions
+
+def csv2bin(file, offset, type, newfile):
+    """ Convert '.csv' file to '.bin' file format 
+    
+    csv2bin converts a '.csv' input file containing one decimal value per line
+    into a '.bin' binary file.
+    """
+    src_file = open(file, 'r')
+    src_file.read(offset)
+    lines = src_file.readlines()
+    pt_list = []
+    
+    for line in lines:
+        pt_list.append(struct.pack(type, int(line[:-1], base=10)))
+    src_file.close()
+    
+    dest_file = open(newfile, 'wb')
+    for point in pt_list:
+        dest_file.write(point)
+    dest_file.close()
+
+def csv2bin_parallel_call(files, offset, type, reg):
+    """ Parallel convert '.csv' file to '.bin' file format."""
+    for file in files:
+        m = re.search(reg, file)
+        if m is None:
+            print(file)
+        else:
+            filename = file[:-3]+"bin"
+            Process(target=csv2bin, args=(file, offset,type,filename)).start()
+```
+
+```python
+# Executing the parallel conversion over all '.csv' files.
+regex = '([/a-zA-Z0-9_-]*)(n=[0-9]{1,5}_)([.=a-zA-Z0-9_-]*)'
+csv2bin_parallel_call(files, 627, 'h', regex)
+```
+
+### Load and visualize traces
+
+```bash
+pip install matplotlib
+```
 
 ```python
 import scared
@@ -29,31 +116,29 @@ metadata = {
 
 Then we create the trace set:
 
+⚠ **Warning:** It can takes **20GB** of RAM.
 
 ```python
-ths = scared.traces.read_ths_from_bin_filenames_pattern(
-    '../../../../dpa_v2_files/*.bin',
+full_ths = scared.traces.read_ths_from_bin_filenames_pattern(
+    './DPA_contest2_public_base_diff_vcc_a128_2009_12_23/*.bin',
     dtype='int16',
     metadatas_parsers=metadata
 )
-print(ths)
+print(full_ths)
 
 # Trace Header Set:
 # Name.............: BinFormat trace header set
-# Reader...........: Bin format reader with 20000 files, dtype int16
+# Reader...........: Bin format reader with 640000 files, dtype int16
 # key..............: uint8
 # plain............: uint8
 # cipher...........: uint8
 ```
 
-    Trace Header Set:
-    Name.............: BinFormat trace header set
-    Reader...........: Bin format reader with 20000 files, dtype int16
-    key..............: uint8
-    plain............: uint8
-    cipher...........: uint8
-    
+Since the traces corresponds to 32 subsets of 20,000 traces (One subset per key), we want to perfom the attack on only one subset.
 
+```python
+ths = full_ths[0:20000]  # Pick the first subset of traces
+```
 
 We can now study the traces. Here, the set contains 20 000 traces, with the same known key for all the traces, and plain and cipher for each trace.
 
