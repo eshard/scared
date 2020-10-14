@@ -1,5 +1,42 @@
 # Changelog
 
+### <small>0.8.13 (2020-10-14)</small>
+
+* maint: Add tests for python 3.8. ([22b0098e](https://gitlab.com/eshard/scared/-/commit/22b0098e90f8b875faee93c32b84b1cdd31a3934))
+* fix: Update example in readme. ([b22c49db](https://gitlab.com/eshard/scared/-/commit/b22c49db5cefba319ea32cefb1ea8f7be5670fa8))
+
+### <small>0.8.12 (2020-06-16)</small>
+
+* fix: fix bug in template distinguisher ([f62f2d7](https://gitlab.com/eshard/scared/commit/f62f2d7))
+
+### <small>0.8.11 (2019-12-17)</small>
+
+* fix: compute batch size private method working statically ([2cc26d8](https://gitlab.com/eshard/scared/commit/2cc26d8))
+
+### <small>0.8.10 (2019-12-16)</small>
+
+* fix: put back private compute batch size method on container ([eeb7e12](https://gitlab.com/eshard/scared/commit/eeb7e12))
+
+### <small>0.8.9 (2019-12-13)</small>
+
+* fix: avoid iterable conversion to list ([0b9957d](https://gitlab.com/eshard/scared/commit/0b9957d))
+
+### <small>0.8.8 (2019-12-12)</small>
+
+* fix: avoid loading too much traces for trace_size computation ([88fd69c](https://gitlab.com/eshard/scared/commit/88fd69c))
+
+### <small>0.8.7 (2019-12-12)</small>
+
+* fix: container trace size and batch size depend on preprocesses ([8041375](https://gitlab.com/eshard/scared/commit/8041375))
+* maint: add instructions for python 3.8 support ([09c3609](https://gitlab.com/eshard/scared/commit/09c3609))
+* maint: update CHANGELOG ([b93442c](https://gitlab.com/eshard/scared/commit/b93442c))
+* doc: improve README ([6b44dc5](https://gitlab.com/eshard/scared/commit/6b44dc5))
+
+### <small>0.8.6-doc</small> (2019-12-09)
+
+* maint: add instructions for python 3.8 support ([09c3609](https://gitlab.com/eshard/scared/commit/09c3609))
+* doc: improve README ([6b44dc5](https://gitlab.com/eshard/scared/commit/6b44dc5))
+
 ### <small>0.8.6 (2019-11-25)</small>
 
 * fix: documentation, pypi source build and conda build now working for C extension ([29dfb27](https://gitlab.com/eshard/scared/commit/29dfb27))

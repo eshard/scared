@@ -134,4 +134,4 @@ Python version:
 
 - 3.6
 - 3.7
-- 3.8 from `conda`, or buy building from sources.
+- 3.8
