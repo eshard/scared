@@ -4,8 +4,7 @@ from enum import Enum as _Enum
 import warnings as _warnings
 
 import numpy as _np
-
-from . import _c_find_peaks
+import numba as _nb
 
 
 def find_peaks(data, min_peak_distance, min_peak_height):
@@ -29,16 +28,30 @@ def find_peaks(data, min_peak_distance, min_peak_height):
         if not isinstance(min_peak_distance, float) and not isinstance(min_peak_distance, int):
             raise TypeError(f"'min_peak_distance' should be a float or int value, or numpy.inf, not {type(min_peak_distance)}.")
 
-    float_data = data.astype('float32')
-    float_result = _c_find_peaks.c_find_peaks(float_data, min_peak_distance, min_peak_height)
-    return float_result.astype(int)
+    dtype = _np.int64 if len(data) > 2**30 else _np.int32
+    tmp = _np.r_[True, data[1:] >= data[:-1]] & _np.r_[data[:-1] >= data[1:], True]
+    maximas = (_np.hstack(_np.where((data >= min_peak_height) & (tmp)))).astype(dtype)
+    return _find_peaks_numba_core(data, maximas, min_peak_distance)
+
+
+@_nb.njit()
+def _find_peaks_numba_core(data, maximas, min_peak_distance):
+    for i in  range(len(maximas)):
+        p = i
+        while p < (len(maximas) - 1) and abs(maximas[i] - maximas[p + 1]) < min_peak_distance:
+            p += 1
+            if data[maximas[i]] < data[maximas[p]]:
+                maximas[i] = -1
+            else:
+                maximas[p] = -1
+    return maximas[maximas > -1]
 
 
 class Direction(_Enum):
     r"""Direction for interval detection.
 
-    Positive: finds patterns with shape \_\_\_\|\-\-\|\_\_\_, then detects positive windows (humps) in signal.
-    Negative: finds patterns with shape \-\-\-\|\_\_\|\-\-\-, then detects negative windows (hollows) in signal.
+    Positive: finds patterns with shape ___|--|___, then detects positive windows (humps) in signal.
+    Negative: finds patterns with shape ---|__|---, then detects negative windows (hollows) in signal.
 
     """
 
