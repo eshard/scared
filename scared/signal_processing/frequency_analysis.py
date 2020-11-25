@@ -38,7 +38,7 @@ def fft(data, frequency, axis=-1):
     if not isinstance(frequency, float) and not isinstance(frequency, int):
         raise TypeError(f"'frequency' should be an of int or float type, not {type(frequency)}.")
     if frequency <= 0:
-        raise ValueError(f"'frequency' should be positive.")
+        raise ValueError("'frequency' should be positive.")
     if not isinstance(axis, int):
         TypeError(f"'axis' should be an of int type, not {type(axis)}.")
     if axis >= data.ndim or axis < -(data.ndim):

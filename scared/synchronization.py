@@ -162,7 +162,7 @@ class Synchronizer:
         self._err_counter = _ErrorCounter()
 
         with _no_stdout():
-            logger.info(f'Perform synchronization started.')
+            logger.info('Perform synchronization started.')
             logger.info(f'Number of iterations for the synchronization: {len(self.input_ths)}', {'nb_iterations': len(self.input_ths)})
             for i, trace_object in enumerate(self.input_ths):
                 logger.info(f'Start processing synchronization for trace number {i}.')

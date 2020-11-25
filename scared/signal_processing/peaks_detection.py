@@ -36,7 +36,7 @@ def find_peaks(data, min_peak_distance, min_peak_height):
 
 @_nb.njit()
 def _find_peaks_numba_core(data, maximas, min_peak_distance):
-    for i in  range(len(maximas)):
+    for i in range(len(maximas)):
         p = i
         while p < (len(maximas) - 1) and abs(maximas[i] - maximas[p + 1]) < min_peak_distance:
             p += 1

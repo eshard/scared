@@ -18,7 +18,7 @@ def _set_frames(obj, frame_1, frame_2):
 
 def _check_same_length_frames(frame_1, frame_2):
     if frame_1 is not None and frame_2 is not None and len(frame_1) != len(frame_2):
-        raise PreprocessError(f'This combination mode needs frame 1 and frame 2 to be provided and of the same length.')
+        raise PreprocessError('This combination mode needs frame 1 and frame 2 to be provided and of the same length.')
 
 
 def _point_to_point_frames_check(obj, frame_1, frame_2):

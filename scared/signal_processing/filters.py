@@ -59,7 +59,7 @@ def _butterworth_args_check(data, frequency, cutoff, filter_type, order, axis, p
     if not isinstance(frequency, int) and not isinstance(frequency, float):
         raise TypeError(f"'frequency' should be an of int or float type, not {type(frequency)}.")
     if frequency <= 0:
-        raise ValueError(f"'frequency' should be positive.")
+        raise ValueError("'frequency' should be positive.")
     if hasattr(cutoff, '__iter__'):
         cutoff = tuple(cutoff)
     else:
@@ -68,13 +68,13 @@ def _butterworth_args_check(data, frequency, cutoff, filter_type, order, axis, p
         if not isinstance(value, int) and not isinstance(value, float):
             raise TypeError(f"'cutoff' should be a value or a collection of values of int or float type, not {type(value)}.")
         if value <= 0:
-            raise ValueError(f"'cutoff' value(s) should be positive.")
+            raise ValueError("'cutoff' value(s) should be positive.")
     if not isinstance(filter_type, FilterType):
         raise TypeError(f"'filter_type' should be an of FilterType type, not {type(filter_type)}.")
     if not isinstance(order, int):
         raise TypeError(f"'order' should be an of int type, not {type(order)}.")
     if order <= 0:
-        raise ValueError(f"'order' should be positive.")
+        raise ValueError("'order' should be positive.")
     if not isinstance(axis, int):
         raise TypeError(f"'axis' should be an of int type, not {type(axis)}.")
     try:
@@ -101,6 +101,6 @@ def _signal_butter_wrapper(order, frequency, cutoff, filter_type):
 
     max_cutoff = _np.max(cutoff)
     if max_cutoff >= frequency / 2:
-        raise ValueError(f"'cutoff' should be lower than frequency/2.")
+        raise ValueError("'cutoff' should be lower than frequency/2.")
 
     return _signal.butter(order, cutoff / (frequency / 2), filter_type)

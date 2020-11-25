@@ -164,7 +164,7 @@ def _moving_argument_check(data, window_size, axis):
     if not isinstance(window_size, int):
         raise TypeError(f"'window_size' should be an of int or float type, not {type(window_size)}.")
     if window_size <= 0:
-        raise ValueError(f"'window_size' should be positive.")
+        raise ValueError("'window_size' should be positive.")
     if not isinstance(axis, int):
         TypeError(f"'axis' should be an of int type, not {type(axis)}.")
     if axis >= data.ndim or axis < -(data.ndim):

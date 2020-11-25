@@ -374,7 +374,7 @@ def get_master_key(round_key, nb_round, plaintext, expected_ciphertext):
     _is_bytes_of_len(plaintext, length=[8])
     _is_bytes_of_len(expected_ciphertext, length=[8])
     if not (round_key < 64).all():
-        raise ValueError(f'round_key should be a 8x6bit array, but it contains at least one value coded on more than 6 bits (> 63).')
+        raise ValueError('round_key should be a 8x6bit array, but it contains at least one value coded on more than 6 bits (> 63).')
     if not isinstance(nb_round, int):
         raise TypeError(f'nb_round must be an integer value, not a value of type {type(nb_round)}.')
     if nb_round < 0 or nb_round > 15:
@@ -941,9 +941,9 @@ class _ParametricCipher():
             if not isinstance(at_des, int):
                 raise TypeError(f'at_des must be an integer value, not {at_des}.')
             elif (key.shape[-1] == 8 or key.shape[-1] == 128) and at_des != 0:
-                raise ValueError(f'at_des can only be 0 if DES is used.')
+                raise ValueError('at_des can only be 0 if DES is used.')
             elif (key.shape[-1] == 16 or key.shape[-1] == 256 or key.shape[-1] == 24 or key.shape[-1] == 384) and at_des != 0 and at_des != 1 and at_des != 2:
-                raise ValueError(f'at_des can only be 0, 1 or 2 if TDES2 or TDES3 are used.')
+                raise ValueError('at_des can only be 0, 1 or 2 if TDES2 or TDES3 are used.')
             return at_des
         else:
             if key.shape[-1] == 8 or key.shape[-1] == 128:

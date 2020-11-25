@@ -14,7 +14,7 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
         maxdata = _np.nanmax(data)
         if self.partitions is None:
             if maxdata > 255:
-                raise ValueError(f'max value for intermediate data is greater than 255, you need to provide partitions explicitly at init.')
+                raise ValueError('max value for intermediate data is greater than 255, you need to provide partitions explicitly at init.')
             ls = [0, 9, 64, 256]
             for r in ls:
                 if maxdata <= r:
@@ -46,7 +46,7 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
                 part_bool=tmp_bool
             )
 
-        logger.info(f'Start accumulation of traces with boolean mask.')
+        logger.info('Start accumulation of traces with boolean mask.')
         self._accumulate(traces, data, bool_mask)
         logger.info(f'End of accumualtions of traces for {self.__class__.__name__}.')
 

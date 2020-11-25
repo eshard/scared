@@ -16,7 +16,7 @@ class _BaseAnalysis:
 
         """
         if not isinstance(self, distinguishers.DistinguisherMixin):
-            raise NotImplementedError(f'_BaseAnalysis class should be used in conjunction with a mixin class inheriting from DistinguisherMixin.')
+            raise NotImplementedError('_BaseAnalysis class should be used in conjunction with a mixin class inheriting from DistinguisherMixin.')
 
         distinguishers._initialize_distinguisher(self, precision=precision, processed_traces=0)
 
@@ -39,7 +39,7 @@ class _BaseAnalysis:
         return base_batch_size
 
     def _final_compute(self):
-        logger.info(f'Starting final computing.')
+        logger.info('Starting final computing.')
         self.compute_results()
 
     def run(self, container):
@@ -64,7 +64,7 @@ class _BaseAnalysis:
             self.process(batch)
             self._batch_loop_compute()
             logger.info(f'Process batch {i} iteration finished.')
-        logger.info(f'Batches processing finished.')
+        logger.info('Batches processing finished.')
         self._final_compute()
         logger.info(f'Run on container {container} finished.')
 
@@ -106,9 +106,9 @@ class _BaseAnalysis:
         This method is used internally by `run`, but can also be used to have a finer control on the process.
 
         """
-        logger.info(f'Computing results ...')
+        logger.info('Computing results ...')
         self.results = self.compute()
-        logger.info(f'Results computed.')
+        logger.info('Results computed.')
 
 
 class BaseAttack(_BaseAnalysis):
@@ -195,7 +195,7 @@ class BaseAttack(_BaseAnalysis):
             self._compute_convergence_traces()
 
     def _batch_loop_compute(self):
-        logger.info(f'Compute convergence results.')
+        logger.info('Compute convergence results.')
         if self.convergence_step:
             self._batches_processed.append(self.processed_traces)
             if self._batches_processed[-1] - self._batches_processed[0] >= self.convergence_step:
@@ -204,9 +204,9 @@ class BaseAttack(_BaseAnalysis):
                 self._compute_convergence_traces()
 
     def _compute_convergence_traces(self):
-        logger.info(f'Update convergence traces.')
+        logger.info('Update convergence traces.')
         if self.convergence_traces is None:
-            logger.info(f'Initialize convergence traces.')
+            logger.info('Initialize convergence traces.')
             self.convergence_traces = _np.empty(self.scores.shape + (0, ), dtype=self.precision)
         self.convergence_traces = _np.append(self.convergence_traces, self.scores[..., None], axis=-1)
 
@@ -218,7 +218,7 @@ class BaseAttack(_BaseAnalysis):
         """
         super().compute_results()
         self.scores = self.discriminant(self.results)
-        logger.info(f'Scores computed.')
+        logger.info('Scores computed.')
 
     def __str__(self):
         template_str = f'''Analysis informations:
