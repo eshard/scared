@@ -4,7 +4,6 @@ import sys
 
 from setuptools import setup
 from setuptools.command.test import test
-from setuptools import Extension
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +22,7 @@ class PyTest(test):
 
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
+
 
 setup(
     cmdclass={"test": PyTest}
