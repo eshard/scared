@@ -19,7 +19,6 @@ requirements:
     - wheel
     - pip
     - numpy
-    - cython
   run:
     - python {{python}}
     - numpy
@@ -27,7 +26,6 @@ requirements:
     - psutil
     - numba
     - scipy
-    - cython
 about:
   home: https://gitlab.com/eshard/scared
   license: GNU LGPL V3
