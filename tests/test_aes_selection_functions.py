@@ -29,17 +29,21 @@ def test_aes_encrypt_first_round_key_with_alternative_args():
         key_tag='thekey'
     )
     assert sf.guesses.tolist() == _alt_guesses.tolist()
-    assert sf.words == 6
+    assert sf.words == [6]
     assert sf.target_tag == 'plain'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
+
     data = np.random.randint(0, 255, (10, 16), dtype='uint8')
     expected = np.empty((10, len(_alt_guesses), 16), dtype='uint8')
+
     for i, guess in enumerate(_alt_guesses):
         expected[:, i, :] = np.bitwise_xor(data, guess)
-    assert np.array_equal(expected[:, :, 6], sf(plain=data))
+    assert np.array_equal(expected[:, :, 6], sf(plain=data)[:, :, 0])
+
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
+
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert isinstance(str(sf), str)
 
@@ -70,17 +74,21 @@ def test_aes_encrypt_last_round_key_with_alternative_args():
         key_tag='thekey'
     )
     assert sf.guesses.tolist() == _alt_guesses.tolist()
-    assert sf.words == 6
+    assert sf.words == [6]
     assert sf.target_tag == 'nop'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
+
     data = np.random.randint(0, 255, (10, 16), dtype='uint8')
     expected = np.empty((10, len(_alt_guesses), 16), dtype='uint8')
     for i, guess in enumerate(_alt_guesses):
         expected[:, i, :] = np.bitwise_xor(data, guess)
-    assert np.array_equal(expected[:, :, 6], sf(nop=data))
+
+    assert np.array_equal(expected[:, :, 6], sf(nop=data)[:, :, 0])
+
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
+
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert isinstance(str(sf), str)
 
@@ -243,18 +251,23 @@ def test_aes_decrypt_first_round_key_with_alternative_args():
         guesses=_alt_guesses,
         key_tag='thekey'
     )
+
     assert sf.guesses.tolist() == _alt_guesses.tolist()
-    assert sf.words == 6
+    assert sf.words == [6]
     assert sf.target_tag == 'cif'
     assert sf.key_tag == 'thekey'
     assert isinstance(sf, selection_functions.SelectionFunction)
+
     data = np.random.randint(0, 255, (10, 16), dtype='uint8')
     expected = np.empty((10, len(_alt_guesses), 16), dtype='uint8')
     for i, guess in enumerate(_alt_guesses):
         expected[:, i, :] = np.bitwise_xor(data, guess)
-    assert np.array_equal(expected[:, :, 6], sf(cif=data))
+
+    assert np.array_equal(expected[:, :, 6], sf(cif=data)[:, :, 0])
+
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[-1]
+
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert isinstance(str(sf), str)
 
@@ -285,16 +298,20 @@ def test_aes_decrypt_last_round_key_with_alternative_args():
         key_tag='thekey'
     )
     assert sf.guesses.tolist() == _alt_guesses.tolist()
-    assert sf.words == 6
+    assert sf.words == [6]
     assert sf.target_tag == 'nop'
     assert isinstance(sf, selection_functions.SelectionFunction)
+
     data = np.random.randint(0, 255, (10, 16), dtype='uint8')
     expected = np.empty((10, len(_alt_guesses), 16), dtype='uint8')
     for i, guess in enumerate(_alt_guesses):
         expected[:, i, :] = np.bitwise_xor(data, guess)
-    assert np.array_equal(expected[:, :, 6], sf(nop=data))
+
+    assert np.array_equal(expected[:, :, 6], sf(nop=data)[:, :, 0])
+
     master_key = np.random.randint(0, 255, (16,), dtype='uint8')
     expected_key = aes.key_schedule(master_key)[0]
+
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
     assert isinstance(str(sf), str)

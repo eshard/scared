@@ -9,7 +9,7 @@ class _TemplateBuildAnalysis(BasePartitionedReverse, distinguishers._TemplateBui
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not isinstance(self.selection_function.words, int):
+        if isinstance(self.selection_function.words, Ellipsis.__class__) or len(self.selection_function.words) != 1:
             raise _sf.base.SelectionFunctionError(
                 f'Selection function for template attack must return only 1 word of intermediate data.\
                 `selection_function.words` attribute must thus be an integer, not {self.selection_function.words}.'

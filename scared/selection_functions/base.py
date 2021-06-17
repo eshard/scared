@@ -32,6 +32,9 @@ class SelectionFunction:
         if words is not None and not isinstance(words, (int, slice, type(...), list, _np.ndarray)):
             raise TypeError(f'words should be instance of int, slice, Ellipsis, list or ndarray, not {type(words)}.')
 
+        if isinstance(words, int):
+            words = [words]
+
         if isinstance(words, list):
             words = _np.array(words, dtype='uint8')
 
