@@ -423,8 +423,9 @@ def test_dpa_template_matching_phase(sf, dpa_template_datas):
         ths=ths_matching
     )
     template.run(matching_cont)
-    assert np.allclose(template.results, dpa_template_datas.scores)
-    assert np.allclose(template.convergence_traces, dpa_template_datas.conv_traces)
+
+    assert np.allclose(template.results[:, 0, 0], dpa_template_datas.scores)
+    assert np.allclose(template.convergence_traces[:, 0, 0, :], dpa_template_datas.conv_traces)
 
 
 def test_dpa_template_matching_phase_raises_exception_if_incorrect_trace_size(sf, dpa_template_datas):
