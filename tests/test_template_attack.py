@@ -29,6 +29,15 @@ def ths():
 
 
 @pytest.fixture
+def long_ths():
+    shape = (25000, 3)
+    samples = np.random.randint(0, 256, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 256, (shape[0], 1), dtype='uint8')
+    return scared.traces.formats.read_ths_from_ram(samples=np.vstack((samples, samples)),
+                                                   plaintext=np.vstack((plaintext, plaintext)))
+
+
+@pytest.fixture
 def container(ths):
     return scared.Container(ths)
 
@@ -458,3 +467,23 @@ def test_dpa_template_matching_phase_raises_exception_if_incorrect_trace_size(sf
     )
     with pytest.raises(scared.DistinguisherError):
         template.run(matching_cont)
+
+
+def test_templates_correct_with_two_batches(long_ths):
+    # The ths is composed of two identical halves thus the templates should be the same
+    # with the whole ths or just the first half
+    sf = scared.selection_function(lambda plaintext: plaintext, words=0)
+    container1 = scared.Container(ths=long_ths[:25000])
+    template1 = scared.TemplateAttack(container_building=container1,
+                                      reverse_selection_function=sf,
+                                      model=scared.Value(),
+                                      convergence_step=1)
+    template1.build()
+    container2 = scared.Container(ths=long_ths)
+    template2 = scared.TemplateAttack(container_building=container2,
+                                      reverse_selection_function=sf,
+                                      model=scared.Value(),
+                                      convergence_step=1)
+    template2.build()
+
+    assert np.array_equiv(template1.templates, template2.templates)

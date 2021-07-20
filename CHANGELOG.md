@@ -1,5 +1,14 @@
 # Changelog
 
+### <small>0.8.13 (2020-10-14)</small>
+
+* maint: Add tests for python 3.8. ([22b0098e](https://gitlab.com/eshard/scared/-/commit/22b0098e90f8b875faee93c32b84b1cdd31a3934))
+* fix: Update example in redme. ([b22c49db](https://gitlab.com/eshard/scared/-/commit/b22c49db5cefba319ea32cefb1ea8f7be5670fa8))
+
+### <small>0.8.12 (2020-06-16)</small>
+
+* fix: fix bug in template distinguisher ([f62f2d7](https://gitlab.com/eshard/scared/commit/f62f2d7))
+
 ### <small>0.8.11 (2019-12-17)</small>
 
 * fix: compute batch size private method working statically ([2cc26d8](https://gitlab.com/eshard/scared/commit/2cc26d8))

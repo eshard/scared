@@ -17,9 +17,9 @@ copyright = '2019, eshard'
 author = 'eshard'
 
 # The short X.Y version
-version = '0.8.11'
+version = '0.8.12'
 # The full version, including alpha/beta/rc tags
-release = '0.8.11'
+release = '0.8.12'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +31,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
+    'recommonmark',
 ]
 html_theme = "sphinx_rtd_theme"
 

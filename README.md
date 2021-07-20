@@ -73,6 +73,7 @@ Start using scared by doing a cool thing:
 ```python
 # First import the lib
 import scared
+import numpy as np
 
 # Define a selection function
 @scared.attack_selection_function
@@ -89,7 +90,7 @@ a = scared.CPAAttack(
         discriminant=scared.maxabs)
 
 # Load some traces, for example a dpa v2 subset
-ths = scared.traces.read_ths_from_ets('dpa_v2.ets')
+ths = scared.traces.read_ths_from_ets_file('dpa_v2.ets')
 
 # Create a container for your ths
 container = scared.Container(ths)
@@ -133,4 +134,4 @@ Python version:
 
 - 3.6
 - 3.7
-- 3.8 from `conda`, or buy building from sources.
+- 3.8
