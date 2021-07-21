@@ -45,8 +45,7 @@ test:python38:
 build:pypi:src:
   stage: build
   script:
-    - apt update && apt install -y gcc
-    - pip install -U pip setuptools numpy
+    - pip install -U pip setuptools
     - python setup.py sdist
   only:
     - tags
@@ -54,18 +53,16 @@ build:pypi:src:
     paths:
       - "dist/*"
 
-
-build:pypi:linux_wheels:
-  image:
-    name: "quay.io/pypa/manylinux1_x86_64"
+build:pypi:wheel:
   stage: build
   script:
-    - ./build_wheels.sh
+    - pip install -U pip setuptools wheel
+    - python setup.py bdist_wheel
   only:
     - tags
   artifacts:
     paths:
-      - "wheelhouse/*.whl"
+      - "dist/*"
 
 deploy:pypi:
   stage: deploy
@@ -73,15 +70,13 @@ deploy:pypi:
     - tags
   when: manual
   script:
-    - conda install python=3.6 psutil cython numpy numba
     - pip install -U pip setuptools twine
-    - twine upload --repository-url $PYPI_REPOSITORY dist/* -u $PYPI_USERNAME -p $PYPI_PWD
-    - twine upload --repository-url $PYPI_REPOSITORY wheelhouse/* -u $PYPI_USERNAME -p $PYPI_PWD
+    - twine upload --repository-url $PYPI_REPOSITORY dist/*.tar.gz -u $PYPI_USERNAME -p $PYPI_PWD
+    - twine upload --repository-url $PYPI_REPOSITORY dyst/*.whl -u $PYPI_USERNAME -p $PYPI_PWD
 
 build:conda:
   stage: build
   script:
-    - apt update && apt install -y gcc
     - conda install conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
     - conda build --output-folder out .recipe
@@ -109,8 +104,7 @@ deploy:conda:
 pages:
   stage: build
   script:
-    - apt update && apt install -y gcc
-    - conda install python=3.6 psutil numpy cython
+    - conda install python=3.6 psutil
     - pip install -e .
     - cd docs
     - ./build_doc.sh
