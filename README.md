@@ -5,7 +5,7 @@
 [![Conda installer](https://anaconda.org/eshard/scared/badges/installer/conda.svg)](https://anaconda.org/eshard/scared)
 [![Latest Conda release](https://anaconda.org/eshard/scared/badges/latest_release_date.svg)](https://anaconda.org/eshard/scared)
 
-scared is a side-channel analysis framework.
+scared is a side-channel analysis framework maintained by eShard team.
 
 ## Getting started
 
