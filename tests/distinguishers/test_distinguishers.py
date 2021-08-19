@@ -86,8 +86,8 @@ def test_dpa_initialize_raises_exception_f_max_data_value_is_not_in_0_1():
 
 def test_dpa_initialize_raises_exception_if_accumulators_are_too_large():
     d = scared.DPADistinguisher(precision='float64')
-    data = np.random.randint(0, 1, (1, 1000000), dtype='uint8')
-    traces = np.random.randint(0, 255, (1, 1000000), dtype='uint8')
+    data = np.random.randint(0, 1, (1, 10000000), dtype='uint8')
+    traces = np.random.randint(0, 255, (1, 10000000), dtype='uint8')
     with pytest.raises(MemoryError):
         d._initialize(traces, data)
 
