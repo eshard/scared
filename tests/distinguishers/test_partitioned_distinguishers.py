@@ -84,7 +84,7 @@ def test_partitioned_analyses_init_initialize_accumulators():
 
 def test_partitioned_analyses_init_raises_error_if_accumulators_are_too_large_for_memory():
     d = DumbPartDistinguisher()
-    traces = np.random.randint(0, 255, (500, 200000), dtype='uint8')
+    traces = np.random.randint(0, 255, (500, 2000000), dtype='uint8')
     data = np.random.randint(0, 255, (500, 40096), dtype='uint8')
 
     with pytest.raises(MemoryError):
