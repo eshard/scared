@@ -96,7 +96,7 @@ This library is licensed under LGPL V3 license. See the [LICENSE](LICENSE) file 
 
 It is mainly intended for non-commercial use, by academics, students or professional willing to learn the basics of side-channel analysis.
 
-If you wish to use this library in a commercial or industrial context, eshard provides commercial licenses under fees. Contact us!
+If you wish to use this library in a commercial or industrial context, [eShard](https://www.eshard.com) provides commercial licenses under fees. Contact us!
 
 ## Authors
 
