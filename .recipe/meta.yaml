@@ -1,4 +1,4 @@
-{% set version = "0.8.13" %}
+{% set version = "0.9.1" %}
 
 package:
   name: scared
@@ -9,11 +9,10 @@ source:
 
 build:
   number: 1
-  noarch: python
 
 requirements:
   host:
-    - python
+    - python {{ python }}
     - setuptools>=40.0
     - wheel
     - pip
