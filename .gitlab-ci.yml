@@ -90,6 +90,7 @@ deploy:conda:
   stage: deploy
   script:
     - conda config --add channels $ANACONDA_CHANNEL
+    - conda update conda
     - conda install anaconda-client
     - anaconda login --username $ANACONDA_USERNAME --password $ANACONDA_PWD
     - anaconda upload out/*/scared*.tar.bz2
