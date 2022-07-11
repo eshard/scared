@@ -1,5 +1,9 @@
 # Changelog
 
+### <small>0.9.1 (2022-07-11)</small>
+* Changed mail support
+* Changed CI and version build
+
 ### <small>0.8.13 (2020-10-14)</small>
 
 * maint: Add tests for python 3.8. ([22b0098e](https://gitlab.com/eshard/scared/-/commit/22b0098e90f8b875faee93c32b84b1cdd31a3934))
