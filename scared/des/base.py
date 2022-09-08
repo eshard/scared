@@ -802,7 +802,7 @@ class _ParametricCipher():
         else:
             out_state = _np.array(state, dtype='uint8', copy=True)
 
-        self.total_words = _np.max([out_state.shape[0], des_keys.shape[1]])
+        self.total_words = max(out_state.shape[0], des_keys.shape[1])
         for des_number, des_rounds in enumerate(des_iterations):
             for round_number, round_operations in enumerate(des_rounds):
                 for step, operation in enumerate(round_operations):

@@ -86,7 +86,7 @@ class _CombinationFrameOnDistance(Preprocess, _BaseCombination):
     def _execute(self, chunk_1, chunk_2, result=None):
         cnt = 0
         for i in range(chunk_1.shape[1]):
-            end = _np.min([i + self.distance + 1, chunk_2.shape[1]]).astype('uint32')
+            end = min(i + self.distance + 1, chunk_2.shape[1])
             tmp2 = chunk_2[:, i:end]
             tmp1 = chunk_1[:, i]
             if result is not None:
