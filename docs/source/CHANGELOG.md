@@ -1,5 +1,12 @@
 # Changelog
 
+### <small>0.9.2 (2022-09-16)</small>
+* Resolve "Bug template attack selection function verification"
+* Resolve "Update CI image"
+* Resolve "optimization Second order preprocess with distance"
+* Replace np.min/max with python min/maxab
+* Fix lint
+
 ### <small>0.9.1 (2022-07-11)</small>
 * Changed mail support
 * Changed CI and version build
