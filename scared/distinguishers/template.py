@@ -47,6 +47,11 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
     def _distinguisher_str(self):
         return 'Template build'
 
+    def _check(self, traces, data):
+        if data.shape[1] != 1:
+            raise base.DistinguisherError(f'Intermediate data for template attack must return only 1 word after model, not {data.shape[1]}')
+        return super()._check(traces, data)
+
 
 class _BaseTemplateAttackDistinguisherMixin(base.DistinguisherMixin, partitioned.PartitionedDistinguisherBase):
 

@@ -209,18 +209,34 @@ def test_template_has_float32_dtype_default_precision(template_klass, sf, buildi
     assert s.precision == np.dtype('float32')
 
 
-def test_template_raises_exception_if_selection_function_returns_more_than_one_word(template_klass, building_container):
+def test_template_build_raises_exception_if_selection_function_returns_more_than_one_word(building_container):
     @scared.selection_function
-    def first_sub(key, data):
-        return scared.aes.encrypt(plaintext=data, key=key, at_round=1, after_step=scared.aes.Steps.SUB_BYTES)
+    def first_sub(key, plaintext):
+        return scared.aes.encrypt(plaintext=plaintext, key=key, at_round=1, after_step=scared.aes.Steps.SUB_BYTES)
 
-    with pytest.raises(scared.SelectionFunctionError):
-        template_klass(
+    with pytest.raises(scared.DistinguisherError, match='Intermediate data for template attack must return only 1 word'):
+        template_attack = scared.TemplateAttack(
             container_building=building_container,
             reverse_selection_function=first_sub,
             model=scared.Value(),
             selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes()
         )
+        template_attack.build()
+
+
+def test_template_dpa_build_raises_exception_if_selection_function_returns_more_than_one_word(building_container):
+    @scared.selection_function
+    def first_sub(key, plaintext):
+        return scared.aes.encrypt(plaintext=plaintext, key=key, at_round=1, after_step=scared.aes.Steps.SUB_BYTES)
+
+    with pytest.raises(scared.SelectionFunctionError, match='Selection function for TemplateDPA attack must return only 1 word of intermediate data.'):
+        template_attack = scared.TemplateDPAAttack(
+            container_building=building_container,
+            reverse_selection_function=first_sub,
+            model=scared.Value(),
+            selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes()
+        )
+        template_attack.build()
 
 
 def test_template_run_raises_exception_if_building_not_done(template_klass, sf, building_container, container):
@@ -487,3 +503,17 @@ def test_templates_correct_with_two_batches(long_ths):
     template2.build()
 
     assert np.array_equiv(template1.templates, template2.templates)
+
+
+def test_template_works_with_multiple_words_combined(building_container, sf, container):
+    nb_words = 4
+    rsf = scared.selection_function(lambda key: key, words=slice(0, nb_words))
+
+    template = scared.TemplateAttack(
+        container_building=building_container,
+        reverse_selection_function=rsf,
+        model=scared.HammingWeight(nb_words=4),
+        selection_function=sf
+    )
+    template.build()
+    template.run(container)
