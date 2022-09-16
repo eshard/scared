@@ -122,7 +122,6 @@ All developments should be compatible with **Python 3.6** and **3.7**.
 To develop, you'll need to support:
 
 - setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
-- a C compiler to compile C extension with Cython (see Cython documentation)
 
 To start runnning your test suite, you can install the library in development mode:
 

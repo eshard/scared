@@ -1,4 +1,4 @@
-image: conda/miniconda3
+image: continuumio/miniconda3
 
 stages:
   - lint
@@ -10,7 +10,7 @@ lint:
   stage: lint
   script:
     - apt update && apt install -y gcc
-    - conda install python=3.6 psutil
+    - conda install python=3.9 psutil
     - pip install .
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
@@ -20,7 +20,7 @@ test:python36:
   script:
     - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
-    - conda create -n env-python36 python=3.6 psutil pycrypto numpy cython
+    - conda create -n env-python36 python=3.6
     - conda activate env-python36
     - python setup.py test -v
 
@@ -29,7 +29,7 @@ test:python37:
   script:
     - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
-    - conda create -n env-python37 python=3.7 psutil pycrypto numpy cython
+    - conda create -n env-python37 python=3.7
     - conda activate env-python37
     - python setup.py test -v
 
@@ -38,8 +38,17 @@ test:python38:
   script:
     - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
-    - conda create -n env-python38 python=3.8 psutil pycrypto numpy cython
+    - conda create -n env-python38 python=3.8
     - conda activate env-python38
+    - python setup.py test -v
+
+test:python39:
+  stage: test
+  script:
+    - apt update && apt install -y gcc
+    - eval "$(conda shell.bash hook)"
+    - conda create -n env-python39 python=3.9
+    - conda activate env-python39
     - python setup.py test -v
 
 build:pypi:src:
