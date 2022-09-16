@@ -6,14 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class _TemplateBuildAnalysis(BasePartitionedReverse, distinguishers._TemplateBuildDistinguisherMixin):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not isinstance(self.selection_function.words, int):
-            raise _sf.base.SelectionFunctionError(
-                f'Selection function for template attack must return only 1 word of intermediate data.\
-                `selection_function.words` attribute must thus be an integer, not {self.selection_function.words}.'
-            )
+    pass
 
 
 class BaseTemplateAttack(BasePartitionedAttack):
@@ -150,4 +143,10 @@ class TemplateDPAAttack(BaseTemplateAttack, distinguishers.TemplateDPADistinguis
 
     """
 
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not isinstance(self.selection_function.words, int):
+            raise _sf.base.SelectionFunctionError(
+                f'Selection function for TemplateDPA attack must return only 1 word of intermediate data.\
+                `selection_function.words` attribute must thus be an integer, not {self.selection_function.words}.'
+            )
