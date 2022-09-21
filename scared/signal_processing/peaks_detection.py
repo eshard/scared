@@ -25,8 +25,8 @@ def find_peaks(data, min_peak_distance, min_peak_height):
     if min_peak_distance < 0:
         raise ValueError(f"'min_peak_distance' should be positive, but it is equal to {min_peak_distance}.")
     if _np.abs(min_peak_height) != _np.inf:
-        if not isinstance(min_peak_distance, float) and not isinstance(min_peak_distance, int):
-            raise TypeError(f"'min_peak_distance' should be a float or int value, or numpy.inf, not {type(min_peak_distance)}.")
+        if not isinstance(min_peak_height, float) and not isinstance(min_peak_height, int):
+            raise TypeError(f"'min_peak_height' should be a float or int value, or numpy.inf, not {type(min_peak_height)}.")
 
     dtype = _np.int64 if len(data) > 2**30 else _np.int32
     tmp = _np.r_[True, data[1:] >= data[:-1]] & _np.r_[data[:-1] >= data[1:], True]

@@ -111,6 +111,10 @@ def test_find_peaks_raises_exception_with_min_peak_height_not_being_int_type():
     data = np.random.randint(0, 10, 100)
     with pytest.raises(TypeError):
         scared.signal_processing.find_peaks(data, 1, "foo")
+    with pytest.raises(TypeError):
+        scared.signal_processing.find_peaks(data, 1, None)
+    with pytest.raises(TypeError):
+        scared.signal_processing.find_peaks(data, 1, {'foo': 'bar'})
 
 
 @pytest.fixture
