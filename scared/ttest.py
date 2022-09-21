@@ -1,9 +1,11 @@
-from . import distinguishers
+from scared.distinguishers.base import _set_precision
 from . import container as _container
+import threading as _th
 import numpy as _np
-import logging
+import numba as _nb
+import logging as _logging
 
-logger = logging.getLogger(__name__)
+logger = _logging.getLogger(__name__)
 
 
 class TTestContainer:
@@ -61,7 +63,8 @@ class TTestAnalysis:
             precision (:class:`numpy.dtype`, default=`float32`): precision which will be used for computations.
 
         """
-        self.accumulators = [TTestAccumulator(precision=precision), TTestAccumulator(precision=precision)]
+        _set_precision(self, precision)
+        self.accumulators = []
 
     def run(self, ttest_container):
         """Process traces wrapped by `ttest_container` and compute the result.
@@ -75,15 +78,28 @@ class TTestAnalysis:
         if not isinstance(ttest_container, TTestContainer):
             raise TypeError(f'ttest_container should be a type TTestContainer, not {type(ttest_container)}.')
 
-        nb_iterations = sum([max(int(len(cont._ths) / cont.batch_size), 1) for cont in ttest_container.containers])
+        if len(self.accumulators) == 0:
+            self.accumulators = [TTestThreadAccumulator(precision=self.precision), TTestThreadAccumulator(precision=self.precision)]
+        nb_iterations = len(ttest_container.containers[0].batches()) + len(ttest_container.containers[1].batches())
         logger.info(f'Start run t-test on container {ttest_container}, with {nb_iterations} iterations', {'nb_iterations': nb_iterations})
+
         for i in range(2):
-            container = ttest_container.containers[i]
-            logger.info(f'Start processing t-test on ths number {i}.')
-            for batch in container.batches():
-                self.accumulators[i].update(batch.samples)
-                logger.info('t-test iteration finished.')
-            self.accumulators[i].compute()
+            self.accumulators[i].start(ttest_container.containers[i])
+        try:
+            for accu in self.accumulators:
+                accu.join()
+                accu.compute()
+        finally:
+            # No way to test this piece of code, but tests in notebooks showed that all the code in the finally block is necessary.
+            for accu in self.accumulators:
+                accu.stop()
+                if accu._tstate_lock is not None:
+                    if accu._tstate_lock.locked():
+                        accu._tstate_lock.release()
+                try:
+                    accu.join()
+                except Exception:
+                    pass
 
         self._compute()
 
@@ -95,8 +111,13 @@ class TTestAnalysis:
         return 't-Test analysis'
 
 
-class TTestAccumulator:
+class TTestThreadAccumulator(_th.Thread):
     """Accumulator class used for t-test analysis.
+
+    It is a threaded accumulator that will process a complete container. Allows multiple accumulations to be launched in parallel.
+
+    Args:
+        precision (np.dtype or str): Data precision (dtype) to use.
 
     Attributes:
         processed_traces (int): number of traces processed
@@ -106,32 +127,85 @@ class TTestAccumulator:
         var (:class:`numpy.ndarray`): array containing variance of traces
 
     Methods:
-        update(traces): given a traces array, update the sum and sum_squared attributes.
+        run(): launch the accumulation on the given Container, in the main thread.
+        start(): launch the accumulation on the given Container, in a separated thread.
+        join(): wait end of thread processing and check for exception. Reraise if any.
         compute(): computes and stores the values of mean and var for the current values accumulated.
+        update(traces): given a traces array, update the sum and sum_squared attributes.
 
     """
 
     def __init__(self, precision):
-        distinguishers._initialize_distinguisher(self, precision=precision, processed_traces=0)
+        """Note: No tests are performed on inputs, delegated to parent TTest."""
+        self.processed_traces = 0
+        self.precision = precision
+        self.container = None
+        self._exception = None
+        self._stop_loop = False
 
     def _initialize(self, traces):
         self.sum = _np.zeros(traces.shape[-1], dtype=self.precision)
         self.sum_squared = _np.zeros(traces.shape[-1], dtype=self.precision)
 
+    @staticmethod
+    @_nb.njit(parallel=True, nogil=True)
+    def _update_core(traces, self_sum, self_sum_squared, precision):
+        for i in _nb.prange(traces.shape[1]):
+            # New array allocation is the faster way to change both dtype and data alignment.
+            tmp = _np.empty(traces.shape[0], dtype=precision)
+            tmp[:] = traces[:, i]
+            self_sum[i] += tmp.sum()
+            self_sum_squared[i] += tmp.T @ tmp
+
     def update(self, traces):
         if not isinstance(traces, _np.ndarray):
             raise TypeError(f'traces must be numpy ndarray, not {type(traces)}.')
-
-        traces = traces.astype(self.precision)
 
         try:
             self.sum
         except AttributeError:
             self._initialize(traces)
 
+        self._update_core(traces, self.sum, self.sum_squared, _np.dtype(self.precision))
         self.processed_traces += traces.shape[0]
-        self.sum += _np.sum(traces, axis=0)
-        self.sum_squared += _np.sum(traces ** 2, axis=0)
+
+    def stop(self):
+        """Inform the thread to stop at next batch processing."""
+        self._stop_loop = True
+
+    def run(self, container=None):
+        """Launch the accumulation on the given Container, in the main thread."""
+        self._exception = None
+        try:
+            self.container = container if container is not None else self.container
+            if not isinstance(self.container, _container.Container):
+                raise ValueError(f'Please give a Container, {type(self.container)} found.')
+            self._stop_loop = False
+            for batch in self.container.batches():
+                if self._stop_loop:
+                    return
+                samples = batch.samples[:]
+                self.update(samples)
+                logger.info('t-test iteration finished.')
+        except Exception as e:
+            self._exception = e
+        finally:
+            if self._exception and not self._initialized:
+                raise self._exception
+
+    def start(self, container):
+        """Launch the accumulation on the given Container, in a separated thread."""
+        if self._initialized and self.is_alive():
+            raise RuntimeError('Thread is already running. Use the `join` method before starting again.')
+        super().__init__(daemon=True)
+        self.container = container
+        super().start()
+
+    def join(self):
+        """Wait end of thread processing and check for exception. Reraise if any."""
+        super().join()
+        if self._exception is not None:
+            raise self._exception
 
     def compute(self):
         try:

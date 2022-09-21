@@ -16,7 +16,7 @@ from .distinguishers import (  # noqa: F401
     NICVDistinguisherMixin, NICVDistinguisher, SNRDistinguisherMixin, SNRDistinguisher,
     MIADistinguisher, TemplateAttackDistinguisherMixin
 )
-from .ttest import TTestAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
+from .ttest import TTestThreadAccumulator, TTestAnalysis, TTestError, TTestContainer  # noqa:F401
 from .analysis import (  # noqa:F401
     BaseAttack, CPAAttack, DPAAttack,
     ANOVAAttack, NICVAttack, SNRAttack,
