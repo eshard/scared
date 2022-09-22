@@ -13,13 +13,13 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'scared'
-copyright = '2019, eshard'
+copyright = '2019-2022, eshard'
 author = 'eshard'
 
 # The short X.Y version
-version = '0.8.12'
+version = '0.9.1'
 # The full version, including alpha/beta/rc tags
-release = '0.8.12'
+release = '0.9.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,7 +31,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
-    'recommonmark',
+    'myst_parser',
 ]
 html_theme = "sphinx_rtd_theme"
 
@@ -51,9 +51,6 @@ templates_path = ['_templates']
 #
 source_suffix = ['.rst', '.md']
 
-source_parsers = {
-    '.md': 'recommonmark.parser.CommonMarkParser',
-}
 
 # The master toctree document.
 master_doc = 'index'

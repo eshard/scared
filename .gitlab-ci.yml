@@ -115,6 +115,7 @@ pages:
   stage: build
   script:
     - conda install python=3.6 psutil
+    - conda install -c conda-forge myst-parser
     - pip install -e .
     - cd docs
     - ./build_doc.sh
