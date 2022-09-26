@@ -1,16 +1,9 @@
 from .partitioned import PartitionedDistinguisherBase, _PartitionnedDistinguisherBaseMixin
 import numpy as _np
+import numba as _nb
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-def _is_valid_bin_edges(bin_edges):
-    return (
-        bin_edges is not None and isinstance(
-            bin_edges, (list, _np.ndarray, range)
-        ) and len(bin_edges) > 1 and all(a < b for a, b in zip(bin_edges, bin_edges[1:]))
-    )
 
 
 class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
@@ -25,42 +18,58 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
 
     @bin_edges.setter
     def bin_edges(self, bin_edges):
-        if not _is_valid_bin_edges(bin_edges):
-            raise TypeError(f'{bin_edges} bins are not valid bins.')
+        if bin_edges is None or not isinstance(bin_edges, (list, _np.ndarray, range)):
+            raise TypeError(f'bin_edges must be a ndarray, a list or a range, not {type(bin_edges)}.')
+        if len(bin_edges) <= 1:
+            raise ValueError(f'bin_edges length must be >1, but {len(bin_edges)}, found.')
+        if not isinstance(bin_edges, _np.ndarray):
+            bin_edges = _np.array(bin_edges, dtype='float64')
+        for a, b in zip(bin_edges, bin_edges[1:]):
+            if not a < b:
+                raise ValueError(f'bin_edges must be sorted, but {a} >= {b}.')
+        if _np.sum(_np.diff(_np.diff(bin_edges))) > 1e-9:
+            raise ValueError('bin_edges must be uniform (i.e with bins equally spaced.')
         self._bin_edges = bin_edges
         self.bins_number = len(bin_edges) - 1
 
-    def _initialize_accumulators(self):
-        self.accumulators = _np.zeros(
-            (self._trace_length, self.bins_number, len(self.partitions), self._data_words),
-            dtype=self.precision
-        )
+    def _set_precision(self, precision):
+        try:
+            precision = _np.dtype(precision)
+        except TypeError:
+            raise TypeError(f'precision should be a valid dtype, not {precision}.')
+        self.precision = precision
 
-    def _accumulate(self, traces, data, bool_mask):
-        logger.info(f'Start accumulation for {self.__class__.__name__}.')
+    def _initialize_accumulators(self):
+        self.accumulators = _np.zeros((self._trace_length, self.bins_number, len(self.partitions), self._data_words),
+                                      dtype=self.precision)
+
+    @staticmethod
+    @_nb.njit(parallel=True)
+    def _accumulate_core(traces, data, self_bin_edges, self_accumulators):
+        nbins = len(self_bin_edges) - 1
+        min_edge = self_bin_edges[0]
+        max_edge = self_bin_edges[-1]
+        norm = nbins / (max_edge - min_edge)
+
+        for sample_idx in _nb.prange(traces.shape[1]):
+            for trace_idx in range(traces.shape[0]):
+                x = traces[trace_idx, sample_idx]
+                if x >= min_edge and x < max_edge:
+                    bin_idx = int((x - min_edge) * norm)
+                elif x == max_edge:
+                    bin_idx = nbins - 1
+                else:
+                    continue
+                for data_idx in range(data.shape[1]):
+                    self_accumulators[sample_idx, bin_idx, data[trace_idx, data_idx], data_idx] += 1
+
+    def _accumulate(self, traces, data):
         if self.bin_edges is None:
             logger.info('Start setting y_window and bin_edges.')
             self.y_window = (_np.min(traces), _np.max(traces))
             self.bin_edges = _np.linspace(*self.y_window, self.bins_number + 1)
             logger.info('Bin edges set.')
-
-        bool_mask = bool_mask.astype('uint8')
-        final_shape = (self.bins_number, len(self.partitions), self._data_words)
-        logger.info('Will start loop on samples.')
-        for s in range(self._trace_length):
-            logger.info(f'Start processing histograms for samples {s}.')
-            histos = _np.apply_along_axis(
-                lambda a: _np.histogram(a, bins=self.bin_edges)[0],
-                axis=-1,
-                arr=traces[:, s: s + 1]
-            ).astype(self.precision)
-            logger.info('Histograms computed, add to accumulators.')
-            logger.info(f'Histo shape {histos.shape} and dtype {histos.dtype}.')
-            logger.info(f'Mask shape {bool_mask.shape} and dtype {bool_mask.dtype}.')
-            dot_prod = _np.dot(histos.T, bool_mask)
-            logger.info('Dot product computed.')
-            self.accumulators[s, :, :, :] += dot_prod.reshape(final_shape)
-            logger.info('Dot product added to accumulators.')
+        self._accumulate_core(traces, data, self.bin_edges, self.accumulators)
 
     def _compute_pdf(self, array, axis):
         s = array.sum(axis=axis)
@@ -101,6 +110,6 @@ def _set_histogram_parameters(obj, bins_number, bin_edges):
 
 class MIADistinguisher(PartitionedDistinguisherBase, MIADistinguisherMixin):
 
-    def __init__(self, bins_number=128, bin_edges=None, partitions=None, precision='float32'):
+    def __init__(self, bins_number=128, bin_edges=None, partitions=None, precision='uint32'):
         _set_histogram_parameters(self, bins_number=bins_number, bin_edges=bin_edges)
         return super().__init__(partitions=partitions, precision=precision)

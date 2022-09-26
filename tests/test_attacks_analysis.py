@@ -464,8 +464,6 @@ def test_partitioned_analysis_raises_exception_if_incorrect_partition(sf, partit
         partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions='foo')
     with pytest.raises(TypeError):
         partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions={})
-    with pytest.raises(TypeError):
-        partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=[1, 23])
     with pytest.raises(ValueError):
         partitioned_klass(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs, partitions=np.array([1.2, 3]))
 

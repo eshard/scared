@@ -1,8 +1,10 @@
 from .base import DistinguisherMixin, _StandaloneDistinguisher
 import numpy as _np
-import logging
+import numba as _nb
+import time as _time
+import logging as _logging
 
-logger = logging.getLogger(__name__)
+logger = _logging.getLogger(__name__)
 
 
 class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
@@ -12,16 +14,20 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
 
     def _initialize(self, traces, data):
         maxdata = _np.nanmax(data)
+        mindata = _np.nanmin(data)
         if self.partitions is None:
             if maxdata > 255:
                 raise ValueError('max value for intermediate data is greater than 255, you need to provide partitions explicitly at init.')
+            if mindata < 0:
+                raise ValueError('min value for intermediate data is lower than 0, you need to provide partitions explicitly at init.')
             ls = [0, 9, 64, 256]
             for r in ls:
                 if maxdata <= r:
                     break
-            self.partitions = range(r)
+            self.partitions = _np.arange(r, dtype='int32')
         self._trace_length = traces.shape[1]
         self._data_words = data.shape[1]
+        self._data_to_partition_index = _define_lut_func(self.partitions)
         self._initialize_accumulators()
 
     def _update(self, traces, data):
@@ -30,28 +36,29 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
         if data.shape[1] != self._data_words:
             raise ValueError(f'data has different number of data words {data.shape[1]} than already processed data {self._data_words}.')
 
-        traces = traces.astype(self.precision)
-        data = data.astype(self.precision)
-
         logger.info(f'Update of partitioned distinguisher {self.__class__.__name__} in progress.')
-
-        bool_mask = _np.empty((traces.shape[0], 0), dtype=bool)
-        for j, partition in enumerate(self.partitions):
-            logger.info(f'Start processing partition {j} for boolean mask.')
-            tmp_bool = data == partition
-            bool_mask = _np.append(bool_mask, tmp_bool, axis=1)
-            self._accumulate_partition(
-                partition_indice=j,
-                partition_value=partition,
-                part_bool=tmp_bool
-            )
-
-        logger.info('Start accumulation of traces with boolean mask.')
-        self._accumulate(traces, data, bool_mask)
+        data = self._data_to_partition_index(data)
+        self._accumulate(traces, data)
         logger.info(f'End of accumualtions of traces for {self.__class__.__name__}.')
 
-    def _accumulate_partition(self, partition_indice, partition_value, part_bool):
-        pass
+
+@_nb.njit()
+def _build_lut(partitions):
+    lut = _np.zeros(2**17, dtype='int32') - 1
+    for i in _np.arange(len(partitions)):
+        lut[partitions[i]] = i
+    return lut
+
+
+def _define_lut_func(partitions):
+    lut = _build_lut(partitions)
+
+    @_nb.vectorize([_nb.int32(_nb.uint8), _nb.int32(_nb.uint16), _nb.int32(_nb.uint32),
+                    _nb.int32(_nb.int8), _nb.int32(_nb.int16), _nb.int32(_nb.int32)])
+    def _lut_function(x):
+        return lut[x]
+
+    return _lut_function
 
 
 class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
@@ -73,16 +80,49 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
         self.sum_square = _np.zeros((self._trace_length, self._data_words, len(self.partitions)), dtype=self.precision)
         self.counters = _np.zeros((self._data_words, len(self.partitions)), dtype=self.precision)
 
-    def _accumulate(self, traces, data, bool_mask):
-        self.sum += _np.dot(traces.T, bool_mask).reshape(
-            (traces.shape[1], data.shape[1], len(self.partitions)), order='F'
-        )
-        self.sum_square += _np.dot((traces ** 2).T, bool_mask).reshape(
-            (traces.shape[1], data.shape[1], len(self.partitions)), order='F'
-        )
+    @staticmethod
+    @_nb.njit(parallel=True)
+    def _accumulate_core_1(traces, data, self_sum, self_sum_square, self_counters, self_precision):
+        for sample_idx in _nb.prange(traces.shape[1]):
+            for trace_idx in range(traces.shape[0]):
+                x = traces[trace_idx, sample_idx]
+                xx = x * x
+                for data_idx in range(data.shape[1]):
+                    data_value = data[trace_idx, data_idx]
+                    if data_value != -1:
+                        self_sum[sample_idx, data_idx, data_value] += x
+                        self_sum_square[sample_idx, data_idx, data_value] += xx
+                        if sample_idx == 0:
+                            self_counters[data_idx, data_value] += 1
 
-    def _accumulate_partition(self, partition_indice, partition_value, part_bool):
-        self.counters[:, partition_indice] += _np.sum(part_bool, axis=0)
+    @staticmethod
+    @_nb.njit(parallel=True)
+    def _accumulate_core_2(traces, data, self_sum, self_sum_square, self_counters, self_precision):
+        """Faster when number of partitions is <=9."""
+        ftraces = traces.astype(self_precision)
+        bool_mask = _np.empty((traces.shape[0], data.shape[1] * self_counters.shape[1]), dtype=self_precision)
+        for p in range(self_counters.shape[1]):
+            tmp_bool = data == p  # Data are already transformed to correspond to partition indexes.
+            self_counters[:, p] += tmp_bool.sum(0)
+            bool_mask[:, p * data.shape[1]:(p + 1) * data.shape[1]] = tmp_bool
+        self_sum += (bool_mask.T @ ftraces).reshape(self_counters.shape[1], data.shape[1], traces.shape[1]).T
+        self_sum_square += (bool_mask.T @ (ftraces ** 2)).reshape(self_counters.shape[1], data.shape[1], traces.shape[1]).T
+
+    def _accumulate(self, traces, data):
+        """If the number of partitions is >9, the method 1 is selected.
+
+        Otherwise, the fastest method is selected empirically.
+        """
+        if len(self.partitions) > 9:
+            self._accumulate_core_1(traces, data, self.sum, self.sum_square, self.counters, self.precision)
+        else:
+            if not hasattr(self, '_timings'):
+                self._timings = [-2, -1]
+            function_idx = _np.argmin(self._timings)
+            function = [self._accumulate_core_1, self._accumulate_core_2][function_idx]
+            t0 = _time.process_time()
+            function(traces, data, self.sum, self.sum_square, self.counters, self.precision)
+            self._timings[function_idx] = _time.process_time() - t0
 
     def _compute(self):
         self.sum = self.sum.swapaxes(0, 1)
@@ -111,9 +151,11 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
 
 def _set_partitions(obj, partitions):
     if partitions is not None:
+        if not isinstance(partitions, (_np.ndarray, list, range)):
+            raise TypeError(f'partitions should be a ndarray, list or range instance, not {type(partitions)}.')
         if not isinstance(partitions, _np.ndarray):
-            raise TypeError(f'partitions should be a Numpy ndarray instance, not {type(partitions)}.')
-        if not partitions.dtype.kind == 'i':
+            partitions = _np.array(partitions, dtype='int32')
+        elif partitions.dtype.kind not in 'iu':
             raise ValueError(f'partitions should be an integer array, not {partitions.dtype}.')
     obj.partitions = partitions
 
