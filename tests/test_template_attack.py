@@ -148,14 +148,6 @@ def test_template_analysis_raises_exception_if_incorrect_partition(template_klas
             partitions={},
             selection_function=sf
         )
-    with pytest.raises(TypeError):
-        template_klass(
-            container_building=building_container,
-            reverse_selection_function=sf,
-            model=scared.HammingWeight(),
-            partitions=[1, 23],
-            selection_function=sf
-        )
     with pytest.raises(ValueError):
         template_klass(
             container_building=building_container,
@@ -250,71 +242,80 @@ def test_template_run_raises_exception_if_building_not_done(template_klass, sf, 
         template.run(container)
 
 
-def test_template_build_phase(sf, template_datas):
+def test_template_build_phase_method_1(sf, template_datas):
     ths_building = scared.traces.formats.read_ths_from_ram(
         template_datas.building_samples,
         plaintext=template_datas.building_plaintext,
-        key=np.array(
-            [
-                template_datas.building_key for i in range(
-                    len(template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        model=scared.Value()
-    )
+        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value())
+    template._build_analysis._accumulate_core_2 = template._build_analysis._accumulate_core_1
     template.build()
+
     assert np.array_equal(template._build_analysis._exi, template_datas.exi)
     assert np.array_equal(template._build_analysis._counters, template_datas.counters)
+
     assert np.array_equal(template._build_analysis._exxi, template_datas.exxi)
     assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov)
     assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, )
     assert np.array_equal(template.templates, template_datas.templates)
 
 
+def test_template_build_phase_method_2(sf, template_datas):
+    ths_building = scared.traces.formats.read_ths_from_ram(
+        template_datas.building_samples,
+        plaintext=template_datas.building_plaintext,
+        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value())
+    template._build_analysis._accumulate_core_1 = template._build_analysis._accumulate_core_2
+    template.build()
+
+    assert np.array_equal(template._build_analysis._exi, template_datas.exi)
+    assert np.array_equal(template._build_analysis._counters, template_datas.counters)
+
+    assert np.array_equal(template._build_analysis._exxi, template_datas.exxi)
+    assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov)
+    assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, )
+    assert np.array_equal(template.templates, template_datas.templates)
+
+
+def test_template_build_timings_updated(sf, template_datas):
+    ths_building = scared.traces.formats.read_ths_from_ram(
+        template_datas.building_samples,
+        plaintext=template_datas.building_plaintext,
+        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value())
+    template._build_analysis._timings = [-2, -1]
+    template.build()
+    assert template._build_analysis._timings[0] > 0
+
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value())
+    template._build_analysis._timings = [-2, -3]
+    template.build()
+    assert template._build_analysis._timings[1] > 0
+
+
 def test_template_matching_phase(sf, template_datas):
     ths_building = scared.traces.formats.read_ths_from_ram(
         template_datas.building_samples,
         plaintext=template_datas.building_plaintext,
-        key=np.array(
-            [
-                template_datas.building_key for i in range(
-                    len(template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        model=scared.Value(),
-        convergence_step=1
-    )
+        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value(), convergence_step=1)
     template.build()
     ths_matching = scared.traces.formats.read_ths_from_ram(
         template_datas.matching_samples,
         plaintext=template_datas.matching_plaintext,
-        key=np.array(
-            [
-                template_datas.matching_key for i in range(
-                    len(template_datas.matching_samples)
-                )
-            ]
-        )
-    )
-    matching_cont = scared.Container(
-        ths=ths_matching
-    )
+        key=np.array([template_datas.matching_key for i in range(len(template_datas.matching_samples))]))
+    matching_cont = scared.Container(ths=ths_matching)
     template.run(matching_cont)
     assert np.allclose(template.results, template_datas.scores)
     assert np.allclose(template.convergence_traces, template_datas.conv_traces)
@@ -324,75 +325,60 @@ def test_template_matching_phase_raises_exception_if_incorrect_trace_size(sf, te
     ths_building = scared.traces.formats.read_ths_from_ram(
         template_datas.building_samples,
         plaintext=template_datas.building_plaintext,
-        key=np.array(
-            [
-                template_datas.building_key for i in range(
-                    len(template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        model=scared.Value(),
-        convergence_step=1
-    )
+        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
+                                     model=scared.Value(), convergence_step=1)
     template.build()
     ths_matching = scared.traces.formats.read_ths_from_ram(
         template_datas.matching_samples,
         plaintext=template_datas.matching_plaintext,
-        key=np.array(
-            [
-                template_datas.matching_key for i in range(
-                    len(template_datas.matching_samples)
-                )
-            ]
-        )
-    )
-    matching_cont = scared.Container(
-        ths=ths_matching,
-        frame=slice(0, 10)
-    )
+        key=np.array([template_datas.matching_key for i in range(len(template_datas.matching_samples))]))
+    matching_cont = scared.Container(ths=ths_matching, frame=slice(0, 10))
     with pytest.raises(scared.DistinguisherError):
         template.run(matching_cont)
 
 
 def test_template_dpa_raises_exceptions_if_matching_sf_is_not_an_attack_selection_function(sf, building_container):
     with pytest.raises(TypeError):
-        scared.TemplateDPAAttack(
-            container_building=building_container,
-            reverse_selection_function=sf,
-            selection_function='foo',
-            model=scared.HammingWeight()
-        )
+        scared.TemplateDPAAttack(container_building=building_container, reverse_selection_function=sf,
+                                 selection_function='foo', model=scared.HammingWeight())
 
 
 def test_dpa_template_build_phase(sf, dpa_template_datas):
     ths_building = scared.traces.formats.read_ths_from_ram(
         dpa_template_datas.building_samples,
         plaintext=dpa_template_datas.building_plaintext,
-        key=np.array(
-            [
-                dpa_template_datas.building_key for i in range(
-                    len(dpa_template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateDPAAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
-        model=scared.HammingWeight()
-    )
+        key=np.array([dpa_template_datas.building_key for i in range(len(dpa_template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateDPAAttack(container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=scared.HammingWeight())
     template.build()
+    assert np.array_equal(template._build_analysis._exi, dpa_template_datas.exi)
+    assert np.array_equal(template._build_analysis._counters, dpa_template_datas.counters)
+    assert np.array_equal(template._build_analysis._exxi, dpa_template_datas.exxi)
+    assert np.allclose(template._build_analysis.pooled_covariance, dpa_template_datas.pooled_cov)
+    assert np.allclose(template._build_analysis.pooled_covariance_inv, dpa_template_datas.pooled_cov_inv, )
+    assert np.array_equal(template.templates, dpa_template_datas.templates)
+
+
+def test_dpa_template_build_phase_with_sparse_partitions(sf, dpa_template_datas):
+    ths_building = scared.traces.formats.read_ths_from_ram(
+        dpa_template_datas.building_samples,
+        plaintext=dpa_template_datas.building_plaintext,
+        key=np.array([dpa_template_datas.building_key for i in range(len(dpa_template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+
+    class DoubleHW(scared.HammingWeight):
+        def __call__(self, data):
+            return 2 * super().__call__(data)
+
+    template = scared.TemplateDPAAttack(partitions=range(0, 18, 2), container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=DoubleHW())
+    template.build()
+    assert np.array_equal(template.partitions, np.arange(0, 18, 2))
     assert np.array_equal(template._build_analysis._exi, dpa_template_datas.exi)
     assert np.array_equal(template._build_analysis._counters, dpa_template_datas.counters)
     assert np.array_equal(template._build_analysis._exxi, dpa_template_datas.exxi)
@@ -405,39 +391,17 @@ def test_dpa_template_matching_phase(sf, dpa_template_datas):
     ths_building = scared.traces.formats.read_ths_from_ram(
         dpa_template_datas.building_samples,
         plaintext=dpa_template_datas.building_plaintext,
-        key=np.array(
-            [
-                dpa_template_datas.building_key for i in range(
-                    len(dpa_template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateDPAAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
-        model=scared.HammingWeight(),
-        convergence_step=1
-    )
+        key=np.array([dpa_template_datas.building_key for i in range(len(dpa_template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateDPAAttack(container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=scared.HammingWeight(), convergence_step=1)
     template.build()
     ths_matching = scared.traces.formats.read_ths_from_ram(
         dpa_template_datas.matching_samples,
         plaintext=dpa_template_datas.matching_plaintext,
-        key=np.array(
-            [
-                dpa_template_datas.matching_key for i in range(
-                    len(dpa_template_datas.matching_samples)
-                )
-            ]
-        )
-    )
-    matching_cont = scared.Container(
-        ths=ths_matching
-    )
+        key=np.array([dpa_template_datas.matching_key for i in range(len(dpa_template_datas.matching_samples))]))
+    matching_cont = scared.Container(ths=ths_matching)
     template.run(matching_cont)
     assert np.allclose(template.results, dpa_template_datas.scores)
     assert np.allclose(template.convergence_traces, dpa_template_datas.conv_traces)
@@ -447,40 +411,17 @@ def test_dpa_template_matching_phase_raises_exception_if_incorrect_trace_size(sf
     ths_building = scared.traces.formats.read_ths_from_ram(
         dpa_template_datas.building_samples,
         plaintext=dpa_template_datas.building_plaintext,
-        key=np.array(
-            [
-                dpa_template_datas.building_key for i in range(
-                    len(dpa_template_datas.building_samples)
-                )
-            ]
-        )
-    )
-    building_cont = scared.Container(
-        ths=ths_building
-    )
-    template = scared.TemplateDPAAttack(
-        container_building=building_cont,
-        reverse_selection_function=sf,
-        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
-        model=scared.HammingWeight(),
-        convergence_step=1
-    )
+        key=np.array([dpa_template_datas.building_key for i in range(len(dpa_template_datas.building_samples))]))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateDPAAttack(container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=scared.HammingWeight(), convergence_step=1)
     template.build()
     ths_matching = scared.traces.formats.read_ths_from_ram(
         dpa_template_datas.matching_samples,
         plaintext=dpa_template_datas.matching_plaintext,
-        key=np.array(
-            [
-                dpa_template_datas.matching_key for i in range(
-                    len(dpa_template_datas.matching_samples)
-                )
-            ]
-        )
-    )
-    matching_cont = scared.Container(
-        ths=ths_matching,
-        frame=slice(0, 10)
-    )
+        key=np.array([dpa_template_datas.matching_key for i in range(len(dpa_template_datas.matching_samples))]))
+    matching_cont = scared.Container(ths=ths_matching, frame=slice(0, 10))
     with pytest.raises(scared.DistinguisherError):
         template.run(matching_cont)
 

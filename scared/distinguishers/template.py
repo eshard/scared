@@ -1,28 +1,61 @@
 from . import partitioned, base
-import logging
+import logging as _logging
 import numpy as _np
+import numba as _nb
+import time as _time
 
 
-logger = logging.getLogger(__name__)
+logger = _logging.getLogger(__name__)
 
 
 class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBaseMixin):
 
     def _initialize_accumulators(self):
-        self._exi = _np.zeros(shape=(len(self.partitions), self._trace_length), dtype=self.precision)
-        self._exxi = _np.zeros(shape=(len(self.partitions), self._trace_length, self._trace_length), dtype=self.precision)
+        self._exi = _np.zeros(shape=(len(self.partitions), self._trace_length), dtype=self.precision, order='C')
+        self._exxi = _np.zeros(shape=(len(self.partitions), self._trace_length, self._trace_length), dtype=self.precision, order='C')
         self._counters = _np.zeros(shape=(len(self.partitions)), dtype=self.precision)
         self.pooled_covariance = None
         self.pooled_covariance_inv = None
 
-    def _accumulate(self, traces, data, bool_mask):
+    @staticmethod
+    @_nb.njit(parallel=True)
+    def _accumulate_core_1(traces, data, self_exi, self_exxi, self_counters, self_precision):
+        """Faster for short traces or when the number of partitions is small."""
+        for sample_idx in _nb.prange(traces.shape[1]):
+            for trace_idx in range(traces.shape[0]):
+                x = self_precision(traces[trace_idx, sample_idx])
+                data_value = data[trace_idx, 0]
+                if data_value != -1:
+                    self_exi[data_value, sample_idx] += x
+                    if sample_idx == 0:
+                        self_counters[data_value] += 1
+                    self_exxi[data_value, sample_idx] += x * traces[trace_idx]
+
+    @staticmethod
+    @_nb.njit(parallel=True)
+    def _accumulate_core_2(traces, data, self_exi, self_exxi, self_counters, self_precision):
+        """Faster when the trace length or the number of partitions becomes high."""
+        for p in _nb.prange(len(self_counters)):
+            b = data[:, 0] == p  # Data are already transformed to correspond to partition indexes
+            tmp = _np.empty((traces.shape[1], b.sum()), dtype=self_precision).T
+            tmp[:] = traces[b]
+            self_counters[p] += b.sum()
+            self_exi[p] += tmp.sum(0)
+            self_exxi[p] += tmp.T @ tmp
+
+    def _accumulate(self, traces, data):
+        """Do the core of the data partitioning.
+
+        The fastest method is selected empirically.
+        """
         logger.debug('Accumulate build distinguisher')
-        self._counters += _np.sum(bool_mask, axis=0)
-        self._exi += _np.dot(bool_mask.T, traces)
-        for i, p in enumerate(self.partitions):
-            tmp = traces[bool_mask[:, i]]
-            tmp = _np.dot(tmp.T, tmp)
-            self._exxi[i] += tmp
+        if not hasattr(self, '_timings'):
+            self._timings = [-2, -1]
+        function_idx = _np.argmin(self._timings)
+        function = [self._accumulate_core_1, self._accumulate_core_2][function_idx]
+        t0 = _time.process_time()
+        function(traces, data, self._exi, self._exxi, self._counters, _np.dtype(self.precision).type)
+        self._timings[function_idx] = _time.process_time() - t0
 
     def _compute(self):
         self.pooled_covariance = _np.zeros((self._trace_length, self._trace_length))

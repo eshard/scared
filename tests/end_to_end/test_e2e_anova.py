@@ -15,6 +15,7 @@ def test_anova_on_dpa_v2():
         selection_function=sf,
         model=scared.HammingWeight(),
         discriminant=scared.maxabs,
+        convergence_step=2000
     )
     att.run(container)
     last_key = np.argmax(att.scores, axis=0)

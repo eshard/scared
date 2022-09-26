@@ -1,4 +1,3 @@
-from scared.distinguishers.base import _set_precision
 from . import container as _container
 import threading as _th
 import numpy as _np
@@ -63,8 +62,18 @@ class TTestAnalysis:
             precision (:class:`numpy.dtype`, default=`float32`): precision which will be used for computations.
 
         """
-        _set_precision(self, precision)
+        self._set_precision(precision)
         self.accumulators = []
+
+    def _set_precision(self, precision):
+        try:
+            precision = _np.dtype(precision)
+        except TypeError:
+            raise TypeError(f'precision should be a valid dtype, not {precision}.')
+
+        if precision.kind != 'f':
+            raise ValueError(f'precision should be a float dtype, not {precision.kind}.')
+        self.precision = precision
 
     def run(self, ttest_container):
         """Process traces wrapped by `ttest_container` and compute the result.
