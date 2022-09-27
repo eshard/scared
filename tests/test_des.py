@@ -82,9 +82,9 @@ def test_key_schedule_raises_exception_if_interrupt_after_round_isnt_int():
         des.key_schedule(key=key, interrupt_after_round='foo')
 
 
-def test_key_schedule_raises_exception_if_key_isnt_int8_array():
+def test_key_schedule_raises_exception_if_key_isnt_bytes_array():
     with pytest.raises(ValueError):
-        key = np.random.randint(0, 255, size=(8,), dtype='uint16')
+        key = np.random.randint(0, 255, size=(8,)).astype('float32')
         des.key_schedule(key=key)
 
 
@@ -121,9 +121,9 @@ def test_get_master_key_raises_exception_if_round_key_isnt_array():
         des.get_master_key('foo', 0, array, array)
 
 
-def test_get_master_key_raises_exception_if_round_key_isnt_int8_array():
-    array = np.random.randint(256, size=8, dtype=np.uint8)
-    round_key = np.random.randint(64, size=8, dtype=np.uint16)
+def test_get_master_key_raises_exception_if_round_key_isnt_bytes_array():
+    array = np.random.randint(0, 256, (8, ), dtype=np.uint8)
+    round_key = np.random.randint(0, 64, (8, )).astype('float32')
     with pytest.raises(ValueError):
         des.get_master_key(round_key, 0, array, array)
 
@@ -162,9 +162,9 @@ def test_get_master_key_raises_exception_if_plaintext_isnt_array():
         des.get_master_key(array, 0, 'foo', array)
 
 
-def test_get_master_key_raises_exception_if_plaintext_isnt_int8_array():
-    array = np.random.randint(64, size=8, dtype=np.uint8)
-    plaintext = np.random.randint(256, size=8, dtype=np.uint16)
+def test_get_master_key_raises_exception_if_plaintext_isnt_bytes_array():
+    array = np.random.randint(0, 64, (8, ), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (8, )).astype('float32')
     with pytest.raises(ValueError):
         des.get_master_key(array, 0, plaintext, array)
 
@@ -182,9 +182,9 @@ def test_get_master_key_raises_exception_if_ciphertext_isnt_array():
         des.get_master_key(array, 0, array, 'foo')
 
 
-def test_get_master_key_raises_exception_if_ciphertext_isnt_int8_array():
+def test_get_master_key_raises_exception_if_ciphertext_isnt_bytes_array():
     array = np.random.randint(64, size=8, dtype=np.uint8)
-    ciphertext = np.random.randint(256, size=8, dtype=np.uint16)
+    ciphertext = np.random.randint(0, 256, (8, )).astype('float32')
     with pytest.raises(ValueError):
         des.get_master_key(array, 0, array, ciphertext)
 
@@ -223,7 +223,7 @@ def test_initial_permutation_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.initial_permutation(state=np.random.randint(0, 255, (12, 16), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.initial_permutation(state=np.random.randint(0, 255, (12, 8), dtype='uint16'))
+        des.initial_permutation(state=np.random.randint(0, 255, (12, 8)).astype('float32'))
 
 
 def test_initial_permutation_returns_correct_array(des_data):
@@ -249,7 +249,7 @@ def test_expansive_permutation_raises_exception_if_state_is_not_a_correct_array(
     with pytest.raises(ValueError):
         des.expansive_permutation(state=np.random.randint(0, 255, (12, 8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.expansive_permutation(state=np.random.randint(0, 255, (12, 4), dtype='uint16'))
+        des.expansive_permutation(state=np.random.randint(0, 255, (12, 4)).astype('float32'))
 
 
 def test_expansive_permutation_returns_correct_array(des_data):
@@ -314,7 +314,7 @@ def test_add_round_key_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.add_round_key(state=np.random.randint(0, 63, (12, 12), dtype='uint8'), keys=np.random.randint(0, 63, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.add_round_key(state=np.random.randint(0, 63, (12, 8), dtype='uint16'), keys=np.random.randint(0, 63, (8), dtype='uint8'))
+        des.add_round_key(state=np.random.randint(0, 63, (12, 8)).astype('float32'), keys=np.random.randint(0, 63, (8), dtype='uint8'))
 
 
 def test_add_round_key_raises_exception_if_key_is_not_array():
@@ -328,7 +328,7 @@ def test_add_round_key_raises_exception_if_key_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.add_round_key(keys=np.random.randint(0, 63, (12, 12), dtype='uint8'), state=np.random.randint(0, 63, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.add_round_key(keys=np.random.randint(0, 63, (12, 8), dtype='uint16'), state=np.random.randint(0, 63, (8), dtype='uint8'))
+        des.add_round_key(keys=np.random.randint(0, 63, (12, 8)).astype('float32'), state=np.random.randint(0, 63, (8), dtype='uint8'))
 
 
 def test_add_round_key_raises_exception_if_key_and_state_dims_are_incompatible():
@@ -355,7 +355,7 @@ def test_sboxes_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.sboxes(state=np.random.randint(0, 63, (12, 16), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.sboxes(state=np.random.randint(0, 63, (12, 8), dtype='uint16'))
+        des.sboxes(state=np.random.randint(0, 63, (12, 8)).astype('float32'))
 
 
 def test_sboxes_returns_correct_array(des_data):
@@ -386,7 +386,7 @@ def test_permutation_p_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.permutation_p(state=np.random.randint(0, 15, (12, 16), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.permutation_p(state=np.random.randint(0, 15, (12, 8), dtype='uint16'))
+        des.permutation_p(state=np.random.randint(0, 15, (12, 8)).astype('float32'))
 
 
 def test_permutation_p_returns_correct_array(des_data):
@@ -413,7 +413,7 @@ def test_inv_permutation_p_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.inv_permutation_p(state=np.random.randint(0, 255, (12, 8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.inv_permutation_p(state=np.random.randint(0, 255, (12, 4), dtype='uint16'))
+        des.inv_permutation_p(state=np.random.randint(0, 255, (12, 4)).astype('float32'))
 
 
 def test_inv_permutation_p_returns_correct_array(des_data):
@@ -445,7 +445,7 @@ def test_final_permutation_raises_exception_if_state_is_not_a_correct_array():
     with pytest.raises(ValueError):
         des.final_permutation(state=np.random.randint(0, 255, (12, 16), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.final_permutation(state=np.random.randint(0, 255, (12, 8), dtype='uint16'))
+        des.final_permutation(state=np.random.randint(0, 255, (12, 8)).astype('float32'))
 
 
 def test_final_permutation_returns_correct_array(des_data):
@@ -469,7 +469,7 @@ def test_encrypt_raises_exception_if_plaintext_or_key_is_not_a_byte_array_of_app
     with pytest.raises(ValueError):
         des.encrypt(plaintext=np.random.randint(0, 255, (12), dtype='uint8'), key=np.random.randint(0, 255, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.encrypt(plaintext=np.random.randint(0, 255, (8), dtype='uint16'), key=np.random.randint(0, 255, (8), dtype='uint8'))
+        des.encrypt(plaintext=np.random.randint(0, 255, (8)).astype('float32'), key=np.random.randint(0, 255, (8), dtype='uint8'))
 
     with pytest.raises(TypeError):
         des.encrypt(key='foo', plaintext=np.random.randint(0, 255, (8), dtype='uint8'))
@@ -478,7 +478,7 @@ def test_encrypt_raises_exception_if_plaintext_or_key_is_not_a_byte_array_of_app
     with pytest.raises(ValueError):
         des.encrypt(key=np.random.randint(0, 255, (12), dtype='uint8'), plaintext=np.random.randint(0, 255, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.encrypt(key=np.random.randint(0, 255, (8), dtype='uint16'), plaintext=np.random.randint(0, 255, (8), dtype='uint8'))
+        des.encrypt(key=np.random.randint(0, 255, (8)).astype('float32'), plaintext=np.random.randint(0, 255, (8), dtype='uint8'))
 
 
 def test_encrypt_raises_exception_if_plaintext_and_keys_multiple_are_incompatible():
@@ -500,6 +500,20 @@ def test_full_encrypt(encrypt_cases):
         encrypt_cases['expected'],
         des.encrypt(plaintext=encrypt_cases['state'], key=encrypt_cases['keys'])
     )
+
+
+def test_full_encrypt_with_int32_data(encrypt_cases):
+    assert np.array_equal(
+        encrypt_cases['expected'],
+        des.encrypt(plaintext=encrypt_cases['state'].astype('int32'),
+                    key=encrypt_cases['keys'].astype('int32')))
+
+
+def test_full_encrypt_with_int8_data():
+    data = np.random.randint(0, 128, (10, 8), dtype='uint8')
+    key = np.random.randint(0, 128, (10, 8), dtype='uint8')
+    expected = des.encrypt(data, key)
+    assert np.array_equal(des.encrypt(data.astype('int8'), key.astype('int8')), expected)
 
 
 def test_full_encrypt_with_expanded_keys(encrypt_cases):
@@ -592,7 +606,7 @@ def test_decrypt_raises_exception_if_ciphertext_or_key_is_not_a_byte_array_of_ap
     with pytest.raises(ValueError):
         des.decrypt(ciphertext=np.random.randint(0, 255, (12), dtype='uint8'), key=np.random.randint(0, 255, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.decrypt(ciphertext=np.random.randint(0, 255, (8), dtype='uint16'), key=np.random.randint(0, 255, (8), dtype='uint8'))
+        des.decrypt(ciphertext=np.random.randint(0, 255, (8)).astype('float32'), key=np.random.randint(0, 255, (8), dtype='uint8'))
 
     with pytest.raises(TypeError):
         des.decrypt(key='foo', ciphertext=np.random.randint(0, 255, (8), dtype='uint8'))
@@ -601,7 +615,7 @@ def test_decrypt_raises_exception_if_ciphertext_or_key_is_not_a_byte_array_of_ap
     with pytest.raises(ValueError):
         des.decrypt(key=np.random.randint(0, 255, (12), dtype='uint8'), ciphertext=np.random.randint(0, 255, (8), dtype='uint8'))
     with pytest.raises(ValueError):
-        des.decrypt(key=np.random.randint(0, 255, (8), dtype='uint16'), ciphertext=np.random.randint(0, 255, (8), dtype='uint8'))
+        des.decrypt(key=np.random.randint(0, 255, (8)).astype('float32'), ciphertext=np.random.randint(0, 255, (8), dtype='uint8'))
 
 
 def test_decrypt_raises_exception_if_ciphertext_and_keys_multiple_are_incompatible():
