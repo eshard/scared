@@ -7,6 +7,7 @@ import os as _os
 import traceback as _traceback
 import warnings as _warn
 import sys as _sys
+from pathlib import Path as _Path
 
 import estraces as _estraces
 from estraces.formats.ets_writer import ETSWriter as _ETSWriter
@@ -102,12 +103,12 @@ class Synchronizer:
         return input_ths
 
     def _check_output(self, output, overwrite):
-        if isinstance(output, str):
+        if isinstance(output, (str, _Path)):
             return _ETSWriter(filename=output, overwrite=overwrite)
         elif isinstance(output, _estraces.TraceHeaderSet):
             return output
         else:
-            raise TypeError(f'output must be an instance of TraceHeaderSet or str, not {type(output)}.')
+            raise TypeError(f'output must be an instance of TraceHeaderSet, str or Path, not {type(output)}.')
 
     def _check_function(self, function):
         if not callable(function):
@@ -140,8 +141,8 @@ class Synchronizer:
                 if catch_exceptions:
                     exc_type, exc_value, exc_traceback = _sys.exc_info()
                     last_traceback = _traceback.extract_tb(exc_traceback)[-1]
-                    formated = _traceback.format_exception(exc_type, exc_value, exc_traceback)
-                    raised = formated[-1][:-1]
+                    formatted = _traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    raised = formatted[-1][:-1]
                     print(f"Raised {raised} in {last_traceback.name} line {last_traceback.lineno}.")
                 else:
                     raise exception
