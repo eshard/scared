@@ -1,5 +1,59 @@
 from scared import traces
 import numpy as _np
+import math as _math
+
+_ORIGINAL_BATCH_SIZES = [(0, 25000), (1001, 5000), (5001, 2500), (10001, 1000), (50001, 250), (100001, 100)]
+
+
+def set_batch_size(batch_size=None):
+    """Set the batch size used by scared analyses.
+
+    Args:
+        batch_size (int, float or list): Batch size to use. If None, the default batch size is restored.
+            The type of the input defines its meaning. If the input is:
+                - an integer, the batch size is set to the given number of traces,
+                - a float, the number of traces is computed using the given value as a batch size in MB (see Notes below),
+                - a list, the input is used as a list of sizes (see Example below).
+
+    Notes:
+        The trace length used to compute the final batch size is the maximum of the following: the raw trace length, the trace length after preprocessing.
+
+        If a size in MB is given, the batch size is floored to the most significant digit (2542 -> 2000).
+        If a size in MB is given, the minimum possible batch size is hardcoded to 10 traces.
+
+    Examples:
+        The sizes list [(0, 25000), (1001, 5000), (5001, 2500)] means that:
+            - if the trace length is in [0, 1000], the batch size is set to 25_000,
+            - if the trace length is in [1001, 5000], the batch size is set to 5000,
+            - if the trace length is in [5001, +∞[, the batch size is set to 2500.
+
+    """
+    if batch_size is None:
+        Container._BATCH_SIZE = _ORIGINAL_BATCH_SIZES
+        return
+    if isinstance(batch_size, (list, tuple)):
+        for bs in batch_size:
+            if not isinstance(bs, (list, tuple)) or len(bs) != 2:
+                raise ValueError(f'Items of a batch sizes list must be couples, but {bs} found.')
+            for val in bs:
+                if not isinstance(val, int):
+                    raise ValueError(f'Values in batch sizes list must be integers, but {val} found.')
+        Container._BATCH_SIZE = list(batch_size) if isinstance(batch_size, tuple) else batch_size.copy()
+        return
+    if isinstance(batch_size, (int, float)):
+        if batch_size <= 0:
+            raise ValueError(f'batch_size must be strictly positive, but {batch_size} found.')
+        Container._BATCH_SIZE = batch_size
+        return
+    raise TypeError(f'batch_size must be an integer, a float or a list, but {type(batch_size)} found.')
+
+
+def _floor_to_most_significant_digit(x):
+    if x < 1:
+        return 0
+    digits = int(_math.log10(x))
+    multiplier = int(10**digits)
+    return int(_math.floor(x / multiplier)) * multiplier
 
 
 class Container:
@@ -13,9 +67,11 @@ class Container:
             to be used by the analysis.
         preprocesses (callable or list of callable, default=[]): list of callable preprocess function
             which will be applied on samples when access to batches is invoked. Each preprocess should
-            be decored with :func:`scared.preprocess`, as it add some basic dimensions and shape verifications.
+            be decorated with :func:`scared.preprocess`, as it add some basic dimensions and shape verifications.
 
     """
+
+    _BATCH_SIZE = _ORIGINAL_BATCH_SIZES
 
     def __init__(self, ths, frame=None, preprocesses=[]):
         """Initialize the container instance.
@@ -26,7 +82,7 @@ class Container:
             to be used by the analysis.
             preprocesses (callable or list of callable, default=[]): list of callable preprocess function
                 which will be applied on samples when access to batches is invoked. Each preprocess should
-                be decored with :func:`scared.preprocess`, as it add some basic dimensions and shape verifications.
+                be decorated with :func:`scared.preprocess`, as it add some basic dimensions and shape verifications.
 
         """
         self._set_ths(ths)
@@ -61,25 +117,31 @@ class Container:
         self.frame = frame if frame is not None else ...
 
     def _compute_batch_size(self, trace_size):
-        ref_sizes = [
-            (0, 25000),
-            (1001, 5000),
-            (5001, 2500),
-            (10001, 1000),
-            (50001, 250),
-            (100001, 100)
-        ]
+
         try:
-            input_size = len(self._ths[0].samples[self.frame])
+            tmp = self._ths[0].samples[self.frame]
+            input_size = len(tmp)
+            input_dtype = tmp.dtype
+            del tmp
         except AttributeError:
             input_size = 0
+            input_dtype = _np.dtype('float32')
         max_size = max(trace_size, input_size)
-        for i in range(len(ref_sizes)):
-            try:
-                if max_size >= ref_sizes[i][0] and max_size < ref_sizes[i + 1][0]:
-                    return ref_sizes[i][1]
-            except IndexError:
-                return ref_sizes[-1][1]
+        class_batch_size = Container._BATCH_SIZE  # to avoid race conditions in case of threading
+        if isinstance(class_batch_size, int):
+            return class_batch_size
+        if isinstance(class_batch_size, list):
+            for i in range(len(class_batch_size)):
+                try:
+                    if max_size >= class_batch_size[i][0] and max_size < class_batch_size[i + 1][0]:
+                        return class_batch_size[i][1]
+                except IndexError:
+                    return class_batch_size[-1][1]
+        if isinstance(class_batch_size, float):
+            batch_size_in_bytes = int(class_batch_size * 2**20)
+            batch_size = batch_size_in_bytes / (input_size * input_dtype.itemsize)
+            batch_size = _floor_to_most_significant_digit(batch_size)
+            return max(batch_size, 10)
 
     @property
     def batch_size(self):
@@ -90,7 +152,7 @@ class Container:
         """Provides an iterable of wrapper class around :class:`TraceHeaderSet` of size `batch_size`.
 
         The wrapper provides samples and metadatas properties. Container and frame preprocesses are applied
-        when acces to this properties are made.
+        when access to this properties are made.
 
         If `batch_size` is not provided, it is computed based on a simple mapping.
 

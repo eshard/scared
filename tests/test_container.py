@@ -250,6 +250,18 @@ def test_container_str_with_preprocesses(ths):
     assert isinstance(str(c), str)
 
 
+def test_container_batches_last_batch_length_is_1():
+    shape = (42, 100)
+    samples = np.random.randint(0, 255, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 255, (shape[0], 16), dtype='uint8')
+    ths = scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
+    container = scared.Container(ths)
+    batches = list(container.batches(41))
+    assert len(batches[0]) == 41
+    assert len(batches[1]) == 1
+    assert batches[1].samples[:].shape == (1, 100)
+
+
 def test_performance_container_str():
     shapes = [(100_000, 10_000), (10_000, 10_000), (1_000, 10_000), (100_000, 1_000), (10_000, 1_000), (1_000, 1_000)]
     times = []
@@ -282,3 +294,84 @@ def test_performance_container_batch_size(moderate_ths):
         times.append(toc - tic)
 
     assert max(times) / min(times) < 5, 'batch_size computation takes too much time'
+
+
+######################
+#   Set batch size   #
+######################
+
+def test_floor_to_most_significant_digit():
+    for value, expected in [(0, 0), (0.1, 0), (1, 1), (10, 10), (2000, 2000), (11, 10), (5999, 5000)]:
+        assert scared.container._floor_to_most_significant_digit(value) == expected
+
+
+def test_set_batch_size_list(ths):
+    scared.set_batch_size([(0, 500), (1000, 100), (2000, 50)])
+    c = scared.Container(ths)
+    assert c.batch_size == 100
+
+
+def test_set_batch_size_int(ths):
+    scared.set_batch_size(42)
+    c = scared.Container(ths)
+    assert c.batch_size == 42
+
+
+def test_set_batch_size_float_1(ths):
+    # raw batch size 262, floored to 200
+    scared.set_batch_size(0.25)
+    c = scared.Container(ths)
+    assert c.batch_size == 200
+
+
+def test_set_batch_size_float_2(ths):
+    # raw batch size 786, floored to 700
+    scared.set_batch_size(0.75)
+    c = scared.Container(ths)
+    assert c.batch_size == 700
+
+
+def test_set_batch_size_float_minimum_batch_size_is_10(ths):
+    scared.set_batch_size(0.000001)
+    c = scared.Container(ths)
+    assert c.batch_size == 10
+
+
+def test_set_batch_size_big_int(ths):
+    scared.set_batch_size(42_000)
+    c = scared.Container(ths)
+    batches = list(c.batches())
+    assert len(batches) == 1
+    for batch in batches:
+        assert len(batch) == 2000
+
+
+def test_set_batch_size_none_restore():
+    scared.set_batch_size(42)
+    assert scared.Container._BATCH_SIZE == 42
+    scared.set_batch_size()
+    assert scared.Container._BATCH_SIZE == scared.container._ORIGINAL_BATCH_SIZES
+
+
+def test_set_batch_size_raises_if_incorrect_type():
+    with pytest.raises(TypeError, match='batch_size must be an integer, a float or a list, but'):
+        scared.set_batch_size('foo')
+
+
+def test_set_batch_size_raises_if_value_lower_or_equal_zero():
+    with pytest.raises(ValueError, match='batch_size must be strictly positive, but'):
+        scared.set_batch_size(0)
+    with pytest.raises(ValueError, match='batch_size must be strictly positive, but'):
+        scared.set_batch_size(-1.1)
+
+
+def test_set_batch_size_raises_if_not_list_of_couples():
+    with pytest.raises(ValueError, match='Items of a batch sizes list must be couples, but'):
+        scared.set_batch_size([(1, 2), 'foo'])
+    with pytest.raises(ValueError, match='Items of a batch sizes list must be couples, but'):
+        scared.set_batch_size([(1, 2), (2, 3, 4)])
+
+
+def test_set_batch_size_raises_if_not_integers_in_list():
+    with pytest.raises(ValueError, match='Values in batch sizes list must be integers, but '):
+        scared.set_batch_size([(1, 2), (1.0, 1)])

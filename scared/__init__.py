@@ -33,6 +33,7 @@ from . import signal_processing  # noqa: F401
 from . import aes  # noqa: F401
 from . import des  # noqa: F401
 from . import container as _container
+from .container import set_batch_size  # noqa: F401
 
 Container = _container.Container
 # Set default logging handler to avoid "No handler found" warnings.
