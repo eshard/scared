@@ -673,23 +673,23 @@ def final_permutation(state):
     data = state.reshape((-1, 8))
     out = _np.zeros((data.shape[0], 8), dtype=_np.uint8)
     for current_byte in _np.arange(8):
-        real_current_byte_indice = int(current_byte / 2) + 4 * (1 - (current_byte % 2))
+        real_current_byte_index = int(current_byte / 2) + 4 * (1 - (current_byte % 2))
         out[:, 0] <<= 1
-        out[:, 0] += (data[:, real_current_byte_indice]) & 0x01
+        out[:, 0] += (data[:, real_current_byte_index]) & 0x01
         out[:, 1] <<= 1
-        out[:, 1] += (data[:, real_current_byte_indice] >> 1) & 0x01
+        out[:, 1] += (data[:, real_current_byte_index] >> 1) & 0x01
         out[:, 2] <<= 1
-        out[:, 2] += (data[:, real_current_byte_indice] >> 2) & 0x01
+        out[:, 2] += (data[:, real_current_byte_index] >> 2) & 0x01
         out[:, 3] <<= 1
-        out[:, 3] += (data[:, real_current_byte_indice] >> 3) & 0x01
+        out[:, 3] += (data[:, real_current_byte_index] >> 3) & 0x01
         out[:, 4] <<= 1
-        out[:, 4] += (data[:, real_current_byte_indice] >> 4) & 0x01
+        out[:, 4] += (data[:, real_current_byte_index] >> 4) & 0x01
         out[:, 5] <<= 1
-        out[:, 5] += (data[:, real_current_byte_indice] >> 5) & 0x01
+        out[:, 5] += (data[:, real_current_byte_index] >> 5) & 0x01
         out[:, 6] <<= 1
-        out[:, 6] += (data[:, real_current_byte_indice] >> 6) & 0x01
+        out[:, 6] += (data[:, real_current_byte_index] >> 6) & 0x01
         out[:, 7] <<= 1
-        out[:, 7] += (data[:, real_current_byte_indice] >> 7) & 0x01
+        out[:, 7] += (data[:, real_current_byte_index] >> 7) & 0x01
     return out.reshape(dimensions)
 
 
@@ -712,7 +712,7 @@ def encrypt(plaintext, key, at_round=None, after_step=Steps.FINAL_PERMUTATION, a
             Multiple keys can be provided as an array of shape (N, 8), (N, 16), (N, 24).
         at_round (int, default: None): stop encryption at the end of the targeted round. Must be between 0 and 15.
         after_step (int): stop encryption after targeted operation of the round. Each round have 8 operations (for rounds where some operations are missing,
-            the identity function is ised instead).
+            the identity function is used instead).
             Must be between 0 and 9. Use Steps enumeration to benefit from an explicit steps naming.
         at_des (int, default: None): stop encryption at the end of the targeted DES encryption. Not usable with classic DES because there is only one DES
             operation, it allows to stop at first or second DES operation instead of the third for TDES2 and TDES3.
@@ -755,7 +755,7 @@ def decrypt(ciphertext, key, at_round=None, after_step=Steps.FINAL_PERMUTATION, 
             Multiple keys can be provided as an array of shape (N, 8).
         at_round (int, default: None): stop decryption at the end of the targeted round. Must be between 0 and 15.
         after_step (int): stop decryption after targeted operation of the round. Each round have 8 operations (for rounds where some operations are missing,
-            the identity function is ised instead).
+            the identity function is used instead).
             Must be between 0 and 9. Use Steps enumeration to benefit from an explicit steps naming.
         at_des (int, default: None): stop decryption at the end of the targeted DES decryption. Not usable with classic DES because there is only one DES
             operation, it allows to stop at first or second DES operation instead of the third for TDES2 and TDES3.
@@ -955,5 +955,5 @@ class _ParametricCipher():
         if not isinstance(mode, str):
             raise TypeError(f'mode must be an str, not a {type(mode)}.')
         if mode != 'encrypt' and mode != 'decrypt':
-            raise ValueError(f'mode must be "enctypt" or "decrypt", not "{mode}"')
+            raise ValueError(f'mode must be "encrypt" or "decrypt", not "{mode}"')
         return mode

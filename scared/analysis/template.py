@@ -20,7 +20,7 @@ class BaseTemplateAttack(BasePartitionedAttack):
             model (:class:`Model`): model instance to compute leakage intermediate values. Must inherit from :class:`Model`.
             precision (:class:`numpy.dtype`, default=`float32`): precision which will be used for computations.
             convergence_step (int, default=None): if provided, `run` method will compute and stores `scores` each time `convergence_step` traces are processed.
-            partitions (range, default=None): partitions to use for the build phase. If unset, partitions will be determinated by the model values.
+            partitions (range, default=None): partitions to use for the build phase. If unset, partitions will be determined by the model values.
 
         """
         super().__init__(

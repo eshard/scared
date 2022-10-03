@@ -40,7 +40,7 @@ class _ErrorCounter:
     """Object used to count errors during resync and raise warning if too much consecutive errors occur.
 
     Attributes:
-        last_errro_id: Last error identifier.
+        last_error_id: Last error identifier.
         counter: Consecutive errors counter.
 
     Usage:
@@ -120,7 +120,7 @@ class Synchronizer:
 
         Args:
             nb_traces (int): Number of traces to test on.
-            catch_exceptions (bool): If True, exceptions are catched and just printed. You can disable it to view the full traceback.
+            catch_exceptions (bool): If True, exceptions are caught and just printed. You can disable it to view the full traceback.
 
         Returns:
             (list): Trace arrays.

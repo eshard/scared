@@ -13,6 +13,18 @@ def traces():
     return _read('product_input.npz')
 
 
+@pytest.fixture(params=['int16', 'uint8', 'float32', 'float64'])
+def traces_dtypes(request):
+    if request.param == 'int16':
+        return np.random.randint(-10000, 10000, (500, 2001), dtype='int16')
+    elif request.param == 'uint8':
+        return np.random.randint(0, 256, (500, 2001), dtype='uint8')
+    elif request.param == 'float32':
+        return np.random.random((500, 2001)).astype('float32')
+    elif request.param == 'float64':
+        return np.random.random((500, 2001)).astype('float64')
+
+
 def test_product_with_no_frame(traces):
     result = scared.preprocesses.high_order.Product()(traces)
     assert (500, 20100) == result.shape
@@ -117,3 +129,40 @@ def test_product_is_preprocess():
 def test_raises_exception_with_improper_mode():
     with pytest.raises(scared.PreprocessError):
         scared.preprocesses.high_order.Product(mode='wfor')
+
+
+def test_product_various_dtypes(traces_dtypes):
+    # Mode PointToPoint
+    result = scared.preprocesses.high_order.Product(frame_1=slice(0, 50), frame_2=slice(50, 100), mode='same')(traces_dtypes)
+    assert result.dtype == max(traces_dtypes.dtype, 'float32')
+    assert traces_dtypes.dtype.kind in np.typecodes['Float'] or result.max() > traces_dtypes[:, slice(0, 50)].max()
+
+    # Mode TwoFrames
+    result = scared.preprocesses.high_order.Product(slice(None, 50))(traces_dtypes)
+    assert result.dtype == max(traces_dtypes.dtype, 'float32')
+    assert traces_dtypes.dtype.kind in np.typecodes['Float'] or result.max() > traces_dtypes[:, slice(0, 50)].max()
+
+    # Mode FrameOnDistance
+    result = scared.preprocesses.high_order.Product(slice(None, 50), distance=5)(traces_dtypes)
+    assert result.dtype == max(traces_dtypes.dtype, 'float32')
+    assert traces_dtypes.dtype.kind in np.typecodes['Float'] or result.max() > traces_dtypes[:, slice(0, 50)].max()
+
+
+def test_product_given_precision(traces_dtypes):
+    # Mode PointToPoint
+    result = scared.preprocesses.high_order.Product(frame_1=slice(0, 50), frame_2=slice(50, 100), mode='same', precision='float64')(traces_dtypes)
+    expected = scared.preprocesses.high_order.Product(frame_1=slice(0, 50), frame_2=slice(50, 100), mode='same')(traces_dtypes.astype('float64'))
+    assert result.dtype == 'float64'
+    assert np.array_equal(result, expected)
+
+    # Mode TwoFrames
+    result = scared.preprocesses.high_order.Product(slice(None, 50), precision='float64')(traces_dtypes)
+    expected = scared.preprocesses.high_order.Product(slice(None, 50))(traces_dtypes.astype('float64'))
+    assert result.dtype == 'float64'
+    assert np.array_equal(result, expected)
+
+    # Mode FrameOnDistance
+    result = scared.preprocesses.high_order.Product(slice(None, 50), distance=5, precision='float64')(traces_dtypes)
+    expected = scared.preprocesses.high_order.Product(slice(None, 50), distance=5)(traces_dtypes.astype('float64'))
+    assert result.dtype == 'float64'
+    assert np.array_equal(result, expected)

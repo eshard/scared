@@ -1,7 +1,6 @@
-from .._base import PreprocessError
-from .. import first_order
-from ._base import _CombinationFrameOnDistance, _CombinationOfTwoFrames, _CombinationPointToPoint
 import numpy as _np
+from ..first_order import CenterOn
+from ._base import _combination
 
 
 def _product(el1, el2):
@@ -12,125 +11,107 @@ def _difference(el1, el2):
     return (el1 - el2)
 
 
-def _centered(function, mean):
-    def _(traces):
-        try:
-            _mean = _np.nanmean(traces, axis=0) if mean is None else mean
-        except IndexError:
-            raise TypeError(f'traces must be a 2 dimensionnal numpy ndarray, not {type(traces)}.')
-        return function(first_order._center(traces, _mean))
-    return _
+def _centered(function, mean, precision):
+    return lambda traces: function(CenterOn(mean=mean, precision=precision)(traces))
 
 
 def _absolute(function):
-    def _(traces):
-        return _np.absolute(function(traces))
-    return _
-
-
-def _combination(operation, frame_1, frame_2=None, mode='full', distance=None):
-    if mode not in ['same', 'full']:
-        raise PreprocessError('Only same or full mode are available for combination preprocesses.')
-    if distance is not None and (mode == 'same' or frame_2 is not None):
-        raise PreprocessError('same mode or usage of two frames is incompatible with use of distance.')
-    if mode == 'same' and frame_2 is None:
-        raise PreprocessError('same mode requires two frames.')
-
-    if distance is not None:
-        res = _CombinationFrameOnDistance(frame_1=frame_1, distance=distance)
-    elif mode == 'same' and frame_2 is not None:
-        res = _CombinationPointToPoint(frame_1=frame_1, frame_2=frame_2)
-    else:
-        res = _CombinationOfTwoFrames(frame_1=frame_1, frame_2=frame_2)
-    res._operation = operation
-    return res
+    return lambda traces: _np.absolute(function(traces))
 
 
 class Difference:
-    """Difference combination preprocess for High Order analysis.
+    """Difference combination preprocess for high-order side-channel analysis.
 
     Args:
         frame_1 (slice or iterable, default=...): first traces frame that will be taken.
-        frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
-        mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
-            In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
-            The two frames needs to be provided and of the same length when using this mode.
-            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it provided,
-            otherwise with the frame between the current point position in `frame_1` and the end of the frame if `distance` is None,
+        frame_2 (slice or iterable, default=None): second optional traces frame that will be taken.
+        mode (str, default='full'): Combination mode either `'full'` or `'same'`.
+            In `'same'` mode, each time-sample of `frame_1` will be combined with the corresponding time-sample in `frame_2`.
+            When using this mode, the two frames needs to be provided and of the same length.
+            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it is provided;
+            otherwise, if `distance` is None, each point of `frame_1` is combined with the following points until the end of `frame_1`;
             else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
-        dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        distance (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        precision (numpy.dtype, default='float32'): optional parameter to define minimum numerical precision used to perform computation.
+            If input data has higher precision, it will be kept instead.
 
     """
 
-    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, precision='float32'):
         return _combination(
-            _difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
+            _difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance, precision=precision
         )
 
 
 class Product:
-    """Product combination preprocess for High Order analysis.
+    """Product combination preprocess for high-order side-channel analysis.
 
     Args:
         frame_1 (slice or iterable, default=...): first traces frame that will be taken.
-        frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
-        mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
-            In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
-            The two frames needs to be provided and of the same length when using this mode.
-            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it provided,
-            otherwise with the frame between the current point position in `frame_1` and the end of the frame if `distance` is None,
+        frame_2 (slice or iterable, default=None): second optional traces frame that will be taken.
+        mode (str, default='full'): Combination mode either `'full'` or `'same'`.
+            In `'same'` mode, each time-sample of `frame_1` will be combined with the corresponding time-sample in `frame_2`.
+            When using this mode, the two frames needs to be provided and of the same length.
+            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it is provided;
+            otherwise, if `distance` is None, each point of `frame_1` is combined with the following points until the end of `frame_1`;
             else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
-        dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        distance (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        precision (numpy.dtype, default='float32'): optional parameter to define minimum numerical precision used to perform computation.
+            If input data has higher precision, it will be kept instead.
 
     """
 
-    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, precision='float32'):
         return _combination(
-            _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
+            _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance, precision=precision
         )
 
 
 class CenteredProduct(Product):
-    """Centered prodiuct combination preprocess for High Order analysis.
+    """Centered product combination preprocess for high-order side-channel analysis.
 
     Args:
         frame_1 (slice or iterable, default=...): first traces frame that will be taken.
-        frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
-        mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
-            In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
-            The two frames needs to be provided and of the same length when using this mode.
-            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it provided,
-            otherwise with the frame between the current point position in `frame_1` and the end of the frame if `distance` is None,
+        frame_2 (slice or iterable, default=None): second optional traces frame that will be taken.
+        mode (str, default='full'): Combination mode either `'full'` or `'same'`.
+            In `'same'` mode, each time-sample of `frame_1` will be combined with the corresponding time-sample in `frame_2`.
+            When using this mode, the two frames needs to be provided and of the same length.
+            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it is provided;
+            otherwise, if `distance` is None, each point of `frame_1` is combined with the following points until the end of `frame_1`;
             else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
-        dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
-        mean (numpy.ndarray, default=None): a mean array with compatible size with traces. If it None, the mean of provided traces is computed.
+        distance (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        mean (numpy.ndarray, default=None): a mean array with compatible size with traces. If None, the mean of provided batch of traces is computed.
+        precision (numpy.dtype, default='float32'): optional parameter to define minimum numerical precision used to perform computation.
+            If input data has higher precision, it will be kept instead.
 
     """
 
-    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, mean=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, mean=None, precision='float32'):
         return _centered(
             _combination(
-                _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance
-            ), mean=mean)
+                _product, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance, precision=precision
+            ), mean=mean, precision=precision)
 
 
 class AbsoluteDifference:
-    """Absolute difference combination preprocess for High Order analysis.
+    """Absolute difference combination preprocess for high-order side-channel analysis.
 
     Args:
         frame_1 (slice or iterable, default=...): first traces frame that will be taken.
-        frame_2 (slice or iterable, default=None): second optionnal traces frame that will be taken.
-        mode (str, default='full'): Combination mode between `'full'` and `'same'` values.
-            In `'same'` mode, each point of `frame_1` will be combined with its corresponding point in `frame_2`.
-            The two frames needs to be provided and of the same length when using this mode.
-            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it provided,
-            otherwise with the frame between the current point position in `frame_1` and the end of the frame if `distance` is None,
+        frame_2 (slice or iterable, default=None): second optional traces frame that will be taken.
+        mode (str, default='full'): Combination mode either `'full'` or `'same'`.
+            In `'same'` mode, each time-sample of `frame_1` will be combined with the corresponding time-sample in `frame_2`.
+            When using this mode, the two frames needs to be provided and of the same length.
+            In `'full'` mode, each point of `frame_1` is combined with full `frame_2` if it is provided;
+            otherwise, if `distance` is None, each point of `frame_1` is combined with the following points until the end of `frame_1`;
             else with a subframe starting at the current point position in `frame_1` and of size equals to `distance`.
-        dist (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        distance (integer, default=None): size of the frame to combine with each point of `frame_1`. This parameter is not available if `frame_2` is provided.
+        precision (numpy.dtype, default='float32'): optional parameter to define minimum numerical precision used to perform computation.
+            If input data has higher precision, it will be kept instead.
 
     """
 
-    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None):
+    def __new__(cls, frame_1=..., frame_2=None, mode='full', distance=None, precision='float32'):
         return _absolute(
-            _combination(_difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance)
+            _combination(_difference, frame_1=frame_1, frame_2=frame_2, mode=mode, distance=distance, precision=precision)
         )
