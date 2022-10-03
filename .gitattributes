@@ -1,3 +1,4 @@
 *.ets filter=lfs diff=lfs merge=lfs -text
 *npz filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
+scared/_version.py export-subst

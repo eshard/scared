@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from .__version__ import __version__ as VERSION  # noqa: F401, N812
 import warnings
 import logging
 
@@ -33,10 +31,16 @@ from . import signal_processing  # noqa: F401
 from . import aes  # noqa: F401
 from . import des  # noqa: F401
 from . import container as _container
+from . import _version
 from .container import set_batch_size  # noqa: F401
+
 
 Container = _container.Container
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 # Always display DeprecationWarning by default.
 warnings.simplefilter('default', category=DeprecationWarning)
+
+
+__version__ = _version.get_versions()['version']
+VERSION = _version.get_versions()['version']

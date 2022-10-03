@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 import sys
 
 from setuptools import setup
 from setuptools.command.test import test
 import logging
+import versioneer
 
 logger = logging.getLogger(__name__)
 
@@ -25,5 +26,6 @@ class PyTest(test):
 
 
 setup(
-    cmdclass={"test": PyTest}
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(cmdclass={"test": PyTest}),
 )
