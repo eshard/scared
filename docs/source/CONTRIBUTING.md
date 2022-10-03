@@ -8,7 +8,7 @@
   - [Documentation contributions](#documentation-contributions)
   - [Code contributions](#code-contributions)
     - [Steps for Submitting Code](#steps-for-submitting-code)
-      - [Merge requestion approval check-list](#merge-requestion-approval-check-list)
+      - [Merge requests approval check-list](#merge-requests-approval-check-list)
     - [Code Review](#code-review)
     - [New Contributors](#new-contributors)
     - [Get Early Feedback](#get-early-feedback)
@@ -18,7 +18,6 @@
     - [Numpy compressed array files](#numpy-compressed-array-files)
       - [Code style and formatting](#code-style-and-formatting)
       - [Docstrings](#docstrings)
-    - [Build contributions](#build-contributions)
       - [Building for Pypi](#building-for-pypi)
       - [Building for Conda](#building-for-conda)
 
@@ -76,9 +75,9 @@ When contributing code, you’ll want to follow this checklist:
 - Run the entire test suite again, confirming that all tests pass including the ones you just added.
 - Send a Gitlab Merge Request to the main repository’s master branch. Gitlab Merge Requests are the expected method of code collaboration on this project.
 
-#### Merge requestion approval check-list
+#### Merge requests approval check-list
 
-For your merge reques to be reviewed and eventually merged into master, please use the following check-list:
+For your merge request to be reviewed and eventually merged into master, please use the following check-list:
 
 - [ ] Related issue, documented and qualified
 - [ ] The development is finished (pipeline passing) and include new or modified tests
@@ -107,7 +106,7 @@ If you are contributing, do not feel the need to sit on your contribution until 
 - checkout the project
 - create a branch from the master or identify the branch you should be working on, be it a feature or a bug branch. Reference the issue number in the branch name
 - work on the branch
-- commit often small functionnal perimeter - some passing tests with it's working code. Typical commit frequency is several times each day - several begins at 2 …
+- commit often small functional perimeter - some passing tests with it's working code. Typical commit frequency is several times each day - several begins at 2 …
 - push less often, but regularly. Typical push frequency is daily.
 - when work is finished, ask for final review and merge request to the upstream.
 
@@ -117,13 +116,13 @@ For code contributions, please follows these guidelines.
 
 #### Requirements
 
-All developments should be compatible with **Python 3.6** and **3.7**.
+All developments should be compatible with **Python 3.6+** versions.
 
-To develop, you'll need to support:
+To develop, you'll need to have:
 
 - setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
 
-To start runnning your test suite, you can install the library in development mode:
+To start running your test suite, you must install the library in development mode:
 
 ```bash
 pip install -e .
@@ -171,17 +170,11 @@ We use the Google style guide conventions for docstrings, and the API documentat
 - [Support of Google docstring in Sphinx](http://www.sphinx-doc.org/en/stable/ext/napoleon.html#docstring-sections), with the list supported section headers
 - [Python domain directives in Sphinx](http://www.sphinx-doc.org/en/1.7/domains.html?highlight=python%20domain#the-python-domain), to enhance API documentation with cross-linking
 
-### Build contributions
-
-If your platform has not already binaries available on Pypi or Conda, a great contribution can simply to build binaries for your platform.
-To do so, please create a dedicated merge request from the tag your are building for, and attach the resulting build files to it.
-You can then submit the merge request for review.
-
 #### Building for Pypi
 
 To build for Pypi, you will need to follow these instructions:
 
-- `pip install -U pip setuptools wheel numpy`
+- `pip install -U pip setuptools wheel`
 - Run `python setup.py bdist_wheel` from the root folder
 - Get build files in `dist/` directory
 

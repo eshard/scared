@@ -4,6 +4,12 @@
 #
 import os
 import sys
+import scared
+
+from os.path import join, pardir, dirname
+
+sys.path.insert(0, join(dirname(__file__), pardir))
+
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
@@ -17,9 +23,9 @@ copyright = '2019-2022, eshard'
 author = 'eshard'
 
 # The short X.Y version
-version = '0.9.1'
+version = scared.__version__
 # The full version, including alpha/beta/rc tags
-release = '0.9.1'
+release = scared.__version__
 
 
 # -- General configuration ---------------------------------------------------

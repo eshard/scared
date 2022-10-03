@@ -1,0 +1,28 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: scared
+  version: {{ data['version'] }}
+
+source:
+  path: ../../
+
+requirements:
+  host:
+    - python {{ python }}
+    - setuptools>=40.0
+    - wheel
+    - pip
+    - numpy
+  run:
+    - python
+    - numpy
+    - estraces
+    - psutil
+    - numba
+    - scipy
+about:
+  home: https://gitlab.com/eshard/scared
+  license: GNU LGPL V3
+  license_file: LICENSE
+  summary: scared is a side-channel analysis framework.

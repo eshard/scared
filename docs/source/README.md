@@ -5,7 +5,7 @@
 [![Conda installer](https://anaconda.org/eshard/scared/badges/installer/conda.svg)](https://anaconda.org/eshard/scared)
 [![Latest Conda release](https://anaconda.org/eshard/scared/badges/latest_release_date.svg)](https://anaconda.org/eshard/scared)
 
-scared is a side-channel analysis framework.
+scared is a side-channel analysis framework maintained by [eShard](http://www.eshard.com) team.
 
 ## Getting started
 
@@ -19,12 +19,7 @@ You can install `scared`, depending on your setup:
 - with `pip`
 - with `conda`
 
->At time of writing, we highly recommend to install `scared` with `conda` if you want to use it with **python 3.8**
-
 #### Install with `conda`
-
-Conda builds are available for `linux-x64` and `osx-64` platforms.
-If your system isn't yet supported, [build contributions are welcome!](./CONTRIBUTING.md#building-for-conda)).
 
 You just have to run:
 
@@ -34,29 +29,15 @@ conda install -c eshard scared
 
 #### Install with `pip`
 
-Binary builds are available from Pypi for most Linux platforms and OS X. If your environment has a binary build available, just run:
+Python wheels are available from Pypi, just run:
 
 ```bash
 pip install scared
 ```
 
-If no wheel is available for your setup, you'll also need:
+#### Install from sources
 
-- setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
-- a C compiler to compile C extension
-- for **Python 3.8** only, a `llvmlite` working installation (see [install from source documentation](https://llvmlite.readthedocs.io/en/latest/admin-guide/install.html#building-manually))
-
-and then run `pip install scared`.
-
-#### Install from source
-
-To install from source, you will need:
-
-- setuptools **0.40 or greater** (just run `pip install -U pip setuptools`)
-- a C compiler to compile C extension
-- for **Python 3.8** only, a `llvmlite` working installation (see [install from source documentation](https://llvmlite.readthedocs.io/en/latest/admin-guide/install.html#building-manually), or install it with `conda`)
-
-You need to run:
+To install from sources, you will need to run:
 
 ```bash
 pip install .
@@ -115,7 +96,7 @@ This library is licensed under LGPL V3 license. See the [LICENSE](LICENSE) file 
 
 It is mainly intended for non-commercial use, by academics, students or professional willing to learn the basics of side-channel analysis.
 
-If you wish to use this library in a commercial or industrial context, eshard provides commercial licenses under fees. Contact us!
+If you wish to use this library in a commercial or industrial context, [eShard](https://www.eshard.com) provides commercial licenses under fees. [Contact us](mailto:scared@eshard.com)!
 
 ## Authors
 

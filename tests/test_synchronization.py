@@ -1,5 +1,6 @@
 import os
 import warnings
+import shutil
 
 import estraces
 import numpy as np
@@ -7,6 +8,10 @@ from pathlib import Path
 import pytest
 
 from .context import scared
+
+
+WORKING_DIRECTORY = 'tests/samples_workdir/'
+SAMPLE_DIRECTORY = 'tests/samples/'
 
 
 def test_error_counter_warns_every_consecutive_error_with_limit_doubling_each_time():
@@ -33,6 +38,13 @@ def test_error_counter_warns_every_consecutive_error_with_limit_doubling_each_ti
 
 
 @pytest.fixture
+def sample_directory():
+    shutil.copytree(SAMPLE_DIRECTORY, WORKING_DIRECTORY)
+    yield WORKING_DIRECTORY
+    shutil.rmtree(WORKING_DIRECTORY)
+
+
+@pytest.fixture
 def output_filename():
     file_name = "tests/samples/synchronization/synced.ets"
     if os.path.exists(file_name):
@@ -42,11 +54,11 @@ def output_filename():
         os.remove(file_name)
 
 
-def test_synchronizer_run_with_ets_file_applies_given_function_and_returns_correct_ths(output_filename):
+def test_synchronizer_run_with_ets_file_applies_given_function_and_returns_correct_ths(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array + 0.5
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -62,14 +74,14 @@ def test_synchronizer_run_with_ets_file_applies_given_function_and_returns_corre
     ths.close()
 
 
-def test_synchronizer_run_with_binary_file_applies_given_function_and_returns_correct_ths(output_filename):
+def test_synchronizer_run_with_binary_file_applies_given_function_and_returns_correct_ths(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array + 0.5
 
-    input_text_filename = "tests/samples/synchronization/binary_text_file.txt"
+    input_text_filename = f"{sample_directory}/synchronization/binary_text_file.txt"
     text_128 = estraces.formats.bin_extractor.FilePatternExtractor(input_text_filename, r"([a-fA-F0-9]{128})", num=0)
     text_64 = estraces.formats.bin_extractor.FilePatternExtractor(input_text_filename, r"([a-fA-F0-9]{64})", num=2)
-    input_binary_filenames = "tests/samples/synchronization/aes_binary.*"
+    input_binary_filenames = f"{sample_directory}/synchronization/aes_binary.*"
     ths = estraces.read_ths_from_bin_filenames_pattern(input_binary_filenames, dtype='uint8', metadatas_parsers={"text1": text_128, "text2": text_64})
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -84,14 +96,14 @@ def test_synchronizer_run_with_binary_file_applies_given_function_and_returns_co
     ths.close()
 
 
-def test_synchronizer_run_returns_only_values_that_are_returned_by_the_given_function_without_errors(output_filename):
+def test_synchronizer_run_returns_only_values_that_are_returned_by_the_given_function_without_errors(sample_directory, output_filename):
     def sync_function(trace_object):
         if trace_object.name == 'Trace n°0' or trace_object.name == 'Trace n°1' or trace_object.name == 'Trace n°3':
             return trace_object.samples.array
         if trace_object.name == 'Trace n°2':
             raise scared.ResynchroError('Error.')
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -100,12 +112,12 @@ def test_synchronizer_run_returns_only_values_that_are_returned_by_the_given_fun
     ths.close()
 
 
-def test_synchronizer_run_returns_traces_preserving_its_added_attributes(output_filename):
+def test_synchronizer_run_returns_traces_preserving_its_added_attributes(sample_directory, output_filename):
     def sync_function(trace_object):
         trace_object.name2 = trace_object.name
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -117,13 +129,13 @@ def test_synchronizer_run_returns_traces_preserving_its_added_attributes(output_
     ths.close()
 
 
-def test_synchronizer_run_passes_kwargs_to_the_synchronization_function(output_filename):
+def test_synchronizer_run_passes_kwargs_to_the_synchronization_function(sample_directory, output_filename):
     def sync_function(trace_object, foo, bar):
         trace_object.foo = foo
         trace_object.bar = bar
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function, foo=10, bar=20)
@@ -135,11 +147,11 @@ def test_synchronizer_run_passes_kwargs_to_the_synchronization_function(output_f
     ths.close()
 
 
-def test_synchronizer_check_prints_exception_with_function_raising_exception_and_catch_exceptions_to_true(capsys, output_filename):
+def test_synchronizer_check_prints_exception_with_function_raising_exception_and_catch_exceptions_to_true(sample_directory, capsys, output_filename):
     def sync_function(trace_object):
         raise scared.ResynchroError('Error.')
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -149,11 +161,11 @@ def test_synchronizer_check_prints_exception_with_function_raising_exception_and
     ths.close()
 
 
-def test_synchronizer_check_raises_exception_with_function_raising_exception_and_catch_exceptions_to_false(capsys, output_filename):
+def test_synchronizer_check_raises_exception_with_function_raising_exception_and_catch_exceptions_to_false(sample_directory, capsys, output_filename):
     def sync_function(trace_object):
         raise scared.ResynchroError('Error.')
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -164,11 +176,11 @@ def test_synchronizer_check_raises_exception_with_function_raising_exception_and
     ths.close()
 
 
-def test_synchronizer_run_raises_exception_with_already_existing_result_file_and_overwrite_to_false(output_filename):
+def test_synchronizer_run_raises_exception_with_already_existing_result_file_and_overwrite_to_false(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -181,11 +193,11 @@ def test_synchronizer_run_raises_exception_with_already_existing_result_file_and
     ths.close()
 
 
-def test_synchronizer_run_does_not_raise_exception_with_already_existing_result_file_and_overwrite_to_true(output_filename):
+def test_synchronizer_run_does_not_raise_exception_with_already_existing_result_file_and_overwrite_to_true(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -197,11 +209,11 @@ def test_synchronizer_run_does_not_raise_exception_with_already_existing_result_
     ths.close()
 
 
-def test_synchronizer_run_raises_exception_with_run_called_twice(output_filename):
+def test_synchronizer_run_raises_exception_with_run_called_twice(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -219,40 +231,40 @@ def test_synchronizer_raises_exception_with_input_ths_of_wrong_type(output_filen
         scared.Synchronizer("foo", output_filename, sync_function)
 
 
-def test_synchronizer_accept_path_as_output(output_filename):
+def test_synchronizer_accept_path_as_output(sample_directory, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
     scared.Synchronizer(ths, Path(output_filename), sync_function)
 
 
-def test_synchronizer_raises_exception_with_output_of_wrong_type():
+def test_synchronizer_raises_exception_with_output_of_wrong_type(sample_directory):
     def sync_function(trace_object):
         return trace_object.samples.array
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     with pytest.raises(TypeError):
         scared.Synchronizer(ths, 3, sync_function)
 
 
-def test_synchronizer_raises_exception_with_function_of_wrong_type(output_filename):
+def test_synchronizer_raises_exception_with_function_of_wrong_type(sample_directory, output_filename):
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     with pytest.raises(TypeError):
         scared.Synchronizer(ths, output_filename, "foo")
 
 
-def test_synchronizer_run_with_ets_file_report_prints_correct_string(capsys, output_filename):
+def test_synchronizer_run_with_ets_file_report_prints_correct_string(sample_directory, capsys, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array + 0.5
 
-    input_filename = "tests/samples/synchronization/ets_file.ets"
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
@@ -265,14 +277,14 @@ def test_synchronizer_run_with_ets_file_report_prints_correct_string(capsys, out
     ths.close()
 
 
-def test_synchronizer_run_with_binary_file__str__prints_correct_string(capsys, output_filename):
+def test_synchronizer_run_with_binary_file__str__prints_correct_string(sample_directory, capsys, output_filename):
     def sync_function(trace_object):
         return trace_object.samples.array + 0.5
 
-    input_text_filename = "tests/samples/synchronization/binary_text_file.txt"
+    input_text_filename = f"{sample_directory}/synchronization/binary_text_file.txt"
     text_128 = estraces.formats.bin_extractor.FilePatternExtractor(input_text_filename, r"([a-fA-F0-9]{128})", num=0)
     text_64 = estraces.formats.bin_extractor.FilePatternExtractor(input_text_filename, r"([a-fA-F0-9]{64})", num=2)
-    input_binary_filenames = "tests/samples/synchronization/aes_binary.*"
+    input_binary_filenames = f"{sample_directory}/synchronization/aes_binary.*"
     ths = estraces.read_ths_from_bin_filenames_pattern(input_binary_filenames, dtype='uint8', metadatas_parsers={"text1": text_128, "text2": text_64})
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)

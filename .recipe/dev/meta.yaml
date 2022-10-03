@@ -1,14 +1,11 @@
-{% set version = "0.9.2" %}
+{% set data = load_setup_py_data() %}
 
 package:
-  name: scared
-  version: {{ version }}
+  name: scared-dev
+  version: {{ data['version'] }}
 
 source:
-  path: ../
-
-build:
-  number: 1
+  path: ../../
 
 requirements:
   host:
