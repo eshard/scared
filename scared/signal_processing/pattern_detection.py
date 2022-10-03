@@ -3,7 +3,7 @@
 Provides sliding metrics to detect a 'pattern' into a 'trace', with len(pattern) < len(trace).
 
 correlation: Pearson correlation metric. Highest score is the better.
-distance: Euclidian distance metric. Lowest score is the better.
+distance: Euclidean distance metric. Lowest score is the better.
 bcdc: BCDC metric. Lowest score is the better.
 
 """
@@ -56,9 +56,9 @@ def correlation(trace, pattern):
 
 
 def distance(trace, pattern):
-    """Pattern matching using euclidian distance.
+    """Pattern matching using euclidean distance.
 
-    This function performs a sliding euclidian distance between trace and pattern.
+    This function performs a sliding euclidean distance between trace and pattern.
     Lowest score is the better.
 
     Args:

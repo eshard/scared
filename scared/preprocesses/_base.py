@@ -21,7 +21,7 @@ def preprocess(function):
         if not isinstance(traces, _np.ndarray):
             raise TypeError(f'preprocess expect Numpy ndarray, not {type(traces)}.')
         if traces.ndim != 2:
-            raise ValueError(f'preprocess expect 2 dimension nparray, not {traces.ndim} dimensions array.')
+            raise ValueError(f'preprocess expect 2 dimension numpy array, not {traces.ndim} dimensions array.')
         result = function(traces)
         if not isinstance(result, _np.ndarray):
             raise PreprocessError(f'Preprocess {function} does not returns correct typed results, but {type(result)}.')

@@ -1,4 +1,4 @@
-"""Signal processing basic functionnalities on numpy arrays."""
+"""Signal processing basic functionalities on numpy arrays."""
 
 import numpy as _np
 

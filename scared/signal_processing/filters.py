@@ -1,4 +1,4 @@
-"""Filter functionnalities with mainly Butterworth filter."""
+"""Filter functionalities with mainly Butterworth filter."""
 
 import numpy as _np
 from scipy import signal as _signal

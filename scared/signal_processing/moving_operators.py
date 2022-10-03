@@ -1,4 +1,4 @@
-"""Moving functionnalities with moving sum, mean, variance, standard deviation, skew and kurtosis."""
+"""Moving functionalities with moving sum, mean, variance, standard deviation, skew and kurtosis."""
 
 import numpy as _np
 from .base import cast_array, pad

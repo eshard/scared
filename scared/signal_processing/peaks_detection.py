@@ -1,4 +1,4 @@
-"""Peaks detection functionnalities."""
+"""Peaks detection functionalities."""
 
 from enum import Enum as _Enum
 import warnings as _warnings

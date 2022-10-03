@@ -39,7 +39,7 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
         logger.info(f'Update of partitioned distinguisher {self.__class__.__name__} in progress.')
         data = self._data_to_partition_index(data)
         self._accumulate(traces, data)
-        logger.info(f'End of accumualtions of traces for {self.__class__.__name__}.')
+        logger.info(f'End of accumulations of traces for {self.__class__.__name__}.')
 
 
 @_nb.njit()
@@ -62,7 +62,7 @@ def _define_lut_func(partitions):
 
 
 class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
-    """Base mixin for various traces partitionning based attacks (ANOVA, NICV, SNR, ...).
+    """Base mixin for various traces partitioning based attacks (ANOVA, NICV, SNR, ...).
 
     Attacks differs mainly in the metric computation, not in the accumulation process.
 

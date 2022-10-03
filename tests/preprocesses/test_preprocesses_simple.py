@@ -3,18 +3,23 @@ import pytest
 import numpy as np
 
 
-@pytest.fixture(params=['int', 'uint', 'float'])
+@pytest.fixture(params=['int16', 'uint8', 'float32', 'float64'])
 def traces(request):
-    if request.param == 'int':
+    if request.param == 'int16':
         return np.random.randint(-10000, 10000, (500, 2001), dtype='int16')
-    elif request.param == 'uint':
+    elif request.param == 'uint8':
         return np.random.randint(0, 256, (500, 2001), dtype='uint8')
-    elif request.param == 'float':
-        return np.random.random((500, 2001))
+    elif request.param == 'float32':
+        return np.random.random((500, 2001)).astype('float32')
+    elif request.param == 'float64':
+        return np.random.random((500, 2001)).astype('float64')
 
 
 def test_square_preprocess(traces):
-    assert np.array_equal(traces ** 2, scared.preprocesses.square(traces))
+    expected = np.square(traces, dtype=max(traces.dtype, 'float32'))
+    result = scared.preprocesses.square(traces)
+    assert result.dtype >= 'float32'
+    assert np.array_equal(expected, result)
 
     with pytest.raises(TypeError):
         scared.preprocesses.square('foo')
@@ -41,8 +46,9 @@ def test_fft_modulus_preprocess(traces):
 
 
 def test_center(traces):
-    expected = traces - np.mean(traces, axis=0)
+    expected = traces - np.mean(traces, axis=0, dtype=max(traces.dtype, 'float32'))
     result = scared.preprocesses.center(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
@@ -50,13 +56,15 @@ def test_center_on_given_mean(traces):
     given_mean = np.mean(np.random.random((500, 2001)), axis=0)
     expected = traces - given_mean
     result = scared.preprocesses.CenterOn(mean=given_mean)(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
 def test_center_on_given_mean_works_if_mean_is_none(traces):
     given_mean = None
-    expected = traces - np.nanmean(traces, axis=0)
+    expected = traces - np.nanmean(traces, axis=0, dtype=max(traces.dtype, 'float32'))
     result = scared.preprocesses.CenterOn(mean=given_mean)(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
@@ -72,24 +80,35 @@ def test_center_on_given_mean_raises_exception_if_incompatible_shapes(traces):
         scared.preprocesses.CenterOn(wrong_mean)(traces)
 
 
+def test_center_on_given_precision(traces):
+    for precision in ['float64', 'float128']:
+        expected = traces - np.mean(traces, axis=0, dtype=precision)
+        result = scared.preprocesses.CenterOn(precision=precision)(traces)
+        assert result.dtype == precision
+        assert np.array_equal(expected, result)
+
+
 def test_standardize(traces):
-    expected = traces - np.mean(traces, axis=0)
-    expected /= np.std(traces, axis=0)
+    expected = traces - np.mean(traces, axis=0, dtype=max(traces.dtype, 'float32'))
+    expected /= np.std(traces, axis=0, dtype=max(traces.dtype, 'float32'))
     result = scared.preprocesses.standardize(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
 def test_standardize_on_given_mean(traces):
     given_mean = np.mean(np.random.random((500, 2001)), axis=0)
-    expected = (traces - given_mean) / np.std(traces, axis=0)
+    expected = (traces - given_mean) / np.std(traces, axis=0, dtype=max(traces.dtype, 'float32'))
     result = scared.preprocesses.StandardizeOn(mean=given_mean)(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
 def test_standardize_on_given_std(traces):
     given_std = np.nanstd(np.random.random((500, 2001)), axis=0)
-    expected = (traces - np.mean(traces, axis=0)) / given_std
+    expected = (traces - np.mean(traces, axis=0, dtype=max(traces.dtype, 'float32'))) / given_std
     result = scared.preprocesses.StandardizeOn(std=given_std)(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
@@ -98,6 +117,7 @@ def test_standardize_on_given_std_and_mean(traces):
     given_std = np.nanstd(np.random.random((500, 2001)), axis=0)
     expected = (traces - given_mean) / given_std
     result = scared.preprocesses.StandardizeOn(std=given_std, mean=given_mean)(traces)
+    assert result.dtype >= 'float32'
     assert np.array_equal(expected, result)
 
 
@@ -113,6 +133,15 @@ def test_standardize_on_raises_exception_if_incompatible_shapes(traces):
 
     with pytest.raises(scared.PreprocessError):
         scared.preprocesses.StandardizeOn(std=wrong_std, mean=wrong_mean)(traces)
+
+
+def test_standardize_on_given_precision(traces):
+    for precision in ['float64', 'float128']:
+        expected = traces - np.nanmean(traces, axis=0, dtype=precision)
+        expected /= np.nanstd(traces, axis=0, dtype=precision)
+        result = scared.preprocesses.StandardizeOn(precision=precision)(traces)
+        assert result.dtype == precision
+        assert np.array_equal(expected, result)
 
 
 def test_power_preprocess_raises_exception_if_power_not_a_number(traces):
@@ -132,12 +161,19 @@ def test_power_preprocess(traces, powers):
     assert p.power == powers
     assert isinstance(p, scared.Preprocess)
     expected = traces ** powers
-    data = p(traces)
-    assert np.allclose(expected, data, equal_nan=True)
+    result = p(traces)
+    assert result.dtype >= 'float32'
+    assert np.allclose(expected, result, equal_nan=True)
 
 
 def test_power_preprocess_default_value(traces):
     p = scared.preprocesses.ToPower()
-    assert isinstance(p, scared.Preprocess)
-    expected = traces ** 1
-    assert np.array_equal(expected, p(traces))
+    assert np.array_equal(traces, p(traces))
+
+
+def test_power_given_precision(traces, powers):
+    for precision in ['float64', 'float128']:
+        expected = np.power(traces, powers, dtype=precision)
+        result = scared.preprocesses.ToPower(powers, precision=precision)(traces)
+        assert result.dtype == precision
+        assert np.array_equal(expected, result, equal_nan=True)

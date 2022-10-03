@@ -114,13 +114,13 @@ class _BaseAnalysis:
 class BaseAttack(_BaseAnalysis):
     """Base class for all attack analysis processing objects.
 
-    This class must be subclassed and combined with a mixin inheriting from :class:`DistiguinsherMixin`.
+    This class must be subclassed and combined with a mixin inheriting from :class:`DistinguisherMixin`.
     It provides the common processing method for a side-channel statistical analysis.
 
     The base class:
         - initialize the state before processing any traces
         - provides method, either to process traces and compute results manually, either to run a complete processing of a :class:`Container` instance
-        - manage results attributes: dstinguisher method output (`results`), `scores` and `convergence_traces`
+        - manage results attributes: distinguisher method output (`results`), `scores` and `convergence_traces`
 
     Attributes:
         results (:class:`numpy.ndarray`): array containing the latest results obtained from the distinguisher computing.
@@ -154,7 +154,7 @@ class BaseAttack(_BaseAnalysis):
             selection_function (:class:`SelectionFunction`): selection function to compute intermediate values. Must inherit from :class:`SelectionFunction`.
             model (:class:`Model`): model instance to compute leakage intermediate values. Must inherit from :class:`Model`.
             discriminant (function): a function to compute scores from a distinguisher results array.
-                Must be decorated with :func:`scared.discriminants.disciminant`.
+                Must be decorated with :func:`scared.discriminants.discriminant`.
             precision (:class:`numpy.dtype`, default=`float32`): precision which will be used for computations.
             convergence_step (int, default=None): if provided, `run` method will compute and stores `scores` each time `convergence_step` traces are processed.
 
@@ -221,7 +221,7 @@ class BaseAttack(_BaseAnalysis):
         logger.info('Scores computed.')
 
     def __str__(self):
-        template_str = f'''Analysis informations:
+        template_str = f'''Analysis information:
     {self.selection_function}
     Distinguisher     : {self._distinguisher_str}
     Model             : {self.model}
@@ -233,13 +233,13 @@ class BaseAttack(_BaseAnalysis):
 class BaseReverse(_BaseAnalysis):
     """Base class for all reverse analysis processing objects.
 
-    This class must be subclassed and combined with a mixin inheriting from :class:`DistiguinsherMixin`.
+    This class must be subclassed and combined with a mixin inheriting from :class:`DistinguisherMixin`.
     It provides the common processing method for a side-channel statistical analysis.
 
     The base class:
         - initialize the state before processing any traces
         - provides method, either to process traces and compute results manually, either to run a complete processing of a :class:`Container` instance
-        - manage results attributes: dstinguisher method output (`results`)
+        - manage results attributes: distinguisher method output (`results`)
 
     Attributes:
         results (:class:`numpy.ndarray`): array containing the latest results obtained from the distinguisher computing.

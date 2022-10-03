@@ -65,3 +65,4 @@ out/*
 __pycache__/*
 .venv/*
 .devcontainer
+tmp/

@@ -44,7 +44,7 @@ _hw_functions_list = dict([(1, _fhw8), (2, _fhw16), (4, _fhw32), (8, _fhw64)])
 
 
 class Model(abc.ABC):
-    """Leakage model callable abtsract class.
+    """Leakage model callable abstract class.
 
     Use this abstract class to implement your own leakage function. Subclass it and define a _compute method which
     take a data argument.

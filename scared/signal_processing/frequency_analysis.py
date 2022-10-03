@@ -1,4 +1,4 @@
-"""Frequency analysis functionnalities with mainly FFT operation."""
+"""Frequency analysis functionalities with mainly FFT operation."""
 
 import numpy as _np
 
