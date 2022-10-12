@@ -1,4 +1,5 @@
 from .context import scared
+from scared.analysis.template import _TemplateBuildAnalysis
 import pytest
 import numpy as np
 
@@ -242,7 +243,7 @@ def test_template_run_raises_exception_if_building_not_done(template_klass, sf, 
         template.run(container)
 
 
-def test_template_build_phase_method_1(sf, template_datas):
+def test_template_build_phase_method(sf, template_datas):
     ths_building = scared.traces.formats.read_ths_from_ram(
         template_datas.building_samples,
         plaintext=template_datas.building_plaintext,
@@ -250,7 +251,6 @@ def test_template_build_phase_method_1(sf, template_datas):
     building_cont = scared.Container(ths=ths_building)
     template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
                                      model=scared.Value())
-    template._build_analysis._accumulate_core_2 = template._build_analysis._accumulate_core_1
     template.build()
 
     assert np.array_equal(template._build_analysis._exi, template_datas.exi)
@@ -260,46 +260,6 @@ def test_template_build_phase_method_1(sf, template_datas):
     assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov)
     assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, )
     assert np.array_equal(template.templates, template_datas.templates)
-
-
-def test_template_build_phase_method_2(sf, template_datas):
-    ths_building = scared.traces.formats.read_ths_from_ram(
-        template_datas.building_samples,
-        plaintext=template_datas.building_plaintext,
-        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
-    building_cont = scared.Container(ths=ths_building)
-    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
-                                     model=scared.Value())
-    template._build_analysis._accumulate_core_1 = template._build_analysis._accumulate_core_2
-    template.build()
-
-    assert np.array_equal(template._build_analysis._exi, template_datas.exi)
-    assert np.array_equal(template._build_analysis._counters, template_datas.counters)
-
-    assert np.array_equal(template._build_analysis._exxi, template_datas.exxi)
-    assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov)
-    assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, )
-    assert np.array_equal(template.templates, template_datas.templates)
-
-
-def test_template_build_timings_updated(sf, template_datas):
-    ths_building = scared.traces.formats.read_ths_from_ram(
-        template_datas.building_samples,
-        plaintext=template_datas.building_plaintext,
-        key=np.array([template_datas.building_key for i in range(len(template_datas.building_samples))]))
-    building_cont = scared.Container(ths=ths_building)
-
-    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
-                                     model=scared.Value())
-    template._build_analysis._timings = [-2, -1]
-    template.build()
-    assert template._build_analysis._timings[0] > 0
-
-    template = scared.TemplateAttack(container_building=building_cont, reverse_selection_function=sf,
-                                     model=scared.Value())
-    template._build_analysis._timings = [-2, -3]
-    template.build()
-    assert template._build_analysis._timings[1] > 0
 
 
 def test_template_matching_phase(sf, template_datas):
@@ -458,3 +418,46 @@ def test_template_works_with_multiple_words_combined(building_container, sf, con
     )
     template.build()
     template.run(container)
+
+
+@pytest.fixture(scope='module')
+def test_vectors_template_sum_precision():
+    """Compute the same Template build in C/F order, float32/64 precision, and both accumulate_core implementations."""
+    dataset = np.load('tests/samples/dataset_for_precision_errors.npz')
+
+    distinguishers = {}
+    for order in ['C', 'F']:
+        for precision in ['float32', 'float64']:
+            traces = np.asarray(dataset['samples'], order=order, dtype=precision)
+            data = np.asarray(scared.Monobit(0)(dataset['data'][:, 2:3]), order=order)
+
+            template = distinguishers[order, precision] = _TemplateBuildAnalysis(selection_function=scared.selection_function(lambda x: x),
+                                                                                 model=scared.Monobit(0),
+                                                                                 partitions=range(2),
+                                                                                 precision=precision)
+
+            for _ in range(5):  # Process 5 times the same batch
+                template.update(traces, data)
+    return distinguishers
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_template_build_order_independent(precision, test_vectors_template_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_template_sum_precision
+    for attribute in ['_exi', '_exxi']:
+        np.testing.assert_array_equal(getattr(distinguishers['F', precision], attribute),
+                                      getattr(distinguishers['C', precision], attribute),
+                                      err_msg=f'Difference between F/C inputs, for attribute {attribute} in precision {precision}')
+
+
+@pytest.mark.parametrize('order', ['C', 'F'])
+def test_template_build_acceptable_precision(order, test_vectors_template_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_template_sum_precision
+    for attribute in ['_exi', '_exxi']:
+        np.testing.assert_allclose(getattr(distinguishers[order, 'float32'], attribute),
+                                   getattr(distinguishers[order, 'float64'], attribute),
+                                   atol=200,
+                                   rtol=1e-6,
+                                   err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')

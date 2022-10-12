@@ -256,3 +256,42 @@ def test_exception_well_passed_to_analysis_level(ths_1, ths_2):
     analysis = scared.TTestAnalysis()
     with pytest.raises(TypeError, match="traces must be numpy ndarray, not <class 'list'>"):
         analysis.run(cont)
+
+
+@pytest.fixture(scope='module')
+def test_vectors_ttest_sum_precision():
+    """Compute the same t-test accumulator in C/F order and float32/64 precision."""
+    dataset = np.load('tests/samples/dataset_for_precision_errors.npz')
+
+    ttests = {}
+    for order in ['C', 'F']:
+        for precision in ['float32', 'float64']:
+            traces = np.asarray(dataset['samples'], order=order, dtype=precision)
+
+            ttest = ttests[order, precision] = scared.ttest.TTestThreadAccumulator(precision)
+
+            for _ in range(5):  # Process 5 times the same batch
+                ttest.update(traces)
+    return ttests
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_ttest_update_order_independent(precision, test_vectors_ttest_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    ttests = test_vectors_ttest_sum_precision
+    for attribute in ['sum', 'sum_squared']:
+        np.testing.assert_array_equal(getattr(ttests['F', precision], attribute),
+                                      getattr(ttests['C', precision], attribute),
+                                      err_msg=f'Difference between F/C inputs, for attribute {attribute} in precision {precision}')
+
+
+@pytest.mark.parametrize('order', ['C', 'F'])
+def test_cpa_update_acceptable_precision(order, test_vectors_ttest_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    ttests = test_vectors_ttest_sum_precision
+    for attribute in ['sum', 'sum_squared']:
+        np.testing.assert_allclose(getattr(ttests[order, 'float32'], attribute),
+                                   getattr(ttests[order, 'float64'], attribute),
+                                   atol=0,
+                                   rtol=1e-6,
+                                   err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')

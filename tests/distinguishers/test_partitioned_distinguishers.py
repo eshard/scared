@@ -239,3 +239,49 @@ def test_snr_compute(partitioned_datas):
 
     results = d.compute()
     assert np.array_equal(partitioned_datas.result_snr, results)
+
+
+@pytest.fixture(params=[1, 2], scope='module')
+def test_vectors_partitioned_sum_precision(request):
+    """Compute the same Partitioned update in C/F order, float32/64 precision, and both accumulate_core implementations."""
+    dataset = np.load('tests/samples/dataset_for_precision_errors.npz')
+
+    distinguishers = {}
+    for order in ['C', 'F']:
+        for precision in ['float32', 'float64']:
+            traces = np.asarray(dataset['samples'], order=order, dtype=precision)
+            data = np.asarray(scared.Monobit(0)(dataset['data'][:, 2:3]), order=order)
+
+            anova = distinguishers[order, precision] = scared.distinguishers.ANOVADistinguisher(partitions=range(2), precision=precision)
+
+            # Surcharge implementation
+            if request.param == 1:
+                anova._accumulate_core_2 = anova._accumulate_core_1
+            elif request.param == 2:
+                anova._accumulate_core_1 = anova._accumulate_core_2
+
+            for _ in range(5):  # Process 5 times the same batch
+                anova.update(traces, data)
+    return distinguishers
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_partitioned_update_order_independent(precision, test_vectors_partitioned_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_partitioned_sum_precision
+    for attribute in ['sum', 'sum_square']:
+        np.testing.assert_array_equal(getattr(distinguishers['F', precision], attribute),
+                                      getattr(distinguishers['C', precision], attribute),
+                                      err_msg=f'Difference between F/C inputs, for attribute {attribute} in precision {precision}')
+
+
+@pytest.mark.parametrize('order', ['C', 'F'])
+def test_partitioned_update_acceptable_precision(order, test_vectors_partitioned_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_partitioned_sum_precision
+    for attribute in ['sum', 'sum_square']:
+        np.testing.assert_allclose(getattr(distinguishers[order, 'float32'], attribute),
+                                   getattr(distinguishers[order, 'float64'], attribute),
+                                   atol=200,
+                                   rtol=1e-6,
+                                   err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')

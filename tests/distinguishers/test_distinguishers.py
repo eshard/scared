@@ -352,3 +352,83 @@ def test_cpa_update_method_converts_traces_and_data_properly():
 
     assert np.alltrue(c.ex2 > 0)
     assert np.alltrue(c.ey2 > 0)
+
+
+@pytest.fixture(scope='module')
+def test_vectors_dpa_sum_precision():
+    """Compute the same DPA update in C/F order and float32/64 precision."""
+    dataset = np.load('tests/samples/dataset_for_precision_errors.npz')
+
+    distinguishers = {}
+    for order in ['C', 'F']:
+        for precision in ['float32', 'float64']:
+            traces = np.asarray(dataset['samples'], order=order, dtype=precision) ** 2
+            data = np.asarray(scared.Monobit(0)(dataset['data'][:, 2:3]), order=order)
+
+            dpa = distinguishers[order, precision] = scared.distinguishers.DPADistinguisher(precision)
+
+            for _ in range(5):  # Process 5 times the same batch
+                dpa.update(traces, data)
+    return distinguishers
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_dpa_update_order_independent(precision, test_vectors_dpa_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_dpa_sum_precision
+    for attribute in ['accumulator_traces', 'accumulator_ones', 'processed_ones']:
+        np.testing.assert_array_equal(getattr(distinguishers['F', precision], attribute),
+                                      getattr(distinguishers['C', precision], attribute),
+                                      err_msg=f'Difference between F/C inputs, for attribute {attribute} in precision {precision}')
+
+
+@pytest.mark.parametrize('order', ['C', 'F'])
+def test_dpa_update_acceptable_precision(order, test_vectors_dpa_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_dpa_sum_precision
+    for attribute in ['accumulator_traces', 'accumulator_ones', 'processed_ones']:
+        np.testing.assert_allclose(getattr(distinguishers[order, 'float32'], attribute),
+                                   getattr(distinguishers[order, 'float64'], attribute),
+                                   atol=200,
+                                   rtol=1e-6,
+                                   err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')
+
+
+@pytest.fixture(scope='module')
+def test_vectors_cpa_sum_precision():
+    """Compute the same CPA update in C/F order and float32/64 precision."""
+    dataset = np.load('tests/samples/dataset_for_precision_errors.npz')
+
+    distinguishers = {}
+    for order in ['C', 'F']:
+        for precision in ['float32', 'float64']:
+            traces = np.asarray(dataset['samples'], order=order, dtype=precision)
+            data = np.asarray(dataset['data'], order=order, dtype=precision)
+
+            cpa = distinguishers[order, precision] = scared.distinguishers.CPADistinguisher(precision)
+
+            for _ in range(5):  # Process 5 times the same batch
+                cpa.update(traces, data)
+    return distinguishers
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_cpa_update_order_independent(precision, test_vectors_cpa_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_cpa_sum_precision
+    for attribute in ['ex', 'ex2', 'ey', 'ey2', 'exy']:
+        np.testing.assert_array_equal(getattr(distinguishers['F', precision], attribute),
+                                      getattr(distinguishers['C', precision], attribute),
+                                      err_msg=f'Difference between F/C inputs, for attribute {attribute} in precision {precision}')
+
+
+@pytest.mark.parametrize('order', ['C', 'F'])
+def test_cpa_update_acceptable_precision(order, test_vectors_cpa_sum_precision):
+    """See issue https://gitlab.com/eshard/scared/-/issues/65 for details."""
+    distinguishers = test_vectors_cpa_sum_precision
+    for attribute in ['ex', 'ex2', 'ey', 'ey2', 'exy']:
+        np.testing.assert_allclose(getattr(distinguishers[order, 'float32'], attribute),
+                                   getattr(distinguishers[order, 'float64'], attribute),
+                                   atol=200,
+                                   rtol=1e-6,
+                                   err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')
