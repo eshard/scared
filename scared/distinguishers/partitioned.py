@@ -84,16 +84,20 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
     @_nb.njit(parallel=True)
     def _accumulate_core_1(traces, data, self_sum, self_sum_square, self_counters, self_precision):
         for sample_idx in _nb.prange(traces.shape[1]):
+            tmp_sum = _np.zeros((self_counters.shape[0], self_counters.shape[1]), dtype='float64')
+            tmp_sum_square = _np.zeros((self_counters.shape[0], self_counters.shape[1]), dtype='float64')
             for trace_idx in range(traces.shape[0]):
                 x = traces[trace_idx, sample_idx]
                 xx = x * x
                 for data_idx in range(data.shape[1]):
                     data_value = data[trace_idx, data_idx]
                     if data_value != -1:
-                        self_sum[sample_idx, data_idx, data_value] += x
-                        self_sum_square[sample_idx, data_idx, data_value] += xx
+                        tmp_sum[data_idx, data_value] += x
+                        tmp_sum_square[data_idx, data_value] += xx
                         if sample_idx == 0:
                             self_counters[data_idx, data_value] += 1
+            self_sum[sample_idx] += tmp_sum
+            self_sum_square[sample_idx] += tmp_sum_square
 
     @staticmethod
     @_nb.njit(parallel=True)

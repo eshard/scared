@@ -39,8 +39,8 @@ class DPADistinguisherMixin(DistinguisherMixin):
         logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
 
         self.processed_ones += _np.sum(data, axis=0)
-        traces = traces.astype(self.precision)
-        data = data.astype(self.precision)
+        traces = traces.astype(self.precision, order='F')
+        data = data.astype(self.precision, order='F')
         self.accumulator_traces += _np.sum(traces, axis=0)
         self.accumulator_ones += _np.dot(data.T, traces)
         logger.info(f'End updating accumulators for {self.__class__.__name__}.')
