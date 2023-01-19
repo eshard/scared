@@ -40,6 +40,16 @@ def test_partitioned_distinguishers_analyses_raises_exception_if_incorrect_parti
         DumbPartDistinguisher(partitions=np.array([1.2, 3]))
 
 
+def test_partitioned_analyses_raises_if_max_partitions_gte_2p16():
+    with pytest.raises(ValueError, match='partition values must be in '):
+        DumbPartDistinguisher(partitions=range(2**16 - 10, 2**16 + 10))
+
+
+def test_partitioned_analyses_raises_if_max_partitions_lte_2p16():
+    with pytest.raises(ValueError, match='partition values must be in '):
+        DumbPartDistinguisher(partitions=range(-2**16 - 10, -2**16 + 10))
+
+
 def test_partitioned_analyses_raises_exception_at_init_if_partitions_is_none_and_value_gt_than_255():
     d = DumbPartDistinguisher()
     with pytest.raises(ValueError, match='max value for intermediate data is greater than 255'):
@@ -97,6 +107,44 @@ def test_data_to_partition_index_function():
         assert nd == idx
 
 
+def test_data_to_partition_index_function_with_negative_partitions():
+    traces = np.random.randint(0, 256, (1, 3), dtype='uint8')
+    data = np.random.randint(-10, 18, (1, 256), dtype='int8')
+    partitions = range(-10, 18, 2)
+    d = DumbPartDistinguisher(partitions=partitions)
+    d._initialize(traces, data)
+    new_data = d._data_to_partition_index(data)
+
+    assert np.array_equal(d.partitions, np.arange(-10, 18, 2))
+    assert new_data.shape == data.shape
+
+    for d, nd in zip(data.flatten(), new_data.flatten()):
+        idx = np.where(d == partitions)[0]
+        idx = -1 if len(idx) == 0 else idx[0]
+        assert nd == idx
+
+
+@pytest.mark.parametrize('dtype', ['complex', 'float32', 'bool'])
+def test_data_to_partition_index_raises_if_not_integer(dtype):
+    traces = np.random.randint(0, 256, (1, 3), dtype='uint8')
+    data = np.random.randint(0, 2, (1, 256), dtype='uint8')
+    data = data.astype(dtype)
+    partitions = range(0, 18, 2)
+    d = DumbPartDistinguisher(partitions=partitions)
+    with pytest.raises(TypeError, match='data dtype for partitioned distinguisher, including MIA and Template, must be an integer dtype, not'):
+        d.update(traces=traces, data=data)
+
+
+@pytest.mark.parametrize('dtype', ['uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', int])
+def test_data_to_partition_index_works_with_all_integer_dtypes(dtype):
+    traces = np.random.randint(0, 256, (1, 3), dtype='uint8')
+    data = np.random.randint(0, 2, (1, 256), dtype='uint8')
+    data = data.astype(dtype)
+    partitions = range(0, 18, 2)
+    d = DumbPartDistinguisher(partitions=partitions)
+    d.update(traces=traces, data=data)
+
+
 def test_partitioned_analyses_init_initialize_accumulators_with_sparse_partitions():
     d = DumbPartDistinguisher(partitions=range(0, 18, 2))
     d.update(traces=np.random.randint(0, 255, (500, 200), dtype='int16'),
@@ -113,7 +161,7 @@ def test_partitioned_analyses_init_raises_error_if_accumulators_are_too_large_fo
     traces = np.random.randint(0, 255, (500, 2000000), dtype='uint8')
     data = np.random.randint(0, 255, (500, 40096), dtype='uint8')
 
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.distinguishers.DistinguisherError, match='This analysis will probably need more than 90'):
         d.update(traces=traces, data=data)
 
 

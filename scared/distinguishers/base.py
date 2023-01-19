@@ -46,9 +46,8 @@ class DistinguisherMixin(abc.ABC):
             logger.debug(f'Origin shape {self._origin_shape}')
             mem = psutil.virtual_memory().available / 2 ** 30
             logger.debug(f'Memory usage before compute {mem} GB.')
+            self._check(traces=traces, data=data)
             self._initialize(traces=traces, data=data)
-
-        self._check(traces=traces, data=data)
 
         self.processed_traces += traces.shape[0]
         logger.info('Will call _update traces.')
@@ -80,19 +79,18 @@ class DistinguisherMixin(abc.ABC):
 
     def _check(self, traces, data):
         if not self._is_checked:
-            data_dim = data.shape[1]
-            dtype_size = _np.dtype(self.precision).itemsize
-            needed_mem = dtype_size * data_dim * self._memory_usage_coefficient(trace_size=traces.shape[1]) / 2 ** 30
+            needed_mem = self._memory_usage(traces, data) / 2 ** 30
             available_mem = psutil.virtual_memory().available / 2 ** 30
             logger.debug(f'Needed memory estimated to {needed_mem} GB, for available {available_mem}.')
             self._is_checked = True
             if needed_mem > 0.9 * available_mem:
                 raise DistinguisherError(
-                    f'This analysis will probably need more than 90% of your available memory - {available_mem} GB available against {needed_mem} GB needed.'
+                    f'This analysis will probably need more than 90% of your available memory. {available_mem} GB available against {needed_mem} GB needed.'
                 )
 
-    def _memory_usage_coefficient(self, trace_size):
-        return 2 * trace_size
+    def _memory_usage(self, traces, data):
+        dtype_size = _np.dtype(self.precision).itemsize
+        return 2 * dtype_size * data.shape[1] * traces.shape[1]
 
     @property
     @abc.abstractmethod
