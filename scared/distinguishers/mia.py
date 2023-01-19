@@ -9,8 +9,18 @@ logger = logging.getLogger(__name__)
 class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
     """This partitioned distinguisher mixin applies a mutual information computation."""
 
-    def _memory_usage_coefficient(self, trace_size):
-        return 3 * len(self.partitions) * self.bins_number * trace_size
+    def _memory_usage(self, traces, data):
+        self._init_partitions(data)
+        self._init_bin_edges(traces)
+        dtype_size = _np.dtype(self.precision).itemsize
+        return 3 * dtype_size * data.shape[1] * traces.shape[1] * len(self.partitions) * self.bins_number
+
+    def _init_bin_edges(self, traces):
+        if self.bin_edges is None:
+            logger.info('Start setting y_window and bin_edges.')
+            self.y_window = (_np.min(traces), _np.max(traces))
+            self.bin_edges = _np.linspace(*self.y_window, self.bins_number + 1)
+            logger.info('Bin edges set.')
 
     @property
     def bin_edges(self):
@@ -64,11 +74,6 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
                     self_accumulators[sample_idx, bin_idx, data[trace_idx, data_idx], data_idx] += 1
 
     def _accumulate(self, traces, data):
-        if self.bin_edges is None:
-            logger.info('Start setting y_window and bin_edges.')
-            self.y_window = (_np.min(traces), _np.max(traces))
-            self.bin_edges = _np.linspace(*self.y_window, self.bins_number + 1)
-            logger.info('Bin edges set.')
         self._accumulate_core(traces, data, self.bin_edges, self.accumulators)
 
     def _compute_pdf(self, array, axis):

@@ -9,10 +9,12 @@ logger = _logging.getLogger(__name__)
 
 class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
 
-    def _memory_usage_coefficient(self, trace_size):
-        return 3 * len(self.partitions) * trace_size
+    def _memory_usage(self, traces, data):
+        self._init_partitions(data)
+        dtype_size = _np.dtype(self.precision).itemsize
+        return 3 * dtype_size * data.shape[1] * traces.shape[1] * len(self.partitions)
 
-    def _initialize(self, traces, data):
+    def _init_partitions(self, data):
         maxdata = _np.nanmax(data)
         mindata = _np.nanmin(data)
         if self.partitions is None:
@@ -25,6 +27,8 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
                 if maxdata <= r:
                     break
             self.partitions = _np.arange(r, dtype='int32')
+
+    def _initialize(self, traces, data):
         self._trace_length = traces.shape[1]
         self._data_words = data.shape[1]
         self._data_to_partition_index = _define_lut_func(self.partitions)
@@ -35,7 +39,8 @@ class _PartitionnedDistinguisherBaseMixin(DistinguisherMixin):
             raise ValueError(f'traces has different length {traces.shape[1]} than already processed traces {self._trace_length}.')
         if data.shape[1] != self._data_words:
             raise ValueError(f'data has different number of data words {data.shape[1]} than already processed data {self._data_words}.')
-
+        if not _np.issubdtype(data.dtype, _np.integer):
+            raise TypeError(f'data dtype for partitioned distinguisher, including MIA and Template, must be an integer dtype, not {data.dtype}.')
         logger.info(f'Update of partitioned distinguisher {self.__class__.__name__} in progress.')
         data = self._data_to_partition_index(data)
         self._accumulate(traces, data)
@@ -53,8 +58,8 @@ def _build_lut(partitions):
 def _define_lut_func(partitions):
     lut = _build_lut(partitions)
 
-    @_nb.vectorize([_nb.int32(_nb.uint8), _nb.int32(_nb.uint16), _nb.int32(_nb.uint32),
-                    _nb.int32(_nb.int8), _nb.int32(_nb.int16), _nb.int32(_nb.int32)])
+    @_nb.vectorize([_nb.int32(_nb.uint8), _nb.int32(_nb.uint16), _nb.int32(_nb.uint32), _nb.int32(_nb.uint64),
+                    _nb.int32(_nb.int8), _nb.int32(_nb.int16), _nb.int32(_nb.int32), _nb.int32(_nb.int64)])
     def _lut_function(x):
         return lut[x]
 
@@ -161,6 +166,10 @@ def _set_partitions(obj, partitions):
             partitions = _np.array(partitions, dtype='int32')
         elif partitions.dtype.kind not in 'iu':
             raise ValueError(f'partitions should be an integer array, not {partitions.dtype}.')
+        if _np.max(partitions) >= 2**16:
+            raise ValueError(f'partition values must be in ]-2^16, 2^16[, but {_np.max(partitions)} found.')
+        if _np.min(partitions) <= -2**16:
+            raise ValueError(f'partition values must be in ]-2^16, 2^16[, but {_np.min(partitions)} found.')
     obj.partitions = partitions
 
 

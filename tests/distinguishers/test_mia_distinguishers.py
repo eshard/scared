@@ -104,7 +104,7 @@ def test_mia_analyses_init_raises_error_if_accumulators_are_too_large_for_memory
     traces = np.random.randint(0, 255, (500, 200000), dtype='uint8')
     data = np.random.randint(0, 255, (500, 40096), dtype='uint8')
 
-    with pytest.raises(MemoryError):
+    with pytest.raises(scared.distinguishers.DistinguisherError, match='This analysis will probably need more than 90'):
         d.update(traces=traces, data=data)
 
 
