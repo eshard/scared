@@ -5,7 +5,6 @@ import pytest
 
 
 @pytest.mark.end_to_end
-@pytest.mark.xfail(raises=scared.DistinguisherError)
 def test_mia_on_dpa_v2():
 
     ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_sub.ets')

@@ -43,6 +43,27 @@ def moderate_ths():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
+@pytest.fixture
+def preprocess_half():
+    @scared.preprocess
+    def half(traces):
+        new_shape = list(traces.shape)
+        new_shape[1] = int(new_shape[1] // 2)
+        new_traces = np.random.randint(0, 255, new_shape, dtype='uint8')
+        return new_traces
+    return half
+
+
+@pytest.fixture
+def preprocess_double():
+    @scared.preprocess
+    def double(traces):
+        new_shape = list(traces.shape)
+        new_shape[1] = int(new_shape[1] * 2)
+        return np.random.randint(0, 255, new_shape, dtype='uint8')
+    return double
+
+
 def test_container_raises_exception_if_ths_is_not_trace_header_set_compatible():
     with pytest.raises(TypeError):
         scared.Container(ths='foo')
@@ -329,6 +350,31 @@ def test_set_batch_size_float_2(ths):
     scared.set_batch_size(0.75)
     c = scared.Container(ths)
     assert c.batch_size == 700
+
+
+def test_set_batch_size_list_with_preprocess(ths, preprocess_half, preprocess_double):
+    scared.set_batch_size([(0, 500), (1000, 100), (2000, 50)])
+    c = scared.Container(ths, preprocesses=preprocess_half)
+    assert c.batch_size == 100
+    c = scared.Container(ths, preprocesses=preprocess_double)
+    assert c.batch_size == 50
+
+
+def test_set_batch_size_int_with_preprocess(ths, preprocess_half, preprocess_double):
+    scared.set_batch_size(42)
+    c = scared.Container(ths, preprocesses=preprocess_half)
+    assert c.batch_size == 42
+    c = scared.Container(ths, preprocesses=preprocess_double)
+    assert c.batch_size == 42
+
+
+def test_set_batch_size_float_1_with_preprocess(ths, preprocess_half, preprocess_double):
+    # raw batch size 262, floored to 200
+    scared.set_batch_size(0.25)
+    c = scared.Container(ths, preprocesses=preprocess_half)
+    assert c.batch_size == 200
+    c = scared.Container(ths, preprocesses=preprocess_double)
+    assert c.batch_size == 100
 
 
 def test_set_batch_size_float_minimum_batch_size_is_10(ths):
