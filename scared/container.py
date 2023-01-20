@@ -139,7 +139,7 @@ class Container:
                     return class_batch_size[-1][1]
         if isinstance(class_batch_size, float):
             batch_size_in_bytes = int(class_batch_size * 2**20)
-            batch_size = batch_size_in_bytes / (input_size * input_dtype.itemsize)
+            batch_size = batch_size_in_bytes / (max_size * input_dtype.itemsize)
             batch_size = _floor_to_most_significant_digit(batch_size)
             return max(batch_size, 10)
 

@@ -139,6 +139,15 @@ def test_ttest_analysis_run(ths_1, ths_2):
     assert np.array_equal(expected, analysis.result)
 
 
+def test_ttest_analysis_no_threads_after_run(ths_1, ths_2):
+    cont = scared.TTestContainer(ths_1, ths_2)
+    analysis = scared.TTestAnalysis(precision='float64')
+    analysis.run(cont)
+
+    assert analysis.accumulators[0]._thread is None
+    assert analysis.accumulators[1]._thread is None
+
+
 def test_ttest_analysis_run_raises_exception_if_container_not_ttest_container():
     analysis = scared.TTestAnalysis(precision='float64')
     with pytest.raises(TypeError):

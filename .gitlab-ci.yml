@@ -11,7 +11,6 @@ lint:
   script:
     - apt update && apt install -y gcc
     - conda install python=3.9 psutil
-    - pip install .
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
@@ -22,7 +21,8 @@ test:python36:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python36 python=3.6
     - conda activate env-python36
-    - python setup.py test -v
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
 
 test:python37:
   stage: test
@@ -31,7 +31,8 @@ test:python37:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python37 python=3.7
     - conda activate env-python37
-    - python setup.py test -v
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
 
 test:python38:
   stage: test
@@ -40,7 +41,8 @@ test:python38:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python38 python=3.8
     - conda activate env-python38
-    - python setup.py test -v
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
 
 test:python39:
   stage: test
@@ -49,7 +51,8 @@ test:python39:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python39 python=3.9
     - conda activate env-python39
-    - python setup.py test -v
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
 
 build:pypi:src:
   stage: build

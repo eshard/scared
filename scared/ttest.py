@@ -102,9 +102,9 @@ class TTestAnalysis:
             # No way to test this piece of code, but tests in notebooks showed that all the code in the finally block is necessary.
             for accu in self.accumulators:
                 accu.stop()
-                if accu._tstate_lock is not None:
-                    if accu._tstate_lock.locked():
-                        accu._tstate_lock.release()
+                if accu._thread is not None and accu._thread._tstate_lock is not None:
+                    if accu._thread._tstate_lock.locked():
+                        accu._thread._tstate_lock.release()
                 try:
                     accu.join()
                 except Exception:
@@ -120,7 +120,7 @@ class TTestAnalysis:
         return 't-Test analysis'
 
 
-class TTestThreadAccumulator(_th.Thread):
+class TTestThreadAccumulator():
     """Accumulator class used for t-test analysis.
 
     It is a threaded accumulator that will process a complete container. Allows multiple accumulations to be launched in parallel.
@@ -151,6 +151,7 @@ class TTestThreadAccumulator(_th.Thread):
         self.container = None
         self._exception = None
         self._stop_loop = False
+        self._thread = None
 
     def _initialize(self, traces):
         self.sum = _np.zeros(traces.shape[-1], dtype=self.precision)
@@ -199,20 +200,23 @@ class TTestThreadAccumulator(_th.Thread):
         except Exception as e:
             self._exception = e
         finally:
-            if self._exception and not self._initialized:
+            if self._exception and self._thread is None:
                 raise self._exception
 
     def start(self, container):
         """Launch the accumulation on the given Container, in a separated thread."""
-        if self._initialized and self.is_alive():
+        if self._thread is not None and self._thread._initialized and self._thread.is_alive():
             raise RuntimeError('Thread is already running. Use the `join` method before starting again.')
-        super().__init__(daemon=True)
         self.container = container
-        super().start()
+        self._thread = _th.Thread(target=self.run, daemon=True)
+        self._thread.start()
 
     def join(self):
         """Wait end of thread processing and check for exception. Reraise if any."""
-        super().join()
+        if self._thread is None:
+            raise RuntimeError('No running thread.')
+        self._thread.join()
+        self._thread = None
         if self._exception is not None:
             raise self._exception
 
