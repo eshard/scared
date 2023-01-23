@@ -31,25 +31,25 @@ def _cases_cipher(key_size, mult_keys, mult_state, mode='encrypt'):
             state = np.random.randint(0, 255, (number_of_keys, 16), dtype='uint8')
             expected = np.empty((number_of_keys, 16), dtype='uint8')
             for i, key in enumerate(keys):
-                a = crypto_aes.AESCipher(key)
-                expected[i] = np.frombuffer(getattr(a, mode)(state[i]), dtype='uint8')
+                a = crypto_aes.new(key.tobytes(), crypto_aes.MODE_ECB)
+                expected[i] = np.frombuffer(getattr(a, mode)(state[i].tobytes()), dtype='uint8')
         else:
             state = np.random.randint(0, 255, (16), dtype='uint8')
             expected = np.empty((number_of_keys, 16), dtype='uint8')
             for i, key in enumerate(keys):
-                a = crypto_aes.AESCipher(key)
-                expected[i] = np.frombuffer(getattr(a, mode)(state), dtype='uint8')
+                a = crypto_aes.new(key.tobytes(), crypto_aes.MODE_ECB)
+                expected[i] = np.frombuffer(getattr(a, mode)(state.tobytes()), dtype='uint8')
     else:
         keys = np.random.randint(0, 255, (key_size), dtype='uint8')
-        a = crypto_aes.AESCipher(keys)
+        a = crypto_aes.new(keys.tobytes(), crypto_aes.MODE_ECB)
         if mult_state:
             state = np.random.randint(0, 255, (number_of_keys, 16), dtype='uint8')
             expected = np.empty((number_of_keys, 16), dtype='uint8')
             for i, s in enumerate(state):
-                expected[i] = np.frombuffer(getattr(a, mode)(s), dtype='uint8')
+                expected[i] = np.frombuffer(getattr(a, mode)(s.tobytes()), dtype='uint8')
         else:
             state = np.random.randint(0, 255, (16), dtype='uint8')
-            expected = np.frombuffer(getattr(a, mode)(state), dtype='uint8')
+            expected = np.frombuffer(getattr(a, mode)(state.tobytes()), dtype='uint8')
     return {'keys': keys, 'state': state, 'expected': expected}
 
 

@@ -33,33 +33,33 @@ def _cases_cipher(key_size, mult_keys, mult_state, mode='encrypt'):  # noqa
             expected = np.empty((number_of_keys, 8), dtype='uint8')
             for i, key in enumerate(keys):
                 if key_size == 8:
-                    ciphertext = crypto_des.DESCipher(key)
+                    ciphertext = crypto_des.new(key.tobytes(), crypto_des.MODE_ECB)
                 elif key_size == 16 or key_size == 24:
-                    ciphertext = crypto_des3.DES3Cipher(key)
-                expected[i] = np.frombuffer(getattr(ciphertext, mode)(state[i]), dtype='uint8')
+                    ciphertext = crypto_des3.new(key.tobytes(), crypto_des3.MODE_ECB)
+                expected[i] = np.frombuffer(getattr(ciphertext, mode)(state[i].tobytes()), dtype='uint8')
         else:
             state = np.random.randint(0, 255, (8), dtype='uint8')
             expected = np.empty((number_of_keys, 8), dtype='uint8')
             for i, key in enumerate(keys):
                 if key_size == 8:
-                    ciphertext = crypto_des.DESCipher(key)
+                    ciphertext = crypto_des.new(key.tobytes(), crypto_des.MODE_ECB)
                 elif key_size == 16 or key_size == 24:
-                    ciphertext = crypto_des3.DES3Cipher(key)
-                expected[i] = np.frombuffer(getattr(ciphertext, mode)(state), dtype='uint8')
+                    ciphertext = crypto_des3.new(key.tobytes(), crypto_des3.MODE_ECB)
+                expected[i] = np.frombuffer(getattr(ciphertext, mode)(state.tobytes()), dtype='uint8')
     else:
         keys = np.random.randint(0, 255, (key_size), dtype='uint8')
         if key_size == 8:
-            ciphertext = crypto_des.DESCipher(keys)
+            ciphertext = crypto_des.new(keys.tobytes(), crypto_des.MODE_ECB)
         elif key_size == 16 or key_size == 24:
-            ciphertext = crypto_des3.DES3Cipher(keys)
+            ciphertext = crypto_des3.new(keys.tobytes(), crypto_des3.MODE_ECB)
         if mult_state:
             state = np.random.randint(0, 255, (number_of_keys, 8), dtype='uint8')
             expected = np.empty((number_of_keys, 8), dtype='uint8')
             for i, s in enumerate(state):
-                expected[i] = np.frombuffer(getattr(ciphertext, mode)(s), dtype='uint8')
+                expected[i] = np.frombuffer(getattr(ciphertext, mode)(s.tobytes()), dtype='uint8')
         else:
             state = np.random.randint(0, 255, (8), dtype='uint8')
-            expected = np.frombuffer(getattr(ciphertext, mode)(state), dtype='uint8')
+            expected = np.frombuffer(getattr(ciphertext, mode)(state.tobytes()), dtype='uint8')
     return {'keys': keys, 'state': state, 'key_size': key_size, 'expected': expected}
 
 
@@ -203,13 +203,14 @@ def test_get_master_key_retrieves_des_master_key_able_to_decrypt_the_ciphertext(
     des_key_schedule = des.key_schedule(des_key)
 
     for round_index, round_key in enumerate(des_key_schedule):
-        found_master_key = des.get_master_key(round_key, round_index, plaintext, expected_ciphertext)
+        found_master_key = des.get_master_key(
+            round_key, round_index, plaintext, expected_ciphertext)
         assert found_master_key is not None
-        plaintext_from_found_key = np.frombuffer(crypto_des.DESCipher(found_master_key).decrypt(expected_ciphertext), dtype='uint8')
+        plaintext_from_found_key = np.frombuffer(crypto_des.new(found_master_key.tobytes(),
+                                                                crypto_des.MODE_ECB)
+                                                 .decrypt(expected_ciphertext.tobytes()
+                                                          ), dtype='uint8')
         assert np.array_equal(plaintext_from_found_key, plaintext)
-
-
-# Operations
 
 
 def test_initial_permutation_raises_exception_if_state_is_not_array():
