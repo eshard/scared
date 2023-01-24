@@ -13,14 +13,22 @@ requirements:
     - setuptools>=40.0
     - wheel
     - pip
-    - numpy
+    - numpy>=1.20.3
   run:
     - python
-    - numpy
-    - estraces
-    - psutil
-    - numba
-    - scipy
+    {% for dep in data['install_requires'] %}
+    - {{ dep.lower() }}
+    {% endfor %}
+tests:
+  import:
+    - scared
+  source_files:
+    - tests
+  requires:
+    - pytest
+    - pytest-cov
+  commands:
+    - py.test
 about:
   home: https://gitlab.com/eshard/scared
   license: GNU LGPL V3
