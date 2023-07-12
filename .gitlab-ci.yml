@@ -14,16 +14,6 @@ lint:
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
-test:python37:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python37 python=3.7
-    - conda activate env-python37
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
-
 test:python38:
   stage: test
   script:
@@ -51,6 +41,16 @@ test:python310:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python310 python=3.10
     - conda activate env-python310
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
+
+test:python311:
+  stage: test
+  script:
+    - apt update && apt install -y gcc
+    - eval "$(conda shell.bash hook)"
+    - conda create -n env-python311 python=3.11
+    - conda activate env-python311
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
 
