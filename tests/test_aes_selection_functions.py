@@ -1,6 +1,7 @@
 from .context import scared  # noqa: F401
 from scared import aes, selection_functions
 import numpy as np
+import pytest
 
 
 def test_aes_encrypt_first_round_key_with_default_arguments():
@@ -429,3 +430,27 @@ def test_aes_decrypt_delta_r_first_rounds_with_alternative_args():
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
     assert isinstance(str(sf), str)
+
+
+@pytest.mark.parametrize('sf', [scared.aes.selection_functions.encrypt.DeltaRLastRounds,
+                                scared.aes.selection_functions.encrypt.FirstAddRoundKey,
+                                scared.aes.selection_functions.encrypt.FirstSubBytes,
+                                scared.aes.selection_functions.encrypt.LastAddRoundKey,
+                                scared.aes.selection_functions.encrypt.LastSubBytes])
+# see https://gitlab.com/eshard/scared/-/issues/81
+def test_aes_encrypt_output_dtype_even_if_input_not_uint8(sf):
+    data = np.random.randint(0, 256, (5, 16), dtype='int64')
+    output = sf()(plaintext=data, ciphertext=data)
+    assert output.dtype == np.uint8
+
+
+@pytest.mark.parametrize('sf', [scared.aes.selection_functions.decrypt.DeltaRFirstRounds,
+                                scared.aes.selection_functions.decrypt.FirstAddRoundKey,
+                                scared.aes.selection_functions.decrypt.FirstSubBytes,
+                                scared.aes.selection_functions.decrypt.LastAddRoundKey,
+                                scared.aes.selection_functions.decrypt.LastSubBytes])
+# see https://gitlab.com/eshard/scared/-/issues/81
+def test_aes_decrypt_output_dtype_even_if_input_not_uint8(sf):
+    data = np.random.randint(0, 256, (5, 16), dtype='int64')
+    output = sf()(plaintext=data, ciphertext=data)
+    assert output.dtype == np.uint8

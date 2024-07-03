@@ -42,6 +42,11 @@
 #automake
 autoconfig.h*
 
+#test samples
+*.bin
+*.npz
+*.ets
+
 # Miscellaneous compilation files/directories
 .libs/
 build-ext/
