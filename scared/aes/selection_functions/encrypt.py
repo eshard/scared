@@ -20,6 +20,7 @@ def _inv_sub_bytes(data, guesses):
 
 
 def _delta_last_rounds(data, guesses):
+    data = data.astype('uint8')
     return _np.bitwise_xor(
         aes.shift_rows(data),
         aes.inv_sub_bytes(
