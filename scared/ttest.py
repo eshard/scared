@@ -23,6 +23,9 @@ class TTestContainer:
             _container.Container(ths=ths_1, frame=frame, preprocesses=preprocesses),
             _container.Container(ths=ths_2, frame=frame, preprocesses=preprocesses)
         ]
+        if self.containers[0].trace_size != self.containers[1].trace_size:
+            raise ValueError(f"Shape of traces must be the same, "
+                             f"found {self.containers[0].trace_size} and {self.containers[1].trace_size}")
 
     def __str__(self):
         return f'''Container for ths_1:
