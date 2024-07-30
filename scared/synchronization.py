@@ -8,9 +8,8 @@ import traceback as _traceback
 import warnings as _warn
 import sys as _sys
 from pathlib import Path as _Path
-
 import estraces as _estraces
-from estraces.formats.ets_writer import ETSWriter as _ETSWriter
+from estraces.formats.buffered_ets_writer import BufferedETSWriter as _BufferedETSWriter
 import numpy as _np
 
 
@@ -104,7 +103,10 @@ class Synchronizer:
 
     def _check_output(self, output, overwrite):
         if isinstance(output, (str, _Path)):
-            return _ETSWriter(filename=output, overwrite=overwrite)
+            output = _Path(output)
+            if output.exists() and overwrite is False:
+                raise FileExistsError(f'File "{output}" already exists and overwriting is disabled.')
+            return _BufferedETSWriter(filename=output, overwrite=overwrite)
         elif isinstance(output, _estraces.TraceHeaderSet):
             return output
         else:
@@ -161,7 +163,6 @@ class Synchronizer:
         if self._err_counter is not None:
             raise SynchronizerError("'run()' method of Synchronizer object was already called. Rebuild Synchronizer object.")
         self._err_counter = _ErrorCounter()
-
         with _no_stdout():
             logger.info('Perform synchronization started.')
             logger.info(f'Number of iterations for the synchronization: {len(self.input_ths)}', {'nb_iterations': len(self.input_ths)})
@@ -184,6 +185,7 @@ class Synchronizer:
                     self.output.write_trace_object_and_points(trace_object=trace_object, points=synchronized_data, index=self.synchronized_counter - 1)
                 logger.info(f'processing synchronization for trace number {i}: iteration finished.')
 
+        self.output.write_headers(self.input_ths.headers)
         self.output.close()
         return self.output.get_reader()
 
