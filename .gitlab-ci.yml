@@ -64,27 +64,18 @@ test:python312:
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
 
-build:pypi:src:
+build:pypi:
   stage: build
   script:
-    - pip install -U pip setuptools
-    - python setup.py sdist
+    - conda install python=3.10
+    - pip install -U pip setuptools wheel
+    - python setup.py sdist bdist_wheel
   only:
     - tags
   artifacts:
     paths:
       - "dist/*"
 
-build:pypi:wheel:
-  stage: build
-  script:
-    - pip install -U pip setuptools wheel
-    - python setup.py bdist_wheel
-  only:
-    - tags
-  artifacts:
-    paths:
-      - "dist/*"
 
 deploy:pypi:
   stage: deploy

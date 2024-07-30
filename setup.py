@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import sys
+import versioneer
 
 from setuptools import setup
 from setuptools.command.test import test
 import logging
-import versioneer
 
 logger = logging.getLogger(__name__)
 
