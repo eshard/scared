@@ -92,6 +92,8 @@ def find_width(data, direction, threshold, min_width, max_width=None, delta=None
 
 def _check_find_width_args(data, direction, threshold, min_width, max_width, delta):  # noqa: C901
     _check_data(data)
+    if isinstance(direction, int):
+        raise TypeError("'direction' should be a Direction object, not a int.")
     if direction not in Direction:
         raise TypeError(f"'direction' should be a Direction object, not a {type(direction)}.")
     if not isinstance(threshold, int) and not isinstance(threshold, float):
