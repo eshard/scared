@@ -185,11 +185,8 @@ def test_synchronizer_run_raises_exception_with_already_existing_result_file_and
 
     synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
     synchronizer.run()
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    with pytest.raises(FileExistsError, match=f'File "{output_filename}" already exists'):
         synchronizer = scared.Synchronizer(ths, output_filename, sync_function, overwrite=False)
-    with pytest.raises(Exception):
-        synchronizer.run()
     ths.close()
 
 
@@ -247,7 +244,7 @@ def test_synchronizer_raises_exception_with_output_of_wrong_type(sample_director
     input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match='output must be an instance of TraceHeaderSet, str or Path, not'):
         scared.Synchronizer(ths, 3, sync_function)
 
 
@@ -256,8 +253,20 @@ def test_synchronizer_raises_exception_with_function_of_wrong_type(sample_direct
     input_filename = f"{sample_directory}/synchronization/ets_file.ets"
     ths = estraces.read_ths_from_ets_file(input_filename)[:10]
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match='function attribute should be callable, but'):
         scared.Synchronizer(ths, output_filename, "foo")
+
+
+def test_synchronizer_copy_headers(sample_directory, output_filename):
+    def sync_function(trace_object):
+        return trace_object.samples.array
+
+    input_filename = f"{sample_directory}/synchronization/ets_file.ets"
+    ths = estraces.read_ths_from_ets_file(input_filename)[:10]
+    synchronizer = scared.Synchronizer(ths, output_filename, sync_function)
+    out_ths = synchronizer.run()
+    assert ths.headers == out_ths.headers
+    ths.close()
 
 
 def test_synchronizer_run_with_ets_file_report_prints_correct_string(sample_directory, capsys, output_filename):
