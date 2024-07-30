@@ -54,6 +54,16 @@ test:python311:
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
 
+test:python312:
+  stage: test
+  script:
+    - apt update && apt install -y gcc
+    - eval "$(conda shell.bash hook)"
+    - conda create -n env-python312 python=3.12
+    - conda activate env-python312
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
+
 build:pypi:src:
   stage: build
   script:
