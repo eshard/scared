@@ -34,6 +34,19 @@ test:python39:
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
 
+test:python310-intel:
+  stage: test
+  script:
+    - apt update && apt install -y gcc
+    - eval "$(conda shell.bash hook)"
+    - conda config --add channels conda-forge
+    - conda config --add channels https://software.repos.intel.com/python/conda
+    - conda config --set channel_priority strict
+    - conda create -n env-python310 python=3.10
+    - conda activate env-python310
+    - conda install numpy==1.26.4
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=scared tests
 test:python310:
   stage: test
   script:
@@ -93,6 +106,7 @@ build-dev:conda:
     - cd .recipe
     - conda install conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
+    - conda config --add channels https://software.repos.intel.com/python/conda
     - conda build --output-folder out dev
   artifacts:
     paths:
