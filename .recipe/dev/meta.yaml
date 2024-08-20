@@ -17,7 +17,11 @@ requirements:
   run:
     - python
     {% for dep in data['install_requires'] %}
+      {% if dep.lower() == 'estraces' %}
+    - estraces-dev
+      {% else %}
     - {{ dep.lower() }}
+      {% endif %}
     {% endfor %}
 
 tests:
