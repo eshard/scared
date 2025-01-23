@@ -30,8 +30,7 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
             self._exxi[p] += tmp
 
     def _compute(self):
-        self.pooled_covariance = _np.zeros((self._trace_length, self._trace_length))
-        self.pooled_covariance_inv = _np.empty((self._trace_length, self._trace_length))
+        self.pooled_covariance = _np.zeros((self._trace_length, self._trace_length), dtype=self.precision)
 
         tmp_counters = _np.copy(self._counters).astype(self.precision)
         if _np.any(tmp_counters <= 1):
@@ -67,16 +66,7 @@ class _BaseTemplateAttackDistinguisherMixin(base.DistinguisherMixin, partitioned
             raise base.DistinguisherError(
                 f'Trace size for matching {traces.shape[1]} is different than trace size used for building {self.pooled_covariance.shape[1]}.'
             )
-        self._scores = _np.zeros(shape=(self._get_dimension(traces, data), ), dtype=self.precision)
-
-    def _update(self, traces, data):
-        scores = []
-        for i in range(self._get_dimension(traces, data)):
-            tmp_traces = traces - self.templates[self.get_template_index(data, i)]
-            tmp = _np.dot(tmp_traces, self.pooled_covariance_inv)
-            tmp = tmp * tmp_traces
-            scores.append(tmp.sum())
-        self._scores += _np.array(scores) / traces.shape[1]
+        self._scores = self._initialize_scores(data)
 
     def _compute(self):
         return (10 - (self._scores / self.processed_traces))
@@ -88,11 +78,15 @@ class TemplateAttackDistinguisherMixin(_BaseTemplateAttackDistinguisherMixin):
     This mixin distinguisher proceeds to the matching phase, once the template are build.
     """
 
-    def _get_dimension(self, traces, data):
-        return len(self.partitions)
+    def _update(self, traces, data):
+        for i in range(len(self.partitions)):
+            tmp_traces = traces - self.templates[i]
+            tmp = _np.dot(tmp_traces, self.pooled_covariance_inv)
+            tmp = tmp * tmp_traces
+            self._scores[i] += tmp.sum() / traces.shape[1]
 
-    def get_template_index(self, data, i):
-        return i
+    def _initialize_scores(self, data):
+        return _np.zeros(shape=(len(self.partitions), ), dtype=self.precision)
 
     @property
     def _distinguisher_str(self):
@@ -105,11 +99,16 @@ class TemplateDPADistinguisherMixin(_BaseTemplateAttackDistinguisherMixin):
     This mixin distinguisher proceeds to the matching phase, once the template are build.
     """
 
-    def _get_dimension(self, traces, data):
-        return data.shape[1]
+    def _update(self, traces, data):
+        for i in range(len(self.partitions)):
+            tmp_traces = traces - self.templates[i]
+            tmp = _np.dot(tmp_traces, self.pooled_covariance_inv)
+            tmp = tmp * tmp_traces
+            tmp = tmp.sum(1) / traces.shape[1]
+            self._scores += _np.dot(tmp, data == i)
 
-    def get_template_index(self, data, i):
-        return data[:, i]
+    def _initialize_scores(self, data):
+        return _np.zeros(shape=(data.shape[1], ), dtype=self.precision)
 
     @property
     def _distinguisher_str(self):

@@ -257,8 +257,8 @@ def test_template_build_phase_method(sf, template_datas):
     assert np.array_equal(template._build_analysis._counters, template_datas.counters)
 
     assert np.array_equal(template._build_analysis._exxi, template_datas.exxi)
-    assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov)
-    assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, )
+    assert np.allclose(template._build_analysis.pooled_covariance, template_datas.pooled_cov, atol=5e-5)
+    assert np.allclose(template._build_analysis.pooled_covariance_inv, template_datas.pooled_cov_inv, atol=5e-5)
     assert np.array_equal(template.templates, template_datas.templates)
 
 
@@ -318,8 +318,8 @@ def test_dpa_template_build_phase(sf, dpa_template_datas):
     assert np.array_equal(template._build_analysis._exi, dpa_template_datas.exi)
     assert np.array_equal(template._build_analysis._counters, dpa_template_datas.counters)
     assert np.array_equal(template._build_analysis._exxi, dpa_template_datas.exxi)
-    assert np.allclose(template._build_analysis.pooled_covariance, dpa_template_datas.pooled_cov)
-    assert np.allclose(template._build_analysis.pooled_covariance_inv, dpa_template_datas.pooled_cov_inv, )
+    assert np.allclose(template._build_analysis.pooled_covariance, dpa_template_datas.pooled_cov, atol=5e-5)
+    assert np.allclose(template._build_analysis.pooled_covariance_inv, dpa_template_datas.pooled_cov_inv, atol=5e-5)
     assert np.array_equal(template.templates, dpa_template_datas.templates)
 
 
@@ -342,8 +342,8 @@ def test_dpa_template_build_phase_with_sparse_partitions(sf, dpa_template_datas)
     assert np.array_equal(template._build_analysis._exi, dpa_template_datas.exi)
     assert np.array_equal(template._build_analysis._counters, dpa_template_datas.counters)
     assert np.array_equal(template._build_analysis._exxi, dpa_template_datas.exxi)
-    assert np.allclose(template._build_analysis.pooled_covariance, dpa_template_datas.pooled_cov)
-    assert np.allclose(template._build_analysis.pooled_covariance_inv, dpa_template_datas.pooled_cov_inv, )
+    assert np.allclose(template._build_analysis.pooled_covariance, dpa_template_datas.pooled_cov, atol=5e-5)
+    assert np.allclose(template._build_analysis.pooled_covariance_inv, dpa_template_datas.pooled_cov_inv, atol=5e-5)
     assert np.array_equal(template.templates, dpa_template_datas.templates)
 
 
@@ -363,8 +363,49 @@ def test_dpa_template_matching_phase(sf, dpa_template_datas):
         key=np.array([dpa_template_datas.matching_key for i in range(len(dpa_template_datas.matching_samples))]))
     matching_cont = scared.Container(ths=ths_matching)
     template.run(matching_cont)
+    print(template.results)
+    print('*' * 10)
+    print(dpa_template_datas.scores)
     assert np.allclose(template.results, dpa_template_datas.scores)
     assert np.allclose(template.convergence_traces, dpa_template_datas.conv_traces)
+
+
+def test_dpa_template_multiple_traces(sf):
+    ths_building = scared.traces.formats.read_ths_from_ram(
+        np.random.randint(0, 256, (10, 33), dtype='uint8'),
+        plaintext=np.random.randint(0, 256, (10, 16), dtype='uint8'),
+        key=np.random.randint(0, 256, (10, 16), dtype='uint8'))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateDPAAttack(container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=scared.HammingWeight())
+    template.build()
+    ths_matching = ths_building
+    matching_cont = scared.Container(ths=ths_matching)
+    template.run(matching_cont)
+    assert template.templates.shape == (9, 33)
+    assert template._scores.shape == (256, )
+
+
+@pytest.mark.parametrize('precision', ['float32', 'float64'])
+def test_dpa_template_precision(sf, precision):
+    ths_building = scared.traces.formats.read_ths_from_ram(
+        np.random.randint(0, 256, (10, 33), dtype='uint8'),
+        plaintext=np.random.randint(0, 256, (10, 16), dtype='uint8'),
+        key=np.random.randint(0, 256, (10, 16), dtype='uint8'))
+    building_cont = scared.Container(ths=ths_building)
+    template = scared.TemplateDPAAttack(container_building=building_cont, reverse_selection_function=sf,
+                                        selection_function=scared.aes.selection_functions.encrypt.FirstSubBytes(words=0),
+                                        model=scared.HammingWeight(),
+                                        precision=precision)
+    template.build()
+    assert template.templates.dtype == np.dtype(precision)
+    assert template.pooled_covariance.dtype == np.dtype(precision)
+    assert template.pooled_covariance_inv.dtype == np.dtype(precision)
+    ths_matching = ths_building
+    matching_cont = scared.Container(ths=ths_matching)
+    template.run(matching_cont)
+    assert template.scores.dtype == np.dtype(precision)
 
 
 def test_dpa_template_matching_phase_raises_exception_if_incorrect_trace_size(sf, dpa_template_datas):
