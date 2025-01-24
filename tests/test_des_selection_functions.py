@@ -691,3 +691,61 @@ def test_des_decrypt_delta_r_last_rounds_with_alternative_args():
     assert np.array_equal(expected_key, sf.compute_expected_key(thekey=master_key))
     assert sf.key_tag == 'thekey'
     assert isinstance(str(sf), str)
+
+
+# see https://gitlab.com/eshard/scared/-/issues/82
+def test_des_encrypt_docstring_and_name():
+    klass = des.selection_functions.encrypt.FirstAddRoundKey
+    assert klass.__name__ == 'FirstAddRoundKey'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.LastAddRoundKey
+    assert klass.__name__ == 'LastAddRoundKey'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.FirstSboxes
+    assert klass.__name__ == 'FirstSboxes'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.LastSboxes
+    assert klass.__name__ == 'LastSboxes'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+
+    klass = des.selection_functions.encrypt.FeistelRFirstRounds
+    assert klass.__name__ == 'FeistelRFirstRounds'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.FeistelRLastRounds
+    assert klass.__name__ == 'FeistelRLastRounds'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.DeltaRFirstRounds
+    assert klass.__name__ == 'DeltaRFirstRounds'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.encrypt.DeltaRLastRounds
+    assert klass.__name__ == 'DeltaRLastRounds'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+
+
+# see https://gitlab.com/eshard/scared/-/issues/82
+def test_des_decrypt_docstring_and_name():
+    klass = des.selection_functions.decrypt.FirstAddRoundKey
+    assert klass.__name__ == 'FirstAddRoundKey'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.LastAddRoundKey
+    assert klass.__name__ == 'LastAddRoundKey'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.FirstSboxes
+    assert klass.__name__ == 'FirstSboxes'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.LastSboxes
+    assert klass.__name__ == 'LastSboxes'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+
+    klass = des.selection_functions.decrypt.FeistelRFirstRounds
+    assert klass.__name__ == 'FeistelRFirstRounds'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.FeistelRLastRounds
+    assert klass.__name__ == 'FeistelRLastRounds'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.DeltaRFirstRounds
+    assert klass.__name__ == 'DeltaRFirstRounds'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = des.selection_functions.decrypt.DeltaRLastRounds
+    assert klass.__name__ == 'DeltaRLastRounds'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
