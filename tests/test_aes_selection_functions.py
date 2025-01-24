@@ -454,3 +454,41 @@ def test_aes_decrypt_output_dtype_even_if_input_not_uint8(sf):
     data = np.random.randint(0, 256, (5, 16), dtype='int64')
     output = sf()(plaintext=data, ciphertext=data)
     assert output.dtype == np.uint8
+
+
+# see https://gitlab.com/eshard/scared/-/issues/82
+def test_aes_encrypt_docstring_and_name():
+    klass = aes.selection_functions.encrypt.FirstAddRoundKey
+    assert klass.__name__ == 'FirstAddRoundKey'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.encrypt.LastAddRoundKey
+    assert klass.__name__ == 'LastAddRoundKey'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.encrypt.FirstSubBytes
+    assert klass.__name__ == 'FirstSubBytes'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.encrypt.LastSubBytes
+    assert klass.__name__ == 'LastSubBytes'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.encrypt.DeltaRLastRounds
+    assert klass.__name__ == 'DeltaRLastRounds'
+    assert 'encrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+
+
+# see https://gitlab.com/eshard/scared/-/issues/82
+def test_aes_decrypt_docstring_and_name():
+    klass = aes.selection_functions.decrypt.FirstAddRoundKey
+    assert klass.__name__ == 'FirstAddRoundKey'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.decrypt.LastAddRoundKey
+    assert klass.__name__ == 'LastAddRoundKey'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.decrypt.FirstSubBytes
+    assert klass.__name__ == 'FirstSubBytes'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.decrypt.LastSubBytes
+    assert klass.__name__ == 'LastSubBytes'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'last' in klass.__doc__.split('\n')[0]
+    klass = aes.selection_functions.decrypt.DeltaRFirstRounds
+    assert klass.__name__ == 'DeltaRFirstRounds'
+    assert 'decrypt' in klass.__doc__.split('\n')[0] and 'first' in klass.__doc__.split('\n')[0]

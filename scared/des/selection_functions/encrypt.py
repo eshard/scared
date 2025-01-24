@@ -45,7 +45,6 @@ class FirstAddRoundKey:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         plaintext_tag (str, default='plaintext'): tag (key value) of the plaintext metadata to use to retrieve plaintext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
@@ -67,7 +66,6 @@ class LastAddRoundKey:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         ciphertext_tag (str, default='ciphertext'): tag (key value) of the ciphertext metadata to use to retrieve ciphertext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
@@ -89,7 +87,6 @@ class FirstSboxes:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         plaintext_tag (str, default='plaintext'): tag (key value) of the plaintext metadata to use to retrieve plaintext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
@@ -112,7 +109,6 @@ class LastSboxes:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         ciphertext_tag (str, default='ciphertext'): tag (key value) of the ciphertext metadata to use to retrieve ciphertext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
@@ -128,14 +124,13 @@ class LastSboxes:
 
 
 class FeistelRFirstRounds:
-    """Build an attack selection function which computes intermediate values after DES Feistel R, for guesses values.
+    """Build an attack selection function which computes intermediate values after DES encrypt Feistel R at first round, for guesses values.
 
     Args:
         guesses (numpy.array, default=numpy.arange(64)): default guesses value used for key hypothesis.
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         plaintext_tag (str, default='plaintext'): tag (key value) of the plaintext metadata to use to retrieve plaintext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
@@ -151,14 +146,13 @@ class FeistelRFirstRounds:
 
 
 class FeistelRLastRounds:
-    """Build an attack selection function which computes intermediate values after DES Feistel R, for guesses values.
+    """Build an attack selection function which computes intermediate values after DES encrypt Feistel R at last round, for guesses values.
 
     Args:
         guesses (numpy.array, default=numpy.arange(64)): default guesses value used for key hypothesis.
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         ciphertext_tag (str, default='ciphertext'): tag (key value) of the ciphertext metadata to use to retrieve ciphertext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
@@ -181,7 +175,6 @@ class DeltaRFirstRounds:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         plaintext_tag (str, default='plaintext'): tag (key value) of the plaintext metadata to use to retrieve plaintext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, plaintext_tag='plaintext', key_tag='key'):
@@ -204,7 +197,6 @@ class DeltaRLastRounds:
         words (:class:`scared.traces.Samples.SUPPORTED_INDICES_TYPES`, default=None): selection of key words computed.
         ciphertext_tag (str, default='ciphertext'): tag (key value) of the ciphertext metadata to use to retrieve ciphertext
             values from the metadata dict when selection function is called.
-
     """
 
     def __new__(cls, guesses=_np.arange(64, dtype='uint8'), words=None, ciphertext_tag='ciphertext', key_tag='key'):
