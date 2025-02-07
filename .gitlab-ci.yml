@@ -24,9 +24,7 @@ lint:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python$PYTHON_VERSION python=$PYTHON_VERSION
     - conda activate env-python$PYTHON_VERSION
-    - {% if NUMPY_VERSION %}
-      conda install numpy=$NUMPY_VERSION
-      {% endif %}
+    - if [[ -n "$NUMPY_VERSION" ]]; then conda install numpy=$NUMPY_VERSION; fi
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
   variables:
@@ -68,9 +66,7 @@ test:python312:
     - cd .recipe
     - conda install conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
-    - {% if ARCHITECTURE == "linux-aarch64" %}
-      apt update && apt install -y qemu-user-static  # Enable ARM emulation
-      {% endif %}
+    - if [[ "$ARCHITECTURE" == "linux-aarch64" ]]; then apt update && apt install -y qemu-user-static; fi  # Enable ARM emulation
     - conda build --output-folder out prod
     - conda clean --all -y
   artifacts:
