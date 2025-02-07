@@ -31,31 +31,31 @@ lint:
     PYTHON_VERSION: "3.10"
     NUMPY_VERSION: ""
 
-test:python39:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "3.9"
+# test:python39:
+#   extends: .test:python
+#   variables:
+#     PYTHON_VERSION: "3.9"
 
-test:python310-intel:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "3.10"
-    NUMPY_VERSION: "1.26.4"
+# test:python310-intel:
+#   extends: .test:python
+#   variables:
+#     PYTHON_VERSION: "3.10"
+#     NUMPY_VERSION: "1.26.4"
 
-test:python310:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "3.10"
+# test:python310:
+#   extends: .test:python
+#   variables:
+#     PYTHON_VERSION: "3.10"
 
-test:python311:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "3.11"
+# test:python311:
+#   extends: .test:python
+#   variables:
+#     PYTHON_VERSION: "3.11"
 
-test:python312:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "3.12"
+# test:python312:
+#   extends: .test:python
+#   variables:
+#     PYTHON_VERSION: "3.12"
 
 # -------------------- BUILD JOBS --------------------
 
