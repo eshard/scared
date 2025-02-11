@@ -1,4 +1,4 @@
-image: continuumio/miniconda3
+image: hub.eshard.int:5000/ci:2025.04
 
 stages:
   - lint
@@ -6,126 +6,104 @@ stages:
   - build
   - deploy
 
+# -------------------- LINTING --------------------
 lint:
   stage: lint
   script:
     - apt update && apt install -y gcc
+    - conda activate
     - conda install python=3.9 psutil
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
-test:python38:
+# -------------------- TEST JOBS --------------------
+
+.test:python:
   stage: test
   script:
     - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
-    - conda create -n env-python38 python=3.8
-    - conda activate env-python38
+    - conda create -n env-python$PYTHON_VERSION python=$PYTHON_VERSION
+    - conda activate env-python$PYTHON_VERSION
+    - if [[ -n "$NUMPY_VERSION" ]]; then conda install numpy=$NUMPY_VERSION; fi
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
+  variables:
+    PYTHON_VERSION: "3.10"
+    NUMPY_VERSION: ""
 
 test:python39:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python39 python=3.9
-    - conda activate env-python39
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "3.9"
 
 test:python310-intel:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda config --add channels conda-forge
-    - conda config --add channels https://software.repos.intel.com/python/conda
-    - conda config --set channel_priority strict
-    - conda create -n env-python310 python=3.10
-    - conda activate env-python310
-    - conda install numpy==1.26.4
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "3.10"
+    NUMPY_VERSION: "1.26.4"
+
 test:python310:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python310 python=3.10
-    - conda activate env-python310
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "3.10"
 
 test:python311:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python311 python=3.11
-    - conda activate env-python311
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "3.11"
 
 test:python312:
-  stage: test
-  script:
-    - apt update && apt install -y gcc
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python312 python=3.12
-    - conda activate env-python312
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=scared tests
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "3.12"
 
-build:pypi:
+# -------------------- BUILD JOBS --------------------
+
+.build:conda:
   stage: build
   script:
-    - conda install python=3.10
-    - pip install -U pip setuptools wheel
-    - python setup.py sdist bdist_wheel
-  only:
-    - tags
+    - export CONDA_SUBDIR=$ARCHITECTURE
+    - cd .recipe
+    - conda install conda-build conda-verify psutil
+    # - pip3 install --upgrade psutil
+    - conda config --add channels $ANACONDA_CHANNEL
+    # - if [[ "$ARCHITECTURE" == "linux-aarch64" ]]; then apt update && apt install -y qemu-user-static; fi  # Enable ARM emulation
+    - conda build --output-folder out prod
+    - conda clean --all -y
   artifacts:
     paths:
-      - "dist/*"
-
-
-deploy:pypi:
-  stage: deploy
+      - ".recipe/out/*/*.tar.bz2"
+  variables:
+    ARCHITECTURE: "linux-64"
   only:
     - tags
-  when: manual
+
+build:conda:x86_64:
+  extends: .build:conda
+  variables:
+    ARCHITECTURE: "linux-64"
+
+build:conda:arm64:
+  extends: .build:conda
+  tags:
+    - arm
+  variables:
+    ARCHITECTURE: "linux-aarch64"
+
+# -------------------- DEPLOY JOBS --------------------
+
+.deploy:pypi:
+  stage: deploy
   script:
     - pip install -U pip setuptools twine
     - twine upload --repository-url $PYPI_REPOSITORY dist/*.tar.gz -u $PYPI_USERNAME -p $PYPI_PWD
     - twine upload --repository-url $PYPI_REPOSITORY dist/*.whl -u $PYPI_USERNAME -p $PYPI_PWD
-
-build-dev:conda:
-  stage: build
-  script:
-    - cd .recipe
-    - conda install conda-build conda-verify
-    - conda config --add channels $ANACONDA_CHANNEL
-    - conda config --add channels https://software.repos.intel.com/python/conda
-    - conda build --output-folder out dev
-  artifacts:
-    paths:
-      - ".recipe/out/*/*.tar.bz2"
-
-build:conda:
-  stage: build
-  script:
-    - cd .recipe
-    - conda install conda-build conda-verify
-    - conda config --add channels $ANACONDA_CHANNEL
-    - conda build --output-folder out prod
   only:
     - tags
-  artifacts:
-    paths:
-      - ".recipe/out/*/*.tar.bz2"
+  when: manual
 
-deploy:conda:
+.deploy:conda:
   stage: deploy
   script:
     - cd .recipe
@@ -133,21 +111,25 @@ deploy:conda:
     - conda update conda
     - conda install anaconda-client
     - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.tar.bz2
+  only:
+    - tags
   when: manual
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
 
+# -------------------- DOCUMENTATION --------------------
+
 pages:
   stage: build
   script:
-    - conda install python=3.8 psutil
+    - conda install python=3.9 psutil
     - conda install -c conda-forge myst-parser
     - pip install -e .
     - cd docs
     - ./build_doc.sh
   artifacts:
     paths:
-    - public
+      - public
   only:
     - tags
