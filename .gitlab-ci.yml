@@ -16,47 +16,53 @@ lint:
     - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
-# -------------------- TEST JOBS --------------------
+# # -------------------- TEST JOBS --------------------
 
 .test:python:
   stage: test
   script:
     - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
-    - conda create -n env-python$PYTHON_VERSION python=$PYTHON_VERSION
-    - conda activate env-python$PYTHON_VERSION
+    - conda activate py$PYTHON_VERSION
     - if [[ -n "$NUMPY_VERSION" ]]; then conda install numpy=$NUMPY_VERSION; fi
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
   variables:
-    PYTHON_VERSION: "3.10"
+    PYTHON_VERSION: "310"
     NUMPY_VERSION: ""
 
 test:python39:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "3.9"
+    PYTHON_VERSION: "39"
 
 test:python310-intel:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "3.10"
+    PYTHON_VERSION: "310"
     NUMPY_VERSION: "1.26.4"
 
 test:python310:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "3.10"
+    PYTHON_VERSION: "310"
+
+test:python310-arm:
+  extends: .test:python
+  tags:
+    - arm
+  variables:
+    PYTHON_VERSION: "310"
 
 test:python311:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "3.11"
+    PYTHON_VERSION: "311"
 
 test:python312:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "3.12"
+    PYTHON_VERSION: "312"
 
 # -------------------- BUILD JOBS --------------------
 
@@ -76,8 +82,8 @@ test:python312:
       - ".recipe/out/*/*.tar.bz2"
   variables:
     ARCHITECTURE: "linux-64"
-  only:
-    - tags
+  # only:
+  #   - tags
 
 build:conda:x86_64:
   extends: .build:conda

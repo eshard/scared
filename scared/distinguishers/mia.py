@@ -1,8 +1,10 @@
 from .partitioned import PartitionedDistinguisherBase, _PartitionnedDistinguisherBaseMixin
+from .._utils import _use_parallel
 import numpy as _np
 import numba as _nb
 import logging
 
+_parallel = _use_parallel()
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ class MIADistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
                                       dtype=self.precision)
 
     @staticmethod
-    @_nb.njit(parallel=True)
+    @_nb.njit(parallel=_parallel)
     def _accumulate_core(traces, data, self_bin_edges, self_accumulators):
         nbins = len(self_bin_edges) - 1
         min_edge = self_bin_edges[0]

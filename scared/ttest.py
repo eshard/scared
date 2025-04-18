@@ -1,10 +1,12 @@
 from . import container as _container
+from ._utils import _use_parallel
 import threading as _th
 import numpy as _np
 import numba as _nb
 import logging as _logging
 
 logger = _logging.getLogger(__name__)
+_parallel = _use_parallel()
 
 
 class TTestContainer:
@@ -161,7 +163,7 @@ class TTestThreadAccumulator():
         self.sum_squared = _np.zeros(traces.shape[-1], dtype=self.precision)
 
     @staticmethod
-    @_nb.njit(parallel=True, nogil=True)
+    @_nb.njit(parallel=_parallel, nogil=True)
     def _update_core(traces, self_sum, self_sum_squared, precision):
         for i in _nb.prange(traces.shape[1]):
             # New array allocation is the faster way to change both dtype and data alignment.

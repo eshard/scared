@@ -1,8 +1,12 @@
 from .base import DistinguisherMixin, _StandaloneDistinguisher
+from .._utils import _use_parallel
+
 import numpy as _np
 import numba as _nb
 import time as _time
 import logging as _logging
+
+_parallel = _use_parallel()
 
 logger = _logging.getLogger(__name__)
 
@@ -86,7 +90,7 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
         self.counters = _np.zeros((self._data_words, len(self.partitions)), dtype=self.precision)
 
     @staticmethod
-    @_nb.njit(parallel=True)
+    @_nb.njit(parallel=_parallel)
     def _accumulate_core_1(traces, data, self_sum, self_sum_square, self_counters, self_precision):
         for sample_idx in _nb.prange(traces.shape[1]):
             tmp_sum = _np.zeros((self_counters.shape[0], self_counters.shape[1]), dtype='float64')
@@ -105,7 +109,7 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
             self_sum_square[sample_idx] += tmp_sum_square
 
     @staticmethod
-    @_nb.njit(parallel=True)
+    @_nb.njit(parallel=_parallel)
     def _accumulate_core_2(traces, data, self_sum, self_sum_square, self_counters, self_precision):
         """Faster when number of partitions is <=9."""
         ftraces = traces.astype(self_precision)

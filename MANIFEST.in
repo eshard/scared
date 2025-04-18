@@ -1,1 +1,2 @@
-include pyproject.toml setup.cfg setup.py README.md
+include setup.py README.md
+include versioneer.py
