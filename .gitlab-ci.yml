@@ -129,7 +129,8 @@ build:conda:arm64:
 pages:
   stage: build
   script:
-    - conda install python=3.9 psutil
+    - conda activate py39
+    - conda install psutil
     - conda install -c conda-forge myst-parser
     - pip install -e .
     - cd docs
