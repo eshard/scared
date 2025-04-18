@@ -15,6 +15,7 @@
 *.dylib
 *.dll
 *.so
+python/_estoolkit2ext.cpython-36m-x86_64-linux-gnu.so
 
 # Fortran module files
 *.mod

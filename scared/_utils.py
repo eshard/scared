@@ -1,4 +1,5 @@
 import numpy as _np
+import platform as _platform
 
 
 def _is_bytes_array(array):
@@ -14,3 +15,8 @@ def _is_bytes_array(array):
     if array.dtype != _np.int8 and _np.max(array) > 255:
         raise ValueError(f'array should be a bytes array, i.e with values in [0, 255], but highest value {_np.max(array)} found.')
     return True
+
+
+def _use_parallel():
+    arch = _platform.machine().lower()
+    return 'x86_64' in arch or 'amd64' in arch

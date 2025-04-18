@@ -7,7 +7,14 @@ package:
 source:
   path: ../../
 
+build:
+  
+  
+
 requirements:
+  build:
+    - setuptools
+    - wheel
   host:
     - python {{ python }}
     - setuptools>=40.0
@@ -17,21 +24,24 @@ requirements:
     - numpy {{ numpy_version }} 
   run:
     - python
+    # dependencies are defined in setup.py
     {% for dep in data['install_requires'] %}
     - {{ dep.lower() }}
     {% endfor %}
-tests:
-  import:
+
+test:
+  imports:
     - scared
   source_files:
     - tests
   requires:
     - pytest
     - pytest-cov
+    - pycryptodome
   commands:
-    - py.test
+    - pytest
+
 about:
-  home: https://gitlab.com/eshard/scared
-  license: GNU LGPL V3
-  license_file: LICENSE
-  summary: scared is a side-channel analysis framework.
+  home: https://www.eshard.com/
+  license: PROPRIETARY
+  summary: 'scared Python library'
