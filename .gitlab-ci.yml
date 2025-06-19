@@ -101,6 +101,7 @@ build:conda:arm64:
 build:pypi:src:
   stage: build
   script:
+    - conda activate
     - pip install -U pip setuptools
     - python setup.py sdist
   artifacts:
@@ -110,6 +111,7 @@ build:pypi:src:
 build:pypi:wheel:
   stage: build
   script:
+    - conda activate
     - pip install -U pip setuptools wheel
     - python setup.py bdist_wheel
   artifacts:
