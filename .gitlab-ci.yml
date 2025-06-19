@@ -103,8 +103,6 @@ build:pypi:src:
   script:
     - pip install -U pip setuptools
     - python setup.py sdist
-  only:
-    - tags
   artifacts:
     paths:
       - "dist/*"
@@ -114,8 +112,6 @@ build:pypi:wheel:
   script:
     - pip install -U pip setuptools wheel
     - python setup.py bdist_wheel
-  only:
-    - tags
   artifacts:
     paths:
       - "dist/*"
