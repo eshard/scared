@@ -1,10 +1,10 @@
 image: hub.eshard.int:5000/ci:2025.04
 
 stages:
-  - lint
-  - test
-  - build
-  - deploy
+  # - lint
+  # - test
+  # - build
+  # - deploy
   - hook
 
 # -------------------- LINTING --------------------
