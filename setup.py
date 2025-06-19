@@ -26,7 +26,6 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
-        'Framework :: esDynamic',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Topic :: Software Development',

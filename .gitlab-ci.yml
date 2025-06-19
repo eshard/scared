@@ -136,6 +136,7 @@ deploy:conda:
   stage: deploy
   script:
     - cd .recipe
+    - conda activate
     - conda config --add channels $ANACONDA_CHANNEL
     - conda update conda
     - conda install anaconda-client
