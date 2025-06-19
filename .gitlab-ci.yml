@@ -97,9 +97,33 @@ build:conda:arm64:
   variables:
     ARCHITECTURE: "linux-aarch64"
 
+
+build:pypi:src:
+  stage: build
+  script:
+    - pip install -U pip setuptools
+    - python setup.py sdist
+  only:
+    - tags
+  artifacts:
+    paths:
+      - "dist/*"
+
+build:pypi:wheel:
+  stage: build
+  script:
+    - pip install -U pip setuptools wheel
+    - python setup.py bdist_wheel
+  only:
+    - tags
+  artifacts:
+    paths:
+      - "dist/*"
+
+
 # -------------------- DEPLOY JOBS --------------------
 
-.deploy:pypi:
+deploy:pypi:
   stage: deploy
   script:
     - pip install -U pip setuptools twine
@@ -109,7 +133,7 @@ build:conda:arm64:
     - tags
   when: manual
 
-.deploy:conda:
+deploy:conda:
   stage: deploy
   script:
     - cd .recipe
