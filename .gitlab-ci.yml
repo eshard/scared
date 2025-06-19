@@ -172,5 +172,4 @@ notify-webhook:
   script:
     - curl -X POST https://5d7f-2a01-cb1c-88b-d500-8266-b12e-78dd-9c94.ngrok-free.app -H "X-Tag:$CI_COMMIT_TAG"
   only:
-    - deploy
-  when: on_success
+    - tags
