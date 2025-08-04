@@ -170,6 +170,6 @@ pages:
 notify-webhook:
   stage: hook
   script:
-    - curl -X POST https://5d7f-2a01-cb1c-88b-d500-8266-b12e-78dd-9c94.ngrok-free.app/webhook -H "X-Tag:$CI_COMMIT_TAG"
+    - curl -X POST $ASV_PUBLISH_URL -H "X-Tag:$CI_COMMIT_TAG"
   only:
     - tags
