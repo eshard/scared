@@ -24,7 +24,7 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
             bool_mask[p] = data[:, 0] == p  # Data are already transformed to correspond to partition indexes
         self._counters += _np.sum(bool_mask, axis=1)
         traces = _fast_astype(traces, self.precision)
-        self._exi += _np.dot(bool_mask, traces)
+        inplace_dot_sum(bool_mask, traces, self._exi)
         for p in range(len(self.partitions)):
             tmp = traces[bool_mask[p]]
             tmp = _np.dot(tmp.T, tmp)
@@ -106,7 +106,7 @@ class TemplateDPADistinguisherMixin(_BaseTemplateAttackDistinguisherMixin):
             tmp = _np.dot(tmp_traces, self.pooled_covariance_inv)
             tmp = tmp * tmp_traces
             tmp = tmp.sum(1) / traces.shape[1]
-            self._scores = inplace_dot_sum(tmp, data == i, self._scores)
+            inplace_dot_sum(tmp, data == i, self._scores)
 
     def _initialize_scores(self, data):
         return _np.zeros(shape=(data.shape[1], ), dtype=self.precision)
