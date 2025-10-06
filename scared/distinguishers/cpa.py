@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from scared._utils.fast_astype import fast_astype as _fast_astype
 =======
 from scared.utils.utils import inplace_dot_sum
 >>>>>>> 43b76bb (implement in-place dot product and add unit tests)
+=======
+from scared.utils.inplace_dot_sum import inplace_dot_sum
+>>>>>>> 4ca7e22 (perf(distinguisher): add inplace_dot_sum usage and fix imports in template, DPA, and CPA)
 from .base import _StandaloneDistinguisher, DistinguisherMixin, DistinguisherError
 import numpy as _np
 import logging

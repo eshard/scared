@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scared.utils.utils import inplace_dot_sum
+from scared.utils.inplace_dot_sum import inplace_dot_sum
 
 
 @pytest.mark.parametrize("dtype,rtol", [(np.float32, 1e-6), (np.float64, 1e-12)])
