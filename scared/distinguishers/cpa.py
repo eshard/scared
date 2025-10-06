@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 from scared._utils.fast_astype import fast_astype as _fast_astype
+=======
+from scared.utils.utils import inplace_dot_sum
+>>>>>>> 43b76bb (implement in-place dot product and add unit tests)
 from .base import _StandaloneDistinguisher, DistinguisherMixin, DistinguisherError
 import numpy as _np
 import logging
+import numpy as np
+from scipy.linalg.blas import sgemm, dgemm
 logger = logging.getLogger(__name__)
 
 
@@ -33,15 +39,23 @@ class CPADistinguisherMixin(DistinguisherMixin):
         if traces.shape[1] != self.ex.shape[0]:
             raise DistinguisherError(f'traces have different size {traces.shape[1]} than already processed traces {self.ex.shape[0]}.')
 
+<<<<<<< HEAD
         _traces = _fast_astype(traces, self.precision, order='F')
         _data = _fast_astype(data, self.precision, order='F')
+=======
+        print(self.precision.itemsize)
+        # aa = fast_astype(a)
+
+        _traces = traces.astype(self.precision, order='F')
+        _data = data.astype(self.precision, order='F')
+>>>>>>> 43b76bb (implement in-place dot product and add unit tests)
         logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
 
         self.ey += _np.sum(_data, axis=0)
         self.ey2 += _np.sum(_data ** 2, axis=0)
         self.ex += _np.sum(_traces, axis=0)
         self.ex2 += _np.sum(_traces ** 2, axis=0)
-        self.exy += _np.dot(_data.T, _traces)
+        self.exy = inplace_dot_sum(_data.T, _traces, self.exy)
         logger.info(f'End updating accumulators for {self.__class__.__name__}.')
 
     def _compute(self):
