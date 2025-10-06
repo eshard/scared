@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 from scared._utils.fast_astype import fast_astype as _fast_astype
-=======
-from scared.utils.inplace_dot_sum import inplace_dot_sum
->>>>>>> 4ca7e22 (perf(distinguisher): add inplace_dot_sum usage and fix imports in template, DPA, and CPA)
 from . import partitioned, base
 import logging as _logging
 import numpy as _np
@@ -27,13 +23,8 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
         for p in range(len(self.partitions)):
             bool_mask[p] = data[:, 0] == p  # Data are already transformed to correspond to partition indexes
         self._counters += _np.sum(bool_mask, axis=1)
-<<<<<<< HEAD
         traces = _fast_astype(traces, self.precision)
         self._exi += _np.dot(bool_mask, traces)
-=======
-        traces = traces.astype(self.precision)
-        self._exi = inplace_dot_sum(bool_mask, traces, self._exi)
->>>>>>> 4ca7e22 (perf(distinguisher): add inplace_dot_sum usage and fix imports in template, DPA, and CPA)
         for p in range(len(self.partitions)):
             tmp = traces[bool_mask[p]]
             tmp = _np.dot(tmp.T, tmp)
