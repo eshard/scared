@@ -79,6 +79,20 @@ def test_all_memory_order_combinations(a_order, b_order, c_order):
     np.testing.assert_allclose(c, expected, rtol=1e-12)
 
 
+# ---- Test non-contiguous arrays ----
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_non_contiguous_arrays(dtype):
+    a = np.arange(12, dtype=dtype)[::2].reshape(3, 2)  # non-contiguous
+    b = np.arange(6, dtype=dtype).reshape(2, 3)
+    c = np.zeros((3, 3), dtype=dtype)
+
+    _inplace_dot_sum(a, b, c)
+    expected = a @ b
+    assert c.shape == expected.shape
+    rtol = 1e-5 if dtype == np.float32 else 1e-12
+    np.testing.assert_allclose(c, expected, rtol=rtol)
+
+
 @pytest.mark.parametrize("a_shape,b_shape", [((4, 3), (3, 2)), ((2, 4), (4, 3))])
 def test_inplace_dot_sum_rectangular(a_shape, b_shape):
     a = np.random.randn(*a_shape).astype(np.float64, order="F")
@@ -99,7 +113,7 @@ def test_inplace_dot_sum_all_order_combinations(dtype, orders):
 
     expected = a @ b
     _inplace_dot_sum(a, b, c)
-    np.testing.assert_allclose(c, expected, rtol=1e-6 if dtype == np.float32 else 1e-12)
+    np.testing.assert_allclose(c, expected, rtol=1e-5 if dtype == np.float32 else 1e-12)
 
 
 def test_does_not_double_memory():

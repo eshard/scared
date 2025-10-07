@@ -36,15 +36,24 @@ def inplace_dot_sum(a, b, c):
 
     """
 
-    if 0 in a.shape or 0 in b.shape or 0 in c.shape:
-        return c
     _check_matrix(a, 'a'), _check_matrix(b, 'b'), _check_matrix(c, 'c')
+
+    # Empty matrix: nothing to do, c remains unchanged
+    if 0 in a.shape or 0 in b.shape or 0 in c.shape:
+        c[...] = c  # no-op to keep in-place behavior
+        return
+
+    # Fallback if dtype is not float32/64 or dtypes mismatch
     if a.dtype not in [_np.float32, _np.float64] or not _have_same_dtype(a, b, c):
         c[:] = c + _np.dot(a, b)
+        return
+
+    # Select optimized GEMM function
     gemm = _sgemm if a.dtype == _np.float32 else _dgemm
     (a, transpose_a) = (a.T, True) if a.flags.c_contiguous else (a, False)
     (b, transpose_b) = (b.T, True) if b.flags.c_contiguous else (b, False)
 
+    # Handle c contiguous: swap a and b + transpose logic to match GEMM expectations
     if c.flags.c_contiguous:  # (a @ b).T = b.T @ a.T
         c = c.T
         (tmp_b, tmp_transpose_b) = (b, not transpose_b)
