@@ -48,6 +48,10 @@ def inplace_dot_sum(a, b, c):
         c[:] = c + _np.dot(a, b)
         return
 
+    if not (c.flags.c_contiguous or c.flags.f_contiguous):
+        c[:] = c + _np.dot(a, b)
+        return
+
     # Select optimized GEMM function
     gemm = _sgemm if a.dtype == _np.float32 else _dgemm
     (a, transpose_a) = (a.T, True) if a.flags.c_contiguous else (a, False)

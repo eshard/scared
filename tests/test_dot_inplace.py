@@ -147,3 +147,35 @@ def test_does_not_double_memory():
     tracemalloc.stop()
 
     assert peak < c.nbytes * 2
+
+
+# --- Non C- nor F-contiguous arrays ----------------------------------------
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_non_c_nor_f_contiguous(dtype):
+    """Test with arrays that are neither C- nor F-contiguous."""
+    # Create a Fortran array and slice it so it's no longer contiguous
+    base_a = np.asfortranarray(np.random.randn(6, 4).astype(dtype))
+    base_b = np.asfortranarray(np.random.randn(4, 5).astype(dtype))
+    base_c = np.asfortranarray(np.zeros((6, 5), dtype=dtype))
+
+    # Non-contiguous views (stride tricks)
+    a = base_a[::2, :]     # skip every other row → not contiguous
+    b = base_b[:, ::2]     # skip every other column → not contiguous
+    c = base_c[::2, ::2]   # non-contiguous output too
+
+    # Expected result based on same slices
+    expected = a @ b
+
+    _inplace_dot_sum(a, b, c)
+
+    # Verify correctness and shape
+    assert c.shape == expected.shape, f"Expected shape {expected.shape}, got {c.shape}"
+    np.testing.assert_allclose(
+        c, expected,
+        rtol=1e-5 if dtype == np.float32 else 1e-12
+    )
+
+    # Extra safety: ensure arrays are indeed non-contiguous
+    assert not a.flags['C_CONTIGUOUS'] and not a.flags['F_CONTIGUOUS']
+    assert not b.flags['C_CONTIGUOUS'] and not b.flags['F_CONTIGUOUS']
+    assert not c.flags['C_CONTIGUOUS'] and not c.flags['F_CONTIGUOUS']
