@@ -1,15 +1,18 @@
 import numba as nb
 import numpy as np
 
+
 @nb.njit(parallel=True)
 def _fast_astype_core_F(data, out):
     for i in nb.prange(data.shape[1]):
         out[:, i] = data[:, i]
 
+
 @nb.njit(parallel=True)
 def _fast_astype_core_C(data, out):
     for i in nb.prange(data.shape[0]):
         out[i] = data[i]
+
 
 def _data_order(data):
     if data.flags.c_contiguous and data.flags.f_contiguous:
@@ -18,6 +21,7 @@ def _data_order(data):
         return 'C'
     if data.flags.f_contiguous:
         return 'F'
+
 
 def fast_astype(data, dtype='float32', order='C'):
     dtype = np.dtype(dtype)
