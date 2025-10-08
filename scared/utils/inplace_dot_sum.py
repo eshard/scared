@@ -5,7 +5,7 @@ import numpy as _np
 def _check_matrix(m, name='array'):
     if not isinstance(m, _np.ndarray):
         raise TypeError(f'`{name}` must be a ndarray, but {type(m)} found.')
-    if ndim:=m.ndim != 2:
+    if ndim := m.ndim != 2:
         raise ValueError(f'`{name}` must be a 2D ndarray, but {ndim}D found.')
 
 
@@ -35,7 +35,6 @@ def inplace_dot_sum(a, b, c):
         The matrix c = c + a @ b
 
     """
-
     _check_matrix(a, 'a'), _check_matrix(b, 'b'), _check_matrix(c, 'c')
 
     # Empty matrix: nothing to do, c remains unchanged
