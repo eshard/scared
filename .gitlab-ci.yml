@@ -1,4 +1,4 @@
-image: hub.eshard.int:5000/ci:2025.04
+image: hub.eshard.int:5000/ci:2025.04.03
 
 stages:
   - lint
@@ -32,10 +32,6 @@ lint:
     PYTHON_VERSION: "310"
     NUMPY_VERSION: ""
 
-test:python39:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "39"
 
 test:python310-intel:
   extends: .test:python
