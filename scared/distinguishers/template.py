@@ -106,7 +106,7 @@ class TemplateDPADistinguisherMixin(_BaseTemplateAttackDistinguisherMixin):
             tmp = _np.dot(tmp_traces, self.pooled_covariance_inv)
             tmp = tmp * tmp_traces
             tmp = tmp.sum(1) / traces.shape[1]
-            _inplace_dot_sum(tmp, data == i, self._scores)
+            self._scores += _np.dot(tmp, data == i)
 
     def _initialize_scores(self, data):
         return _np.zeros(shape=(data.shape[1], ), dtype=self.precision)

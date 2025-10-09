@@ -5,14 +5,23 @@ import numpy as _np
 def _check_matrix(m, name='array'):
     if not isinstance(m, _np.ndarray):
         raise TypeError(f'`{name}` must be a ndarray, but {type(m)} found.')
-    if ndim := m.ndim != 2:
-        raise ValueError(f'`{name}` must be a 2D ndarray, but {ndim}D found.')
+    if m.ndim != 2:
+        raise ValueError(f'`{name}` must be a 2D ndarray, but {m.ndim}D found.')
+    if 0 in m.shape:
+        raise ValueError(f'`{name}` has a null dimension. `{name}` shape is {m.shape}.')
 
 
 def _have_same_dtype(*args):
     ref = args[0].dtype
     for arg in args[1:]:
         if arg.dtype != ref:
+            return False
+    return True
+
+
+def _are_all_contiguous(*args):
+    for arg in args:
+        if not arg.flags.c_contiguous and not arg.flags.f_contiguous:
             return False
     return True
 
@@ -30,6 +39,8 @@ def inplace_dot_sum(a, b, c):
 
     Note:
         The calculus is performed inplace, i.e. the matrix `c` is updated during the calculus.
+        Note that implies that the matrix C cannot be casted.
+        So, when the fallback is triggered, it can result in memory loss if not used carefully.
 
     Returns:
         The matrix c = c + a @ b
@@ -37,20 +48,10 @@ def inplace_dot_sum(a, b, c):
     """
     _check_matrix(a, 'a'), _check_matrix(b, 'b'), _check_matrix(c, 'c')
 
-    # Empty matrix: nothing to do, c remains unchanged
-    if 0 in a.shape or 0 in b.shape or 0 in c.shape:
-        c[...] = c  # no-op to keep in-place behavior
-        return
-
     # Fallback if dtype is not float32/64 or dtypes mismatch
-    if a.dtype not in [_np.float32, _np.float64] or not _have_same_dtype(a, b, c):
+    if a.dtype not in [_np.float32, _np.float64] or not _have_same_dtype(a, b, c) or not _are_all_contiguous(a, b, c):
         c[:] = c + _np.dot(a, b)
         return
-
-    if not (c.flags.c_contiguous or c.flags.f_contiguous):
-        c[:] = c + _np.dot(a, b)
-        return
-
     # Select optimized GEMM function
     gemm = _sgemm if a.dtype == _np.float32 else _dgemm
     (a, transpose_a) = (a.T, True) if a.flags.c_contiguous else (a, False)
