@@ -33,8 +33,8 @@ class CPADistinguisherMixin(DistinguisherMixin):
         if traces.shape[1] != self.ex.shape[0]:
             raise DistinguisherError(f'traces have different size {traces.shape[1]} than already processed traces {self.ex.shape[0]}.')
 
-        _traces = _fast_astype(self.precision, order='F')
-        _data = _fast_astype(self.precision, order='F')
+        _traces = _fast_astype(traces, self.precision, order='F')
+        _data = _fast_astype(data, self.precision, order='F')
         logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
 
         self.ey += _np.sum(_data, axis=0)
