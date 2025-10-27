@@ -1,6 +1,10 @@
 import numpy as np
+
+
 import pytest
-from scared.utils.fast_astype import fast_astype, _data_order
+
+from scared.utils.fast_astype import _data_order, fast_astype
+
 
 @pytest.fixture
 def sample_matrix():
