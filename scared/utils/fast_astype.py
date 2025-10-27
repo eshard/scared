@@ -4,13 +4,13 @@ import numpy as np
 
 
 @nb.njit(parallel=True)
-def _fast_astype_core_F(data, out):
+def _fast_astype_core_f(data, out):
     for i in nb.prange(data.shape[1]):
         out[:, i] = data[:, i]
 
 
 @nb.njit(parallel=True)
-def _fast_astype_core_C(data, out):
+def _fast_astype_core_c(data, out):
     for i in nb.prange(data.shape[0]):
         out[i] = data[i]
 
@@ -32,9 +32,9 @@ def fast_astype(data, dtype='float32', order='C'):
         return data.astype(dtype=dtype, order=order)
     out = np.empty_like(data, order=order, dtype=dtype)
     if order.upper() == 'C':
-        _fast_astype_core_C(data, out)
+        _fast_astype_core_c(data, out)
     elif order.upper() == 'F':
-        _fast_astype_core_F(data, out)
+        _fast_astype_core_f(data, out)
     else:
         raise ValueError(f'Invalid order {order}.')
     return out
