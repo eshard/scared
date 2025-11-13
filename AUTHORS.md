@@ -16,3 +16,4 @@
 - Aurélien Vasselle
 - Guillaume Vinet (@gvinet)
 - Antoine Wurcker
+- Rafael Carrera Rodriguez (@rafael.carrera)

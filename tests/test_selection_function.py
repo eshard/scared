@@ -12,19 +12,114 @@ def test_selection_function_raises_exception_if_function_is_not_callable():
         scared.selection_function(function='foo')
 
 
-def test_attack_selection_function_raises_exception_if_guesses_is_not_a_bytes_array():
+def test_attack_selection_function_raises_exception_if_guesses_is_not_an_int_array():
     with pytest.raises(TypeError):
         scared.attack_selection_function(function=default_sf, guesses="foo")
     with pytest.raises(TypeError):
         scared.attack_selection_function(function=default_sf, guesses=16)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         scared.attack_selection_function(function=default_sf, guesses=[])
+    with pytest.raises(TypeError):
+        scared.attack_selection_function(function=default_sf, guesses=[3, 4])
+    with pytest.raises(TypeError):
+        scared.attack_selection_function(function=default_sf, guesses=3.14)
+    with pytest.raises(TypeError):
+        scared.attack_selection_function(function=default_sf, guesses=[[], []])
+    with pytest.raises(TypeError):
+        scared.attack_selection_function(function=default_sf, guesses=[["foo"], ["bar"]])
+    with pytest.raises(TypeError):
+        scared.attack_selection_function(function=default_sf, guesses=[[3.14], [2.72]])
 
 
 def test_attack_selection_function_accept_range_guesses():
     sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
     assert np.array_equal(sf.guesses, np.arange(128, dtype='uint8'))
     assert isinstance(str(sf), str)
+
+
+def test_attack_selection_function_accept_list_of_ranges():
+    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(128)])
+    ind_guess = np.array(range(128))
+    tiled_guesses = np.stack(np.meshgrid(ind_guess, ind_guess, indexing='ij'), axis=-1).reshape(-1, 2)
+    assert np.array_equal(sf.guesses, tiled_guesses)
+    assert sf.guesses.ndim == 2
+    assert sf.guesses.shape == (128 * 128, 2)
+
+
+def test_attack_selection_function_accept_list_of_asymmetric_ndarrays():
+    a = np.arange(128)
+    b = np.arange(256)
+    sf = scared.attack_selection_function(function=default_sf, guesses=[a, b])
+    tiled_guesses = np.stack(np.meshgrid(a, b, indexing='ij'), axis=-1).reshape(-1, 2)
+    assert np.array_equal(sf.guesses, tiled_guesses)
+    assert sf.guesses.ndim == 2
+    assert sf.guesses.shape == (128 * 256, 2)
+
+
+def test_attack_selection_function_accept_list_of_asymmetric_signed_ndarrays():
+    a = np.arange(3329 // 2 + 1)
+    b = np.arange(-(3329 // 2), 3329 // 2 + 1)
+    sf = scared.attack_selection_function(function=default_sf, guesses=[a, b])
+    tiled_guesses = np.stack(np.meshgrid(a, b, indexing='ij'), axis=-1).reshape(-1, 2)
+    assert np.array_equal(sf.guesses, tiled_guesses)
+    assert sf.guesses.ndim == 2
+    assert sf.guesses.shape == (len(a) * len(b), 2)
+
+
+def test_attack_selection_function_guesses_yield_correct_length():
+    n = 256
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(n))
+    assert len(sf.guesses) == n
+    sf = scared.attack_selection_function(function=default_sf, guesses=[range(n), range(n)])
+    assert len(sf.guesses) == n * n
+
+
+def test_attack_selection_function_guesses_subscriptable_1d():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
+    assert sf.guesses[3] == 3
+
+
+def test_attack_selection_function_guesses_subscriptable_2d():
+    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(128)])
+    assert np.array_equal(sf.guesses[3], np.array([0, 3], dtype='uint8'))
+
+
+def test_attack_selection_function_guesses_is_iterable():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(3))
+
+    # 1. Check that obj is an instance of an iterable
+    from collections.abc import Iterable
+    assert isinstance(sf.guesses, Iterable)
+
+    # 2. Check that iteration works as expected
+    assert list(sf.guesses) == [0, 1, 2]
+
+
+def test_attack_selection_function_guesses_returns_iterator():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(3))
+    iterator = iter(sf.guesses)
+    from collections.abc import Iterator
+    assert isinstance(iterator, Iterator)
+
+
+def test_attack_selection_function_guesses_dtypes():
+    # Implicit dtypes
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
+    assert sf.guesses.dtype == np.uint8
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(3329))
+    assert sf.guesses.dtype == np.uint16
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(65537))
+    assert sf.guesses.dtype == np.uint32
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(-(3329 // 2), (3329 // 2) + 1))
+    assert sf.guesses.dtype == np.int16
+    sf = scared.attack_selection_function(function=default_sf, guesses=[range(3329 // 2 + 1), range(-(3329 // 2), 3329 // 2 + 1)])
+    assert sf.guesses.dtype == np.int16
+
+    # Explicit dtypes
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128), guesses_dtype=np.uint32)
+    assert sf.guesses.dtype == np.uint32
+    sf = scared.attack_selection_function(function=default_sf, guesses=np.arange(3329, dtype=np.uint16), guesses_dtype=np.int16)
+    assert sf.guesses.dtype == np.int16
 
 
 def test_attack_selection_function_guesses_default_value():
@@ -89,7 +184,7 @@ def test_attack_selection_function_with_expected_key_function():
     def first_bytes(guesses, plaintext):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))
+            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))  # TODO: Value of guesses, not index
         return out.swapaxes(0, 1)
 
     computed_key = first_bytes.compute_expected_key(**datas)
@@ -108,7 +203,7 @@ def test_attack_selection_function_returns_none_without_expected_key_function():
     def first_bytes(guesses, plaintext):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))
+            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))  # TODO: Value of guesses, not their index
         return out.swapaxes(0, 1)
 
     assert first_bytes.compute_expected_key(**datas) is None
@@ -129,7 +224,7 @@ def test_attack_selection_function_compute_expected_key_raises_exception_if_miss
     def first_bytes(guesses, plaintext):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))
+            out[guess] = scared.aes.sub_bytes(np.bitwise_xor(plaintext, guess))  # TODO: Value of guesses, not their index
         return out.swapaxes(0, 1)
 
     with pytest.raises(scared.SelectionFunctionError):
@@ -148,7 +243,7 @@ def test_selection_function_computes_intermediate_datas():
     def sf(plaintext, guesses):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = np.bitwise_xor(plaintext, guess)
+            out[guess] = np.bitwise_xor(plaintext, guess)  # TODO: Value of guesses, not their index
         return out.swapaxes(0, 1)
     res = sf(**datas)
     assert res.shape[:2] == (datas['plaintext'].shape[0], 256)
@@ -184,7 +279,7 @@ def test_selection_function_raises_exceptions_if_intermediate_values_has_inconsi
     def sf(plaintext, guesses):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = np.bitwise_xor(plaintext, guess)
+            out[guess] = np.bitwise_xor(plaintext, guess)  # TODO: Value of guesses, not their index
         return out[:, 0]
 
     with pytest.raises(scared.SelectionFunctionError):
@@ -253,7 +348,7 @@ def test_selection_function_computes_intermediate_datas_with_words_selection():
     def sf(plaintext, guesses):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = np.bitwise_xor(plaintext, guess)
+            out[guess] = np.bitwise_xor(plaintext, guess)  # TODO: Value of guesses, not their index
         return out.swapaxes(0, 1)
 
     assert isinstance(str(sf), str)
@@ -287,7 +382,7 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
     def sf(plaintext, guesses):
         out = np.empty(tuple([len(guesses), plaintext.shape[0], 16]), dtype='uint8')
         for guess in guesses:
-            out[guess] = np.bitwise_xor(plaintext, guess)
+            out[guess] = np.bitwise_xor(plaintext, guess)  # TODO: Value of guesses, not their index
         return out.swapaxes(0, 1)
     with pytest.raises(scared.SelectionFunctionError):
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))
