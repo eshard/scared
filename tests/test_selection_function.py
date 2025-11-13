@@ -31,6 +31,13 @@ def test_attack_selection_function_raises_exception_if_guesses_is_not_an_int_arr
         scared.attack_selection_function(function=default_sf, guesses=[[3.14], [2.72]])
 
 
+def test_attack_selection_function_raises_exception_if_more_than_2d_ndarray_is_given():
+    with pytest.raises(ValueError):
+        scared.attack_selection_function(function=default_sf, guesses=np.ones((2, 2, 2), dtype=np.uint8))
+    with pytest.raises(ValueError):
+        scared.attack_selection_function(function=default_sf, guesses=[np.ones((2, 2), dtype=np.uint8), np.ones((2, 2), dtype=np.uint8)])
+
+
 def test_attack_selection_function_accept_range_guesses():
     sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
     assert np.array_equal(sf.guesses, np.arange(128, dtype='uint8'))
@@ -126,6 +133,11 @@ def test_attack_selection_function_guesses_default_value():
     sf = scared.attack_selection_function(function=default_sf)
     assert np.array_equal(sf.guesses, np.arange(256, dtype='uint8'))
     assert isinstance(str(sf), str)
+
+
+def test_guesses_in_decorated_function():
+    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(256)])
+    assert type(sf.guesses) is scared.selection_functions.guesses.Guesses
 
 
 def test_attack_selection_function_raises_exception_if_function_is_not_callable():
