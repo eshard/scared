@@ -26,6 +26,7 @@ class Guesses(_np.ndarray):
 
         Returns:
             Guesses: The instantiated object.
+
         """
         obj = guess_list
         if isinstance(obj, range):
@@ -73,7 +74,7 @@ class Guesses(_np.ndarray):
 
     @staticmethod
     def _verify_type(array):
-        """Verifies the type of the input array"""
+        """Verifies the type of the input array."""
         if not isinstance(array, _np.ndarray):
             raise TypeError(f'array should be a Numpy ndarray instance, not {type(array)}.')
         if not _np.issubdtype(array.dtype, _np.integer):
