@@ -12,23 +12,38 @@ def test_selection_function_raises_exception_if_function_is_not_callable():
         scared.selection_function(function='foo')
 
 
-def test_attack_selection_function_raises_exception_if_guesses_is_not_an_int_array():
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses="foo")
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=16)
-    with pytest.raises(ValueError):
-        scared.attack_selection_function(function=default_sf, guesses=[])
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=[3, 4])
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=3.14)
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=[[], []])
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=[["foo"], ["bar"]])
-    with pytest.raises(TypeError):
-        scared.attack_selection_function(function=default_sf, guesses=[[3.14], [2.72]])
+@pytest.mark.parametrize(
+    "guesses, expected_error",
+    [
+        pytest.param(
+            "foo", TypeError, id="string"
+        ),
+        pytest.param(
+            16, TypeError, id="int"
+        ),
+        pytest.param(
+            [], ValueError, id="empty_list"
+        ),
+        pytest.param(
+            [3, 4], TypeError, id="list_of_ints"
+        ),
+        pytest.param(
+            3.14, TypeError, id="float"
+        ),
+        pytest.param(
+            [[], []], TypeError, id="list_of_empty_lists"
+        ),
+        pytest.param(
+            [["foo"], ["bar"]], TypeError, id="list_of_lists_of_string"
+        ),
+        pytest.param(
+            [[3.14], [2.72]], TypeError, id="list_of_lists_of_float"
+        )
+    ]
+)
+def test_attack_selection_function_raises_exception_if_guesses_is_not_an_int_array(guesses, expected_error):
+    with pytest.raises(expected_error):
+        scared.attack_selection_function(function=default_sf, guesses=guesses)
 
 
 def test_attack_selection_function_raises_exception_if_more_than_2d_ndarray_is_given():
@@ -109,24 +124,27 @@ def test_attack_selection_function_guesses_returns_iterator():
     assert isinstance(iterator, Iterator)
 
 
-def test_attack_selection_function_guesses_dtypes():
-    # Implicit dtypes
-    sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
-    assert sf.guesses.dtype == np.uint8
-    sf = scared.attack_selection_function(function=default_sf, guesses=range(3329))
-    assert sf.guesses.dtype == np.uint16
-    sf = scared.attack_selection_function(function=default_sf, guesses=range(65537))
-    assert sf.guesses.dtype == np.uint32
-    sf = scared.attack_selection_function(function=default_sf, guesses=range(-(3329 // 2), (3329 // 2) + 1))
-    assert sf.guesses.dtype == np.int16
-    sf = scared.attack_selection_function(function=default_sf, guesses=[range(3329 // 2 + 1), range(-(3329 // 2), 3329 // 2 + 1)])
-    assert sf.guesses.dtype == np.int16
+def test_attack_selection_function_guesses_not_from_zero():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128, 256))
+    assert sf.guesses[0] == 128
+    assert sf.guesses[127] == 255
 
-    # Explicit dtypes
-    sf = scared.attack_selection_function(function=default_sf, guesses=range(128), guesses_dtype=np.uint32)
-    assert sf.guesses.dtype == np.uint32
-    sf = scared.attack_selection_function(function=default_sf, guesses=np.arange(3329, dtype=np.uint16), guesses_dtype=np.int16)
-    assert sf.guesses.dtype == np.int16
+
+@pytest.mark.parametrize(
+    "guesses, expected_dtype, explicit_dtype",
+    [
+        pytest.param(range(128), np.uint8, None, id="uint8_implicit"),
+        pytest.param(range(3329), np.uint16, None, id="uint16_implicit"),
+        pytest.param(range(65537), np.uint32, None, id="uint32_implicit"),
+        pytest.param(range(-(3329 // 2), (3329 // 2) + 1), np.int16, None, id="int16_implicit"),
+        pytest.param([range(3329 // 2 + 1), range(-(3329 // 2), 3329 // 2 + 1)], np.int16, None, id="int16_implicit_list"),
+        pytest.param(range(128), np.uint32, np.uint32, id="uint32_explicit"),
+        pytest.param(np.arange(3329, dtype=np.uint16), np.int16, np.int16, id="int16_explicit")
+    ]
+)
+def test_attack_selection_function_guesses_dtypes(guesses, expected_dtype, explicit_dtype):
+    sf = scared.attack_selection_function(function=default_sf, guesses=guesses, guesses_dtype=explicit_dtype)
+    assert sf.guesses.dtype == expected_dtype
 
 
 def test_attack_selection_function_guesses_default_value():
