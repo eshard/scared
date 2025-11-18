@@ -59,6 +59,13 @@ def test_attack_selection_function_accept_range_guesses():
     assert isinstance(str(sf), str)
 
 
+def test_attack_selection_function_accept_guesses_object():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128))
+    sf_2 = scared.attack_selection_function(function=default_sf, guesses=sf.guesses)
+    assert np.all(sf.guesses == sf_2.guesses)
+    assert sf.guesses is not sf_2.guesses
+
+
 def test_attack_selection_function_accept_list_of_ranges():
     sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(128)])
     ind_guess = np.array(range(128))

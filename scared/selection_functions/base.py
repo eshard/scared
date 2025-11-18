@@ -142,9 +142,10 @@ def attack_selection_function(function=None, guesses=range(256), words=None, exp
 
     Args:
         function (callable): the attack selection function callable.
-        guesses (ndarray, range, list[ndarray] or list[range], default=range(256)): guesses values to be used by the selection function.
+        guesses (ndarray, range, list[ndarray], list[range] or Guesses, default=range(256)): guesses values to be used by the selection function.
         words (ndarray, slice, list, default=None): words subselection used by the selection function.
         expected_key_function (callable, default=None): callable to compute the corresponding expected key value for this selection function.
+        guesses_dtype (numpy.dtype or None, default=None): Defaults to None. If None is given, the dtype will be inferred wtih the smallest possible precision.
 
     Methods:
         compute_expected_key: returns the result of expected_key_function, if available.

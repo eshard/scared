@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Union
 import numpy as _np
+import copy as _copy
 
 
 class Guesses(_np.ndarray):
-    def __new__(cls, guess_list: Union[range, _np.ndarray, list[_np.ndarray], list[range]], dtype: Union[None, _np.dtype] = None) -> Guesses:
+    def __new__(cls, guess_list: Union[range, _np.ndarray, list[_np.ndarray], list[range], Guesses], dtype: Union[None, _np.dtype] = None) -> Guesses:
         """Instantiates a Guesses object.
 
         This class checks the type of given guesses. Additionally, if guesses for multiple words must be done,
@@ -16,7 +17,7 @@ class Guesses(_np.ndarray):
         multidimensional numpy.ndarray is given, no cartesian product will be made.
 
         Args:
-            guess_list (Union[range, numpy.ndarray, list[numpy.ndarray], list[range]]): Guesses to validate.
+            guess_list (Union[range, numpy.ndarray, list[numpy.ndarray], list[range], Guesses]): Guesses to validate.
             dtype (Union[None, numpy.dtype], optional): dtype of the guesses. Defaults to None. If None is given, the dtype will be inferred and
             given the smallest possible precision.
 
@@ -29,6 +30,10 @@ class Guesses(_np.ndarray):
 
         """
         obj = guess_list
+
+        if isinstance(obj, Guesses):
+            return _copy.deepcopy(obj)
+
         if isinstance(obj, range):
             obj = _np.array(obj, dtype=dtype)
             cls._verify_type(obj)
