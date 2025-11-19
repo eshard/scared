@@ -1,4 +1,4 @@
-image: hub.eshard.int:5000/ci:2025.04.03
+image: hub.eshard.int:5000/ci:2026.10.01
 
 stages:
   - lint
@@ -11,10 +11,9 @@ stages:
 lint:
   stage: lint
   script:
-    - apt update && apt install -y gcc
     - conda activate
-    - conda install python=3.9 psutil
-    - pip install "pydocstyle<4" flake8 pep8-naming flake8-docstrings
+    - conda install psutil
+    - pip install pydocstyle flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 scared tests setup.py
 
 # # -------------------- TEST JOBS --------------------
@@ -22,10 +21,9 @@ lint:
 .test:python:
   stage: test
   script:
-    - apt update && apt install -y gcc
     - eval "$(conda shell.bash hook)"
     - conda activate py$PYTHON_VERSION
-    - if [[ -n "$NUMPY_VERSION" ]]; then conda install numpy=$NUMPY_VERSION; fi
+    # - if [[ -n "$NUMPY_VERSION" ]]; then conda install numpy=$NUMPY_VERSION; fi
     - pip install .[test]
     - pytest --color=yes -vv --cov=scared tests
   variables:
@@ -33,33 +31,34 @@ lint:
     NUMPY_VERSION: ""
 
 
-test:python310-intel:
+test:python313-intel:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "310"
-    NUMPY_VERSION: "1.26.4"
+    PYTHON_VERSION: "313"
+    # NUMPY_VERSION: "1.26.4"
 
-test:python310:
+test:python313:
   extends: .test:python
   variables:
-    PYTHON_VERSION: "310"
+    PYTHON_VERSION: "313"
 
-test:python310-arm:
+test:python313-arm:
   extends: .test:python
   tags:
     - arm
   variables:
-    PYTHON_VERSION: "310"
+    PYTHON_VERSION: "313"
+
+test:python312:
+  extends: .test:python
+  variables:
+    PYTHON_VERSION: "312"
 
 test:python311:
   extends: .test:python
   variables:
     PYTHON_VERSION: "311"
 
-test:python312:
-  extends: .test:python
-  variables:
-    PYTHON_VERSION: "312"
 
 # -------------------- BUILD JOBS --------------------
 
@@ -77,6 +76,7 @@ test:python312:
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
+      - ".recipe/out/*/*.conda"
   variables:
     ARCHITECTURE: "linux-64"
   # only:
@@ -137,6 +137,7 @@ deploy:conda:
     - conda config --add channels $ANACONDA_CHANNEL
     - conda update conda
     - conda install anaconda-client
+    - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.conda
     - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.tar.bz2
   only:
     - tags
@@ -144,6 +145,7 @@ deploy:conda:
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
+      - ".recipe/out/*/*.conda"
 
 # -------------------- DOCUMENTATION --------------------
 
