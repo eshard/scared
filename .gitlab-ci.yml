@@ -1,4 +1,4 @@
-image: hub.eshard.int:5000/ci:2026.10.01
+image: hub.eshard.int:5000/ci:2026.04.01
 
 stages:
   - lint
