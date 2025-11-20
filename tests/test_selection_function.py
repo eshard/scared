@@ -1,6 +1,7 @@
 from .context import scared  # noqa: F401
 import pytest
 import numpy as np
+import numba as nb
 
 
 def default_sf(guesses):
@@ -163,6 +164,81 @@ def test_attack_selection_function_guesses_default_value():
 def test_guesses_in_decorated_function():
     sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(256)])
     assert type(sf.guesses) is scared.selection_functions.guesses.Guesses
+
+
+@nb.vectorize
+def xor_nb_vectorized(a, b):
+    return a ^ b
+
+
+def xor_callable(guesses: np.ndarray, data: np.ndarray):
+    ret_arr = np.empty((guesses.shape[0], data.shape[0], data.shape[1]), dtype=data.dtype)
+    guesses = guesses.reshape((guesses.shape[0], -1))
+    data = data.reshape((data.shape[0], data.shape[1] // guesses.shape[1], -1))
+
+    # To simulate what a user without vectorization would do
+    for i, guess in enumerate(guesses):
+        for j, data_trace in enumerate(data):
+            for k, word in enumerate(data_trace):
+                ret_arr[i, j, k:k + guesses.shape[-1]] = word ^ guess
+    return ret_arr.swapaxes(0, 1)
+
+
+@pytest.mark.parametrize("op", [np.bitwise_xor, xor_nb_vectorized, xor_callable])
+@pytest.mark.parametrize("guesses", [
+    pytest.param(range(256), id="guesses_1d"),
+    pytest.param([range(32), range(32)], id="guesses_2d")
+])
+def test_guesses_expand(op, guesses):
+    sf = scared.attack_selection_function(function=lambda x: x, guesses=guesses)
+    data = np.random.randint(0, 256, (100, 10))
+    assert sf.guesses.expand(data, op).ndim == 3
+    assert sf.guesses.expand(data, op).shape[0:2] == (data.shape[0], len(sf.guesses))  # Last dimension is inferred
+
+
+def test_guesses_expand_raises_exception_if_operation_is_not_callable():
+    with pytest.raises(TypeError):
+        sf = scared.attack_selection_function(function=lambda data, guesses: guesses.expand(data, 1))
+        sf(data=np.array(1))
+
+
+def test_guesses_expand_raises_exception_if_arr_is_not_ndarray():
+    sf = scared.attack_selection_function(function=lambda x: x)
+    with pytest.raises(TypeError):
+        sf.guesses.expand(arr=1, op=np.bitwise_xor)
+
+
+def test_guesses_expand_raises_exception_if_arr_is_more_than_2d():
+    sf = scared.attack_selection_function(function=lambda x: x)
+    with pytest.raises(ValueError):
+        sf.guesses.expand(arr=np.zeros((2, 2, 2)), op=np.bitwise_xor)
+
+
+def test_guesses_expand_raises_exception_if_guesses_words_do_not_divide_data_words():
+    data = np.random.randint(0, 256, (100, 3))
+    sf = scared.attack_selection_function(function=lambda data, guesses: guesses.expand(data, np.bitwise_xor), guesses=[range(256), range(256)])
+    with pytest.raises(ValueError):
+        sf(data=data)
+
+
+def test_guesses_expand_raises_exception_if_op_does_not_return_ndarray():
+    def op(guesses, arr):
+        return 1
+    data = np.random.randint(0, 256, (100, 3))
+    sf = scared.attack_selection_function(function=lambda x: x)
+    with pytest.raises(TypeError):
+        sf.guesses.expand(data, op)
+
+
+@pytest.mark.parametrize("op", [
+    lambda guesses, arr: np.empty((2, 2, 2, 2), dtype=guesses.dtype),
+    lambda guesses, arr: np.empty((2, 2, 2), dtype=guesses.dtype)
+])
+def test_guesses_expand_raises_exception_if_op_does_a_well_shaped_ndarray(op):
+    data = np.random.randint(0, 256, (100, 3))
+    sf = scared.attack_selection_function(function=lambda x: x)
+    with pytest.raises(ValueError):
+        sf.guesses.expand(data, op)
 
 
 def test_attack_selection_function_raises_exception_if_function_is_not_callable():
