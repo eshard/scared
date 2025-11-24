@@ -23,7 +23,7 @@ def test_selection_function_raises_exception_if_function_is_not_callable():
             16, TypeError, id="int"
         ),
         pytest.param(
-            [], ValueError, id="empty_list"
+            [], TypeError, id="list"
         ),
         pytest.param(
             [3, 4], TypeError, id="list_of_ints"
@@ -32,13 +32,10 @@ def test_selection_function_raises_exception_if_function_is_not_callable():
             3.14, TypeError, id="float"
         ),
         pytest.param(
-            [[], []], TypeError, id="list_of_empty_lists"
+            np.zeros((3), dtype=float), TypeError, id="float"
         ),
         pytest.param(
-            [["foo"], ["bar"]], TypeError, id="list_of_lists_of_string"
-        ),
-        pytest.param(
-            [[3.14], [2.72]], TypeError, id="list_of_lists_of_float"
+            np.zeros((3, 3), dtype=float), TypeError, id="float"
         )
     ]
 )
@@ -50,8 +47,6 @@ def test_attack_selection_function_raises_exception_if_guesses_is_not_an_int_arr
 def test_attack_selection_function_raises_exception_if_more_than_2d_ndarray_is_given():
     with pytest.raises(ValueError):
         scared.attack_selection_function(function=default_sf, guesses=np.ones((2, 2, 2), dtype=np.uint8))
-    with pytest.raises(ValueError):
-        scared.attack_selection_function(function=default_sf, guesses=[np.ones((2, 2), dtype=np.uint8), np.ones((2, 2), dtype=np.uint8)])
 
 
 def test_attack_selection_function_accept_range_guesses():
@@ -67,41 +62,50 @@ def test_attack_selection_function_accept_guesses_object():
     assert sf.guesses is not sf_2.guesses
 
 
-def test_attack_selection_function_accept_list_of_ranges():
-    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(128)])
-    ind_guess = np.array(range(128))
-    tiled_guesses = np.stack(np.meshgrid(ind_guess, ind_guess, indexing='ij'), axis=-1).reshape(-1, 2)
-    assert np.array_equal(sf.guesses, tiled_guesses)
+@pytest.mark.parametrize(
+    "guesses, nb_words_guess",
+    [
+        pytest.param(range(256), 2),
+        pytest.param(range(-127, 128), 2),
+        pytest.param(range(10), 3)
+    ]
+)
+def test_attack_selection_function_guesses_expand_to_multiple_words(guesses, nb_words_guess):
+    sf = scared.attack_selection_function(function=default_sf, guesses=guesses, nb_words_guess=nb_words_guess)
     assert sf.guesses.ndim == 2
-    assert sf.guesses.shape == (128 * 128, 2)
+    assert len(sf.guesses) == len(guesses) ** nb_words_guess
+    tiled_guesses = np.stack(np.meshgrid(*([guesses] * nb_words_guess), indexing='ij'), axis=-1).reshape(-1, nb_words_guess)
+    assert np.all(sf.guesses == tiled_guesses)
 
 
-def test_attack_selection_function_accept_list_of_asymmetric_ndarrays():
+def test_attack_selection_function_guesses_ignore_nb_words_if_2d_array_given():
+    guesses = np.ones((5, 5), np.uint16)
+    nb_words_guess = 5
+    sf = scared.attack_selection_function(function=default_sf, guesses=guesses, nb_words_guess=nb_words_guess)
+    assert sf.guesses.ndim == 2
+    assert np.all(sf.guesses == guesses)
+
+
+def test_attack_selection_function_guesses_accept_list_of_asymmetric_ndarrays():
     a = np.arange(128)
     b = np.arange(256)
-    sf = scared.attack_selection_function(function=default_sf, guesses=[a, b])
     tiled_guesses = np.stack(np.meshgrid(a, b, indexing='ij'), axis=-1).reshape(-1, 2)
+    sf = scared.attack_selection_function(function=default_sf, guesses=tiled_guesses)
     assert np.array_equal(sf.guesses, tiled_guesses)
-    assert sf.guesses.ndim == 2
-    assert sf.guesses.shape == (128 * 256, 2)
 
 
-def test_attack_selection_function_accept_list_of_asymmetric_signed_ndarrays():
+def test_attack_selection_function_guesses_accept_list_of_asymmetric_signed_ndarrays():
     a = np.arange(3329 // 2 + 1)
     b = np.arange(-(3329 // 2), 3329 // 2 + 1)
-    sf = scared.attack_selection_function(function=default_sf, guesses=[a, b])
     tiled_guesses = np.stack(np.meshgrid(a, b, indexing='ij'), axis=-1).reshape(-1, 2)
+    sf = scared.attack_selection_function(function=default_sf, guesses=tiled_guesses)
     assert np.array_equal(sf.guesses, tiled_guesses)
-    assert sf.guesses.ndim == 2
-    assert sf.guesses.shape == (len(a) * len(b), 2)
 
 
 def test_attack_selection_function_guesses_yield_correct_length():
     n = 256
     sf = scared.attack_selection_function(function=default_sf, guesses=range(n))
     assert len(sf.guesses) == n
-    sf = scared.attack_selection_function(function=default_sf, guesses=[range(n), range(n)])
-    assert len(sf.guesses) == n * n
 
 
 def test_attack_selection_function_guesses_subscriptable_1d():
@@ -110,7 +114,7 @@ def test_attack_selection_function_guesses_subscriptable_1d():
 
 
 def test_attack_selection_function_guesses_subscriptable_2d():
-    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(128)])
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128), nb_words_guess=2)
     assert np.array_equal(sf.guesses[3], np.array([0, 3], dtype='uint8'))
 
 
@@ -139,18 +143,19 @@ def test_attack_selection_function_guesses_not_from_zero():
 
 
 @pytest.mark.parametrize(
-    "guesses, expected_dtype, explicit_dtype",
+    "guesses, nb_words_guess, expected_dtype, explicit_dtype",
     [
-        pytest.param(range(128), np.uint8, None, id="uint8_implicit"),
-        pytest.param(range(3329), np.uint16, None, id="uint16_implicit"),
-        pytest.param(range(65537), np.uint32, None, id="uint32_implicit"),
-        pytest.param(range(-(3329 // 2), (3329 // 2) + 1), np.int16, None, id="int16_implicit"),
-        pytest.param([range(3329 // 2 + 1), range(-(3329 // 2), 3329 // 2 + 1)], np.int16, None, id="int16_implicit_list"),
-        pytest.param(range(128), np.uint32, np.uint32, id="uint32_explicit"),
-        pytest.param(np.arange(3329, dtype=np.uint16), np.int16, np.int16, id="int16_explicit")
+        pytest.param(range(128), 1, np.uint8, None, id="uint8_implicit"),
+        pytest.param(range(3329), 1, np.uint16, None, id="uint16_implicit"),
+        pytest.param(range(65537), 1, np.uint32, None, id="uint32u_implicit"),
+        pytest.param(range(-(3329 // 2), (3329 // 2) + 1), 1, np.int16, None, id="int16_implicit"),
+        pytest.param(range(-(3329 // 2), (3329 // 2) + 1), 2, np.int16, None, id="int16_implicit_2d"),
+        pytest.param(range(128), 1, np.uint32, np.uint32, id="uint32_explicit"),
+        pytest.param(np.arange(3329, dtype=np.uint16), 1, np.int16, np.int16, id="int16_explicit"),
+        pytest.param(np.arange(3329, dtype=np.uint16), 2, np.int16, np.int16, id="int16_explicit_2d")
     ]
 )
-def test_attack_selection_function_guesses_dtypes(guesses, expected_dtype, explicit_dtype):
+def test_attack_selection_function_guesses_dtypes(guesses, nb_words_guess, expected_dtype, explicit_dtype):
     sf = scared.attack_selection_function(function=default_sf, guesses=guesses, guesses_dtype=explicit_dtype)
     assert sf.guesses.dtype == expected_dtype
 
@@ -161,8 +166,8 @@ def test_attack_selection_function_guesses_default_value():
     assert isinstance(str(sf), str)
 
 
-def test_guesses_in_decorated_function():
-    sf = scared.attack_selection_function(function=default_sf, guesses=[range(128), range(256)])
+def test_guesses_correct_type():
+    sf = scared.attack_selection_function(function=default_sf, guesses=range(128), nb_words_guess=2)
     assert type(sf.guesses) is scared.selection_functions.guesses.Guesses
 
 
@@ -185,12 +190,12 @@ def xor_callable(guesses: np.ndarray, data: np.ndarray):
 
 
 @pytest.mark.parametrize("op", [np.bitwise_xor, xor_nb_vectorized, xor_callable])
-@pytest.mark.parametrize("guesses", [
-    pytest.param(range(256), id="guesses_1d"),
-    pytest.param([range(32), range(32)], id="guesses_2d")
+@pytest.mark.parametrize("guesses, nb_words_guess", [
+    pytest.param(range(256), 1, id="guesses_1d"),
+    pytest.param(range(32), 2, id="guesses_2d")
 ])
-def test_guesses_expand(op, guesses):
-    sf = scared.attack_selection_function(function=lambda x: x, guesses=guesses)
+def test_guesses_expand(op, guesses, nb_words_guess):
+    sf = scared.attack_selection_function(function=lambda x: x, guesses=guesses, nb_words_guess=nb_words_guess)
     data = np.random.randint(0, 256, (100, 10))
     assert sf.guesses.expand(data, op).ndim == 3
     assert sf.guesses.expand(data, op).shape[0:2] == (data.shape[0], len(sf.guesses))  # Last dimension is inferred
@@ -216,7 +221,7 @@ def test_guesses_expand_raises_exception_if_arr_is_more_than_2d():
 
 def test_guesses_expand_raises_exception_if_guesses_words_do_not_divide_data_words():
     data = np.random.randint(0, 256, (100, 3))
-    sf = scared.attack_selection_function(function=lambda data, guesses: guesses.expand(data, np.bitwise_xor), guesses=[range(256), range(256)])
+    sf = scared.attack_selection_function(function=lambda data, guesses: guesses.expand(data, np.bitwise_xor), guesses=range(256), nb_words_guess=2)
     with pytest.raises(ValueError):
         sf(data=data)
 

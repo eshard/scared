@@ -6,30 +6,33 @@ import numba as _nb
 
 
 class Guesses(_np.ndarray):
-    def __new__(cls, guess_list: Union[range, _np.ndarray, list[_np.ndarray], list[range], Guesses], dtype: Union[None, _np.dtype] = None) -> Guesses:
+    def __new__(cls, guess_list: Union[range, _np.ndarray, Guesses], dtype: Union[None, _np.dtype] = None, nb_words: int = 1) -> Guesses:
         """Instantiates a Guesses object.
 
-        This class checks the type of given guesses. Additionally, if guesses for multiple words must be done,
+        This class checks the type of given guesses. Additionally, if guesses for multiple words must be done (by specifying nb_words > 1),
         it performs a cartesian product between the guesses of each word.
 
-        The behaviour depends on the object given to `guess_list`. For instance, if the guesses are uni-dimensional (one single word),
-        `guess_list` can be a range object or a numpy.ndarray. Otherwise, if multi-dimensional, it can be a list of range or numpy.ndarray
-        or a multidimensional numpy.ndarray. If a list is given a cartesian product between the guesses will be made. Otherwise, if a
-        multidimensional numpy.ndarray is given, no cartesian product will be made.
+        If no dtype is given, it will be inferred with the smallest possible precision.
 
         Args:
-            guess_list (Union[range, numpy.ndarray, list[numpy.ndarray], list[range], Guesses]): Guesses to validate.
-            dtype (Union[None, numpy.dtype], optional): dtype of the guesses. Defaults to None. If None is given, the dtype will be inferred and
-            given the smallest possible precision.
+            guess_list (Union[range, numpy.ndarray, Guesses]): Guesses to validate.
+            dtype (Union[None, numpy.dtype], optional): dtype of the guesses. Defaults to None.
+            nb_words (int, optional): Number of words for a guess. Defaults to None.
 
         Raises:
-            ValueError: Raised if a list is given, but it is empty.
             TypeError: Raised if the type of the inputs is not valid.
+            ValueError: If dimensions of a given numpy.ndarray are not valid or nb_words is less than 1.
 
         Returns:
             Guesses: The instantiated object.
 
         """
+        # Guards nb_words
+        if not isinstance(nb_words, int):
+            raise TypeError("nb_words must be int.")
+        if nb_words < 1:
+            raise ValueError("Invalid number of words.")
+
         obj = guess_list
 
         if isinstance(obj, Guesses):
@@ -38,17 +41,6 @@ class Guesses(_np.ndarray):
         if isinstance(obj, range):
             obj = _np.array(obj, dtype=dtype)
             cls._verify_type(obj)
-        elif isinstance(obj, list):
-            if len(obj) == 0:
-                raise ValueError("List of guesses per word given was empty.")
-            obj = [_np.array(element, dtype=dtype) if isinstance(element, range) else element for element in obj]  # Convert ranges to numpy arrays
-            # We verify the type of every element
-            for element in obj:
-                cls._verify_type(element)
-                if element.ndim > 1:
-                    raise ValueError(f"Numpy array in list contains more than one dimension. Current dimensions: {element.ndim}.")
-            # We do the crossing of the guesses
-            obj = _np.stack(_np.meshgrid(*obj, indexing='ij'), axis=-1).reshape(-1, len(obj))
         else:
             cls._verify_type(obj)
             if obj.ndim > 2:
@@ -73,6 +65,12 @@ class Guesses(_np.ndarray):
                 candidates = [8, 16, 32, 64]
                 dtype_inferred = _np.dtype(f'int{next(b for b in candidates if bits <= b)}')
             obj = obj.astype(dtype_inferred)
+
+        # Here we expand to multiple words if nb_words is not 1 and current guess array has one dimension.
+        if nb_words > 1 and obj.ndim == 1:
+            obj = [obj] * nb_words
+            print(len(obj))
+            obj = _np.stack(_np.meshgrid(*obj, indexing='ij'), axis=-1).reshape(-1, nb_words)
 
         obj = _np.asarray(obj).view(cls)  # We obtain a view of our object from __array_finalize__
 
