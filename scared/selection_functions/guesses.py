@@ -69,7 +69,6 @@ class Guesses(_np.ndarray):
         # Here we expand to multiple words if nb_words is not 1 and current guess array has one dimension.
         if nb_words > 1 and obj.ndim == 1:
             obj = [obj] * nb_words
-            print(len(obj))
             obj = _np.stack(_np.meshgrid(*obj, indexing='ij'), axis=-1).reshape(-1, nb_words)
 
         obj = _np.asarray(obj).view(cls)  # We obtain a view of our object from __array_finalize__
