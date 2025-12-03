@@ -113,7 +113,7 @@ class Monobit(Model):
     returns the monobit model value computed on last dimension of the array.
 
     Attributes:
-        bit (int): number of the bit targeted. Should be between 0 and 8, otherwise raises a ValueError.
+        bit (int): number of the bit targeted. Should be between 0 and 7, otherwise raises a ValueError.
 
     Args:
         data (numpy.ndarray): a ndarray of numeric type
@@ -126,8 +126,8 @@ class Monobit(Model):
     def __init__(self, bit):
         if not isinstance(bit, int):
             raise TypeError(f'bit target should be an int, not {type(bit)}.')
-        if bit < 0 or bit > 8:
-            raise ValueError(f'bit should be between 0 and 8, not {bit}.')
+        if bit < 0 or bit > 7:
+            raise ValueError(f'bit should be between 0 and 7, not {bit}.')
         self.bit = bit
 
     def _compute(self, data, axis):
