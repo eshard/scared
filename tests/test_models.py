@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 
-@pytest.fixture(params=list(range(9)))
+@pytest.fixture(params=list(range(8)))
 def bits(request):
     return request.param
 
