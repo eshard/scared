@@ -343,15 +343,14 @@ def test_distinguishers_linearise_data_dimensions_internally():
 
 
 def test_cpa_update_method_converts_traces_and_data_properly():
-
     traces = np.random.randint(-10000, 10000, size=(50, 200), dtype='int16')
     data = np.random.randint(0, 255, (50, 256, 16), dtype='uint8')
 
     c = scared.CPADistinguisher()
     c.update(traces, data)
 
-    assert np.alltrue(c.ex2 > 0)
-    assert np.alltrue(c.ey2 > 0)
+    assert np.all(c.ex2 > 0)
+    assert np.all(c.ey2 > 0)
 
 
 @pytest.fixture(scope='module')

@@ -322,6 +322,7 @@ def key_schedule(key, interrupt_after_round=15):
 
     dimensions = key.shape[:-1]
     key = key.reshape((-1, key.shape[-1]))
+    key = key if key.dtype == _np.uint8 else key.astype('uint8')
     # we allocate the table that will contain splitted key bits
     key_bits = _np.empty((key.shape[0], 64), dtype=_np.uint8)
     # split the key into bits
@@ -454,6 +455,7 @@ def initial_permutation(state):
     _is_bytes_of_len(state)
     dimensions = state.shape
     data = state.reshape((-1, 8))
+    data = data if data.dtype == _np.uint8 else data.astype('uint8')
     out = _np.zeros((data.shape[0], 8), dtype=_np.uint8)
     for current_byte in _np.arange(8):
         out[:, 0] <<= 1
@@ -488,6 +490,7 @@ def expansive_permutation(state):
     _is_bytes_of_len(state, length=[4])
     dimensions = state.shape
     data = state.reshape((-1, 4))
+    data = data if data.dtype == _np.uint8 else data.astype('uint8')
     out = _np.zeros((data.shape[0], 8), dtype=_np.uint8)
     # fill output data with specifically picked bits
     for current_2byte_block in _np.arange(4):
@@ -556,6 +559,7 @@ def permutation_p(state):
     _is_bytes_of_len(state)
     dimensions = state.shape
     data = state.reshape((-1, 8))
+    data = data if data.dtype == _np.uint8 else data.astype('uint8')
     out = _np.empty((data.shape[0], 4), dtype=_np.uint8)
 
     # fill output data with specifically picked bits
@@ -611,6 +615,7 @@ def inv_permutation_p(state):
     _is_bytes_of_len(state, length=[4])
     dimensions = state.shape
     data = state.reshape((-1, 4))
+    data = data if data.dtype == _np.uint8 else data.astype('uint8')
     out = _np.zeros((data.shape[0], 8), dtype=_np.int64)
 
     out[:, 0] += ((data[:, 1] & 0x80) != 0) << 3
@@ -671,6 +676,7 @@ def final_permutation(state):
     _is_bytes_of_len(state)
     dimensions = state.shape
     data = state.reshape((-1, 8))
+    data = data if data.dtype == _np.uint8 else data.astype('uint8')
     out = _np.zeros((data.shape[0], 8), dtype=_np.uint8)
     for current_byte in _np.arange(8):
         real_current_byte_index = int(current_byte / 2) + 4 * (1 - (current_byte % 2))

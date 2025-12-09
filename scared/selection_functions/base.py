@@ -1,7 +1,8 @@
 import logging
 import numpy as _np
 import inspect
-from .._utils import _is_bytes_array
+from .guesses import Guesses
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,13 +76,10 @@ class SelectionFunction:
 
 class _AttackSelectionFunction(SelectionFunction):
 
-    def __init__(self, function, guesses, words, expected_key_function=None):
+    def __init__(self, function, guesses, words, expected_key_function=None, guesses_dtype=None, nb_words_guess=1):
         super().__init__(function=function, words=words)
-        if isinstance(guesses, range):
-            guesses = _np.array(guesses, dtype='uint8')
-        _is_bytes_array(guesses)
-        self.guesses = guesses
-        self._base_kwargs['guesses'] = guesses
+        self.guesses = Guesses(guess_list=guesses, dtype=guesses_dtype, nb_words=nb_words_guess)
+        self._base_kwargs['guesses'] = self.guesses
 
         if expected_key_function is not None and not callable(expected_key_function):
             raise TypeError(f'Expected key function must be a callable, not {type(expected_key_function)}.')
@@ -102,7 +100,7 @@ class _AttackSelectionFunction(SelectionFunction):
 
     @property
     def _guesses_str(self):
-        return f'{str(self.guesses)[:20]} ... {str(self.guesses)[-20:]}'.replace('\n', '')
+        return str(self.guesses)
 
     def __str__(self):
         res = super().__str__()
@@ -134,22 +132,29 @@ def selection_function(function=None, words=None):
     return _decorated_selection_function(SelectionFunction, function, words=words)
 
 
-def attack_selection_function(function=None, guesses=range(256), words=None, expected_key_function=None):
+def attack_selection_function(function=None, guesses=range(256), words=None, expected_key_function=None, guesses_dtype=None, nb_words_guess=1):
     """Decorator that wraps provided selection function as an attack selection function.
 
-    Attack selection function must accepts a guesses parameter.
+    Attack selection function must accept a guesses parameter.
+
+    If guesses on multiple words must be made, a value of nb_words_guess bigger than 1 must be given. A cartesian product between the guesses of each word will
+    be made. For instance, if range(256) is given and nb_words_guess=2, the resulting guesses will have the shape (65536, 2). If asymmetric guesses for each
+    word must be made, an already correctly built numpy.ndarray with 2 dimensions must be given.
 
     Args:
         function (callable): the attack selection function callable.
-        guesses (ndarray or range, default=range(256)): guesses values to be used by the selection function.
+        guesses (ndarray, range, or Guesses, default=range(256)): guesses values to be used by the selection function.
         words (ndarray, slice, list, default=None): words subselection used by the selection function.
         expected_key_function (callable, default=None): callable to compute the corresponding expected key value for this selection function.
+        guesses_dtype (numpy.dtype or None, default=None): If None is given, the dtype will be inferred wtih the smallest possible precision.
+        nb_words_guess (int, default=1): The number of words per guess. If a 1d array is given, guesses will be expanded to 2d with cartesian product.
 
     Methods:
         compute_expected_key: returns the result of expected_key_function, if available.
 
     """
-    return _decorated_selection_function(_AttackSelectionFunction, function, words=words, guesses=guesses, expected_key_function=expected_key_function)
+    return _decorated_selection_function(_AttackSelectionFunction, function, words=words, guesses=guesses,
+                                         expected_key_function=expected_key_function, guesses_dtype=guesses_dtype, nb_words_guess=nb_words_guess)
 
 
 def reverse_selection_function(function=None, words=None):
@@ -165,8 +170,10 @@ def reverse_selection_function(function=None, words=None):
 
 class _AttackSelectionFunctionWrapped(_AttackSelectionFunction):
 
-    def __init__(self, function, guesses, words, expected_key_function=None, target_tag=None, key_tag=None, target_name='data', key_name='key'):
-        super().__init__(function=function, words=words, guesses=guesses, expected_key_function=expected_key_function)
+    def __init__(self, function, guesses, words, expected_key_function=None, target_tag=None, key_tag=None,
+                 target_name='data', key_name='key', guesses_dtype=None, nb_words_guess=1):
+        super().__init__(function=function, words=words, guesses=guesses, expected_key_function=expected_key_function,
+                         guesses_dtype=guesses_dtype, nb_words_guess=nb_words_guess)
         self.target_tag = target_tag
         self.target_name = target_name
         self.key_name = key_name

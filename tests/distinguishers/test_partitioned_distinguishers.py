@@ -238,9 +238,8 @@ def test_partitioned_analyses_update_accumulators_method_selection(partitioned_d
     assert d._timings[1] > 0
 
 
-def test_anova_compute_raises_exception_if_no_accumulation(partitioned_datas):
+def test_anova_compute_raises_exception_if_no_accumulation():
     d = scared.ANOVADistinguisher()
-
     with pytest.raises(scared.DistinguisherError):
         d.compute()
 
@@ -252,12 +251,11 @@ def test_anova_compute(partitioned_datas):
     d.update(traces=partitioned_datas.traces_2, data=partitioned_datas.data_2)
 
     results = d.compute()
-    assert np.array_equal(partitioned_datas.result_anova, results)
+    assert np.allclose(partitioned_datas.result_anova, results)  # equal changed in allclose since move to numpy 2, diff is <5e-74
 
 
-def test_nicv_compute_raises_exception_if_no_accumulation(partitioned_datas):
+def test_nicv_compute_raises_exception_if_no_accumulation():
     d = scared.NICVDistinguisher()
-
     with pytest.raises(scared.DistinguisherError):
         d.compute()
 
