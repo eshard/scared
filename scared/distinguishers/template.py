@@ -1,3 +1,4 @@
+from scared._utils.fast_astype import fast_astype as _fast_astype
 from . import partitioned, base
 import logging as _logging
 import numpy as _np
@@ -22,7 +23,7 @@ class _TemplateBuildDistinguisherMixin(partitioned._PartitionnedDistinguisherBas
         for p in range(len(self.partitions)):
             bool_mask[p] = data[:, 0] == p  # Data are already transformed to correspond to partition indexes
         self._counters += _np.sum(bool_mask, axis=1)
-        traces = traces.astype(self.precision)
+        traces = _fast_astype(traces, self.precision)
         self._exi += _np.dot(bool_mask, traces)
         for p in range(len(self.partitions)):
             tmp = traces[bool_mask[p]]

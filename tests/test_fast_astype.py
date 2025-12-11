@@ -3,7 +3,7 @@ import numpy as np
 
 import pytest
 
-from scared.utils.fast_astype import _data_order, fast_astype
+from scared._utils.fast_astype import _data_order, fast_astype
 
 
 @pytest.fixture

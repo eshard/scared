@@ -1,5 +1,5 @@
 from . import container as _container
-from ._utils import _use_parallel
+from ._utils.misc import _use_parallel
 import threading as _th
 import numpy as _np
 import numba as _nb

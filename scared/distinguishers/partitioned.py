@@ -1,5 +1,6 @@
+from scared._utils.fast_astype import fast_astype as _fast_astype
 from .base import DistinguisherMixin, _StandaloneDistinguisher
-from .._utils import _use_parallel
+from .._utils.misc import _use_parallel
 
 import numpy as _np
 import numba as _nb
@@ -112,7 +113,7 @@ class PartitionedDistinguisherMixin(_PartitionnedDistinguisherBaseMixin):
     @_nb.njit(parallel=_parallel)
     def _accumulate_core_2(traces, data, self_sum, self_sum_square, self_counters, self_precision):
         """Faster when number of partitions is <=9."""
-        ftraces = traces.astype(self_precision)
+        ftraces = _fast_astype(traces, self_precision)
         bool_mask = _np.empty((traces.shape[0], data.shape[1] * self_counters.shape[1]), dtype=self_precision)
         for p in range(self_counters.shape[1]):
             tmp_bool = data == p  # Data are already transformed to correspond to partition indexes.

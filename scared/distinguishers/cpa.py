@@ -1,4 +1,4 @@
-from scared.utils.fast_astype import fast_astype as _fast_astype
+from scared._utils.fast_astype import fast_astype as _fast_astype
 from .base import _StandaloneDistinguisher, DistinguisherMixin, DistinguisherError
 import numpy as _np
 import logging
