@@ -1,5 +1,5 @@
 from .context import scared  # noqa: F401
-from scared._utils.misc import _is_bytes_array
+from scared.utils.misc import _is_bytes_array
 import pytest
 import numpy as np
 import time
@@ -117,4 +117,3 @@ def test_des_keyschedule_not_too_slowed_down():
 def test_utils_legacy_import():
     from scared import _utils  # noqa
     print(_utils._is_bytes_array)
-    from scared._utils import _is_bytes_array  # noqa

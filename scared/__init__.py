@@ -33,6 +33,7 @@ from . import des  # noqa: F401
 from . import container as _container
 from . import _version
 from .container import set_batch_size  # noqa: F401
+from . import utils as _utils  # noqa: F401  # for backwards compatibility
 
 
 Container = _container.Container
