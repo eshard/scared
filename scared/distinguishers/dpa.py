@@ -1,4 +1,5 @@
-from scared._utils.fast_astype import fast_astype as _fast_astype
+from scared.utils.fast_astype import fast_astype as _fast_astype
+from scared.utils.inplace_dot_sum import inplace_dot_sum as _inplace_dot_sum
 from .base import DistinguisherMixin, _StandaloneDistinguisher, DistinguisherError
 import numpy as _np
 import logging
@@ -43,7 +44,7 @@ class DPADistinguisherMixin(DistinguisherMixin):
         traces = _fast_astype(traces, self.precision, order='F')
         data = _fast_astype(data, self.precision, order='F')
         self.accumulator_traces += _np.sum(traces, axis=0)
-        self.accumulator_ones += _np.dot(data.T, traces)
+        _inplace_dot_sum(data.T, traces, self.accumulator_ones)
         logger.info(f'End updating accumulators for {self.__class__.__name__}.')
 
     def _compute(self):

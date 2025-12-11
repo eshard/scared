@@ -8,8 +8,8 @@ source:
   path: ../../
 
 build:
-  
-  
+
+
 
 requirements:
   build:
@@ -21,7 +21,7 @@ requirements:
     - wheel
     - pip
     - psutil
-    - numpy {{ numpy_version }} 
+    - numpy {{ numpy_version }}
   run:
     - python
     # dependencies are defined in setup.py
@@ -37,6 +37,7 @@ test:
   requires:
     - pytest
     - pytest-cov
+    - pytest-mock
     - pycryptodome
   commands:
     - pytest
