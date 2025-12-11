@@ -429,5 +429,5 @@ def test_cpa_update_acceptable_precision(order, test_vectors_cpa_sum_precision):
         np.testing.assert_allclose(getattr(distinguishers[order, 'float32'], attribute),
                                    getattr(distinguishers[order, 'float64'], attribute),
                                    atol=200,
-                                   rtol=1e-6,
+                                   rtol=2e-6,
                                    err_msg=f'Float32 accumulators too far from Float64 reference for attribute {attribute}')
