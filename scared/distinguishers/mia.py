@@ -1,5 +1,5 @@
 from .partitioned import PartitionedDistinguisherBase, _PartitionnedDistinguisherBaseMixin
-from .._utils import _use_parallel
+from .._utils.misc import _use_parallel
 import numpy as _np
 import numba as _nb
 import logging

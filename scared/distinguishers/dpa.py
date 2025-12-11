@@ -1,3 +1,4 @@
+from scared._utils.fast_astype import fast_astype as _fast_astype
 from .base import DistinguisherMixin, _StandaloneDistinguisher, DistinguisherError
 import numpy as _np
 import logging
@@ -39,8 +40,8 @@ class DPADistinguisherMixin(DistinguisherMixin):
         logger.info(f'Start updating accumulators for {self.__class__.__name__} with traces {traces.shape} and data {data.shape}.')
 
         self.processed_ones += _np.sum(data, axis=0)
-        traces = traces.astype(self.precision, order='F')
-        data = data.astype(self.precision, order='F')
+        traces = _fast_astype(traces, self.precision, order='F')
+        data = _fast_astype(data, self.precision, order='F')
         self.accumulator_traces += _np.sum(traces, axis=0)
         self.accumulator_ones += _np.dot(data.T, traces)
         logger.info(f'End updating accumulators for {self.__class__.__name__}.')
