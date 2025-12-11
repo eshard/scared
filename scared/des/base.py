@@ -7,7 +7,7 @@ import typing as _typ
 
 import numpy as _np
 
-from .._utils import _is_bytes_array
+from .._utils.misc import _is_bytes_array
 
 
 SBOXES = _np.array([
