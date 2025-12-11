@@ -1,5 +1,4 @@
 import numba as nb
-
 import numpy as np
 
 
@@ -25,6 +24,8 @@ def _data_order(data):
 
 
 def fast_astype(data, dtype='float32', order='C'):
+    if not isinstance(data, np.ndarray):
+        raise TypeError(f'data to cast must be a ndarray, but {type(data)} found.')
     dtype = np.dtype(dtype)
     if data.dtype == dtype and order in _data_order(data):
         return data

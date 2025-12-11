@@ -81,3 +81,8 @@ def test_fast_astype_empty_matrix():
     res = fast_astype(a, dtype="float64", order="C")
     assert res.shape == (0, 3)
     assert res.dtype == np.float64
+
+
+def test_fast_astype_raises_if_wrong_type():
+    with pytest.raises(TypeError, match='data to cast must be a ndarray'):
+        fast_astype('foo')
