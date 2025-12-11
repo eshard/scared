@@ -68,7 +68,7 @@ test:python312:
   script:
     - export CONDA_SUBDIR=$ARCHITECTURE
     - cd .recipe
-    - conda install conda-build conda-verify psutil pytest-mock
+    - conda install conda-build conda-verify psutil
     # - pip3 install --upgrade psutil
     - conda config --add channels $ANACONDA_CHANNEL
     # - if [[ "$ARCHITECTURE" == "linux-aarch64" ]]; then apt update && apt install -y qemu-user-static; fi  # Enable ARM emulation
