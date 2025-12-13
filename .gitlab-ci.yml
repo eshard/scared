@@ -99,7 +99,7 @@ build:pypi:src:
   stage: build
   script:
     - conda activate
-    - pip install -U pip setuptools
+    - pip install -U pip setuptools setuptools-scm
     - python setup.py sdist
   artifacts:
     paths:
@@ -109,7 +109,8 @@ build:pypi:wheel:
   stage: build
   script:
     - conda activate
-    - pip install -U pip setuptools wheel
+    - git fetch --tags
+    - pip install -U pip setuptools setuptools-scm wheel
     - python setup.py bdist_wheel
   artifacts:
     paths:
@@ -137,8 +138,9 @@ deploy:conda:
     - conda config --add channels $ANACONDA_CHANNEL
     - conda update conda
     - conda install anaconda-client
-    - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.conda
-    - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.tar.bz2
+    - 'test -n "$ANACONDA_TOKEN" || { echo "ERROR: ANACONDA_TOKEN is not set"; exit 1; }'
+    - anaconda -t "$ANACONDA_TOKEN" upload out/*/scared*.conda || true
+    - anaconda -t "$ANACONDA_TOKEN" upload out/*/scared*.tar.bz2 || true
   only:
     - tags
 #  when: manual
