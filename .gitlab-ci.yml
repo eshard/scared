@@ -152,7 +152,7 @@ deploy:conda:
 pages:
   stage: build
   script:
-    - conda activate py39
+    - conda activate py313
     - conda install psutil
     - conda install -c conda-forge myst-parser
     - pip install -e .
