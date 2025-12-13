@@ -99,7 +99,8 @@ build:pypi:src:
   stage: build
   script:
     - conda activate
-    - pip install -U pip setuptools
+    - git fetch --tags
+    - pip install -U pip setuptools setuptools-scm
     - python setup.py sdist
   artifacts:
     paths:
@@ -109,7 +110,8 @@ build:pypi:wheel:
   stage: build
   script:
     - conda activate
-    - pip install -U pip setuptools wheel
+    - git fetch --tags
+    - pip install -U pip setuptools setuptools-scm wheel
     - python setup.py bdist_wheel
   artifacts:
     paths:
