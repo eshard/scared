@@ -137,8 +137,9 @@ deploy:conda:
     - conda config --add channels $ANACONDA_CHANNEL
     - conda update conda
     - conda install anaconda-client
-    - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.conda
-    - anaconda -t $ANACONDA_TOKEN upload out/*/scared*.tar.bz2
+    - 'test -n "$ANACONDA_TOKEN" || { echo "ERROR: ANACONDA_TOKEN is not set"; exit 1; }'
+    - anaconda -t "$ANACONDA_TOKEN" upload out/*/scared*.conda
+    - anaconda -t "$ANACONDA_TOKEN" upload out/*/scared*.tar.bz2
   only:
     - tags
 #  when: manual
