@@ -39,6 +39,7 @@ python/_estoolkit2ext.cpython-36m-x86_64-linux-gnu.so
 
 # Python
 *.pyc
+scared/_version.py
 
 #automake
 autoconfig.h*

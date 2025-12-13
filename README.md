@@ -11,7 +11,7 @@ scared is a side-channel analysis framework maintained by [eShard](http://www.es
 
 ### Requirements
 
-Scared need python **3.7**, **3.8**, **3.9** or **3.10**.
+Scared need python **3.11**, **3.12** or **3.13** and **Numpy>=2**
 
 You can install `scared`, depending on your setup:
 
@@ -113,6 +113,6 @@ Platforms:
 
 Python version:
 
-- 3.6
-- 3.7
-- 3.8
+- 3.11
+- 3.12
+- 3.13

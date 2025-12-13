@@ -31,7 +31,6 @@ from . import signal_processing  # noqa: F401
 from . import aes  # noqa: F401
 from . import des  # noqa: F401
 from . import container as _container
-from . import _version
 from .container import set_batch_size  # noqa: F401
 from . import utils as _utils  # noqa: F401  # for backwards compatibility
 
@@ -42,6 +41,18 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 # Always display DeprecationWarning by default.
 warnings.simplefilter('default', category=DeprecationWarning)
 
+# Get version from setuptools-scm
+try:
+    from ._version import __version__
+except ImportError:
+    # Fallback for development installations without setuptools-scm
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        try:
+            __version__ = version("scared")
+        except PackageNotFoundError:
+            __version__ = "unknown"
+    except ImportError:
+        __version__ = "unknown"
 
-__version__ = _version.get_versions()['version']
-VERSION = _version.get_versions()['version']
+VERSION = __version__

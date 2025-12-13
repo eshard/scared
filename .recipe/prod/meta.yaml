@@ -1,33 +1,30 @@
-{% set data = load_setup_py_data() %}
-
 package:
   name: scared
-  version: {{ data['version'] }}
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
   path: ../../
 
 build:
-
-
+  number: 0
 
 requirements:
   build:
-    - setuptools
-    - wheel
+    - {{ compiler('c') }}
   host:
     - python {{ python }}
-    - setuptools>=40.0
+    - setuptools>=64
+    - setuptools-scm>=8
     - wheel
     - pip
-    - psutil
     - numpy {{ numpy_version }}
   run:
     - python
-    # dependencies are defined in setup.py
-    {% for dep in data['install_requires'] %}
-    - {{ dep.lower() }}
-    {% endfor %}
+    - numba
+    - numpy>=2.0.0
+    - estraces>=1.9.4
+    - psutil
+    - scipy
 
 test:
   imports:
