@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scared"
+dynamic = ["version"]
+description = "eshard scared Python library."
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [
+    {name = "eshard", email = "contact@eshard.com"}
+]
+license = {text = "LGPL-3.0"}
+keywords = ["scared"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+]
+requires-python = ">=3.11.0"
+dependencies = [
+    "numba",
+    "numpy>=2.0.0",
+    "estraces>=1.9.4",
+    "psutil",
+    "scipy",
+]
+
+[project.optional-dependencies]
+test = [
+    "pycryptodome",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+
+[project.urls]
+Homepage = "https://www.eshard.com"
+Documentation = "https://eshard.gitlab.io/scared"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["scared", "scared.*"]
+exclude = ["tests"]
+
+[tool.setuptools_scm]
+version_file = "scared/_version.py"
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"
+
+[tool.pytest.ini_options]
+norecursedirs = [".* *.egg* build dist conda.recipe .recipe"]
+addopts = [
+    "--junitxml=junit.xml",
+    "--ignore=setup.py",
+    "--ignore=run_test.py",
+    "--cov-report=term-missing",
+    "--tb=native",
+    "--strict-markers",
+    "--durations=20",
+]
+markers = [
+    "serial: execute test serially (to avoid race conditions)",
+]
+
+[tool.flake8]
+max-line-length = 100
+ignore = ["E122", "E123", "E126", "E127", "E128", "E731", "E722"]
+exclude = ["build", "scared/_version.py", "tests", ".recipe", ".git", "versioneer.py", "benchmarks", ".asv"]

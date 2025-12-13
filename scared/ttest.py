@@ -104,14 +104,10 @@ class TTestAnalysis:
                 accu.join()
                 accu.compute()
         finally:
-            # No way to test this piece of code, but tests in notebooks showed that all the code in the finally block is necessary.
             for accu in self.accumulators:
                 accu.stop()
-                if accu._thread is not None and accu._thread._tstate_lock is not None:
-                    if accu._thread._tstate_lock.locked():
-                        accu._thread._tstate_lock.release()
                 try:
-                    accu.join()
+                    accu.join(timeout=1)
                 except Exception:
                     pass
 
@@ -155,7 +151,7 @@ class TTestThreadAccumulator():
         self.precision = precision
         self.container = None
         self._exception = None
-        self._stop_loop = False
+        self._stop_loop = _th.Event()
         self._thread = None
 
     def _initialize(self, traces):
@@ -186,7 +182,7 @@ class TTestThreadAccumulator():
 
     def stop(self):
         """Inform the thread to stop at next batch processing."""
-        self._stop_loop = True
+        self._stop_loop.set()
 
     def run(self, container=None):
         """Launch the accumulation on the given Container, in the main thread."""
@@ -195,9 +191,9 @@ class TTestThreadAccumulator():
             self.container = container if container is not None else self.container
             if not isinstance(self.container, _container.Container):
                 raise ValueError(f'Please give a Container, {type(self.container)} found.')
-            self._stop_loop = False
+            self._stop_loop.clear()
             for batch in self.container.batches():
-                if self._stop_loop:
+                if self._stop_loop.is_set():
                     return
                 samples = batch.samples[:]
                 self.update(samples)
