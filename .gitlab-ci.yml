@@ -99,7 +99,6 @@ build:pypi:src:
   stage: build
   script:
     - conda activate
-    - git fetch --tags
     - pip install -U pip setuptools setuptools-scm
     - python setup.py sdist
   artifacts:
