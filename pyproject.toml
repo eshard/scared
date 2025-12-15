@@ -35,6 +35,12 @@ test = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
+]
+test-scalib = [
+    "pycryptodome",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
     "scalib",
 ]
 
@@ -69,6 +75,7 @@ addopts = [
 markers = [
     "serial: execute test serially (to avoid race conditions)",
     "end_to_end: mark test as end-to-end test",
+    "scalib: tests requiring SCALib library (automatically skipped on ARM)",
 ]
 
 [tool.flake8]

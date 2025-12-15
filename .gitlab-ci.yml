@@ -30,15 +30,25 @@ lint:
     PYTHON_VERSION: "310"
     NUMPY_VERSION: ""
 
+.test:python-with-scalib:
+  stage: test
+  script:
+    - eval "$(conda shell.bash hook)"
+    - conda activate py$PYTHON_VERSION
+    - pip install .[test-scalib]
+    - pytest --color=yes -vv --cov=scared tests
+  variables:
+    PYTHON_VERSION: "310"
+
 
 test:python313-intel:
-  extends: .test:python
+  extends: .test:python-with-scalib
   variables:
     PYTHON_VERSION: "313"
     # NUMPY_VERSION: "1.26.4"
 
 test:python313:
-  extends: .test:python
+  extends: .test:python-with-scalib
   variables:
     PYTHON_VERSION: "313"
 
@@ -50,12 +60,12 @@ test:python313-arm:
     PYTHON_VERSION: "313"
 
 test:python312:
-  extends: .test:python
+  extends: .test:python-with-scalib
   variables:
     PYTHON_VERSION: "312"
 
 test:python311:
-  extends: .test:python
+  extends: .test:python-with-scalib
   variables:
     PYTHON_VERSION: "311"
 
