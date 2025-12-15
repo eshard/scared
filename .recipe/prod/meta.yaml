@@ -36,7 +36,6 @@ test:
     - pytest-cov
     - pytest-mock
     - pycryptodome
-    - scalib  # [not (aarch64 or arm64)]
   commands:
     - pytest
 
