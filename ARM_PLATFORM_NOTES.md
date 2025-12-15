@@ -54,6 +54,19 @@ test-scalib = [
 ]
 ```
 
+**Conda build recipe** (`.recipe/prod/meta.yaml`):
+```yaml
+test:
+  requires:
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - pycryptodome
+    - scalib  # [not (aarch64 or arm64)]
+```
+
+The conda selector `# [not (aarch64 or arm64)]` ensures scalib is only installed on x86_64 builds.
+
 ### For Developers
 
 **On ARM platforms**:
