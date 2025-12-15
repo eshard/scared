@@ -36,7 +36,7 @@ lint:
     - eval "$(conda shell.bash hook)"
     - conda activate py$PYTHON_VERSION
     - pip install .[test-scalib]
-    - pytest --color=yes -vv --cov=scared tests
+    - pytest --color=yes -vv --cov=scared --force-scalib tests
   variables:
     PYTHON_VERSION: "310"
 
