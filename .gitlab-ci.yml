@@ -94,8 +94,6 @@ test:python311:
 
 build:conda:x86_64:
   extends: .build:conda
-  script:
-    - pip install scalib
   variables:
     ARCHITECTURE: "linux-64"
 
