@@ -25,6 +25,7 @@ requirements:
     - estraces>=1.9.4
     - psutil
     - scipy
+    # Note: scalib is optional, install separately if needed on x86_64
 
 test:
   imports:
@@ -36,6 +37,7 @@ test:
     - pytest-cov
     - pytest-mock
     - pycryptodome
+    # Note: tests requiring scalib will be skipped if not installed
   commands:
     - pytest
 
