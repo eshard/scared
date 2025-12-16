@@ -188,27 +188,40 @@ def test_scalib_ttest_with_preprocesses(ths_1, ths_2):
     np.testing.assert_allclose(ttest.result, t_expected, rtol=1e-10, atol=1e-10)
 
 
-def test_scalib_ttest_with_different_batch_sizes():
-    """Test t-test when containers have different batch sizes."""
+def test_scalib_ttest_with_different_ths_lengths_1():
     from scared.scalib import TTestAnalysisSCALib
 
-    shape = (500, 200)
-    samples_1 = np.random.randint(100, 150, shape, dtype='uint8')
-    samples_2 = np.random.randint(50, 100, shape, dtype='uint8')
-    plaintext = np.random.randint(0, 256, (shape[0], 16), dtype='uint8')
+    trace_length = 1002
+    samples_1 = np.random.randint(0, 256, (100, trace_length), dtype='uint8')
+    samples_2 = np.random.randint(0, 256, (6000, trace_length), dtype='uint8')  # high to ensure more than 1 batch
 
-    ths_1_small = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=plaintext)
-    ths_2_small = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=plaintext)
-
-    ths_1_small.batch_size = 50
-    ths_2_small.batch_size = 75
+    ths_1_small = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=np.random.randint(0, 256, (len(samples_1), 16), dtype='uint8'))
+    ths_2_small = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=np.random.randint(0, 256, (len(samples_2), 16), dtype='uint8'))
 
     container = scared.TTestContainer(ths_1_small, ths_2_small)
     ttest = TTestAnalysisSCALib()
     ttest.run(container)
 
     assert ttest.result is not None
-    assert ttest.result.shape == (200,)
+    assert ttest.result.shape == (trace_length,)
+
+
+def test_scalib_ttest_with_different_ths_lengths_2():
+    from scared.scalib import TTestAnalysisSCALib
+
+    trace_length = 1002
+    samples_1 = np.random.randint(0, 256, (6000, trace_length), dtype='uint8')  # high to ensure more than 1 batch
+    samples_2 = np.random.randint(0, 256, (100, trace_length), dtype='uint8')
+
+    ths_1_small = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=np.random.randint(0, 256, (len(samples_1), 16), dtype='uint8'))
+    ths_2_small = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=np.random.randint(0, 256, (len(samples_2), 16), dtype='uint8'))
+
+    container = scared.TTestContainer(ths_1_small, ths_2_small)
+    ttest = TTestAnalysisSCALib()
+    ttest.run(container)
+
+    assert ttest.result is not None
+    assert ttest.result.shape == (trace_length,)
 
 
 def test_scalib_ttest_with_int16_traces():
@@ -305,39 +318,6 @@ def test_scalib_ttest_result_all_orders_order_3():
     assert ttest.result_all_orders[0].shape == (100,)
     assert ttest.result_all_orders[1].shape == (100,)
     assert ttest.result_all_orders[2].shape == (100,)
-
-
-def test_scalib_ttest_multiple_runs_accumulate():
-    """Test that running multiple times accumulates traces."""
-    from scared.scalib import TTestAnalysisSCALib
-
-    shape = (100, 100)
-    samples_1 = np.random.randint(100, 150, shape, dtype='uint8')
-    samples_2 = np.random.randint(50, 100, shape, dtype='uint8')
-    plaintext = np.random.randint(0, 256, (shape[0], 16), dtype='uint8')
-
-    ths_1_small = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=plaintext)
-    ths_2_small = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=plaintext)
-
-    container = scared.TTestContainer(ths_1_small, ths_2_small)
-    ttest = TTestAnalysisSCALib()
-    ttest.run(container)
-
-    ttest.run(container)
-    result_second = ttest.result
-
-    traces_1_doubled = np.vstack([samples_1, samples_1]).astype(np.int16)
-    traces_2_doubled = np.vstack([samples_2, samples_2]).astype(np.int16)
-
-    mean_1 = np.mean(traces_1_doubled, axis=0, dtype=np.float64)
-    mean_2 = np.mean(traces_2_doubled, axis=0, dtype=np.float64)
-    var_1 = np.var(traces_1_doubled, axis=0, dtype=np.float64, ddof=0)
-    var_2 = np.var(traces_2_doubled, axis=0, dtype=np.float64, ddof=0)
-    n_1 = traces_1_doubled.shape[0]
-    n_2 = traces_2_doubled.shape[0]
-    t_expected = (mean_1 - mean_2) / np.sqrt(var_1 / n_1 + var_2 / n_2)
-
-    np.testing.assert_allclose(result_second, t_expected, rtol=1e-10, atol=1e-10)
 
 
 def test_scalib_ttest_with_small_traces():

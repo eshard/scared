@@ -110,10 +110,6 @@ class TTestAnalysisSCALib:
             raise TypeError(f'ttest_container should be a TTestContainer, not {type(ttest_container)}.')
 
         container_1, container_2 = ttest_container.containers
-
-        if container_1.trace_size != container_2.trace_size:
-            raise ValueError(f'Both trace sets must have the same length, found {container_1.trace_size} and {container_2.trace_size}.')
-
         self._scalib_ttest = _SCALibTtest(d=self.order)
 
         batches_1 = list(container_1.batches())
