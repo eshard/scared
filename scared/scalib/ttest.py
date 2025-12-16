@@ -2,7 +2,7 @@
 
 import numpy as _np
 from ..ttest import TTestContainer as _TTestContainer
-from ..utils.misc import fast_astype as _fast_astype
+from ..utils.fast_astype import fast_astype as _fast_astype
 
 try:
     from scalib.metrics import Ttest as _SCALibTtest  # noqa: N811
