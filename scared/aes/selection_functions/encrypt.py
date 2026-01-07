@@ -1,40 +1,9 @@
 from scared.selection_functions.base import _decorated_selection_function, _AttackSelectionFunctionWrapped
-from scared.aes import base as aes
+
 import numpy as _np
-
-
-def _add_round_key(data, guesses):
-    res = _np.empty((len(guesses), ) + data.shape, dtype='uint8')
-    data = data.astype('uint8')
-    for i, g in enumerate(guesses):
-        res[i] = _np.bitwise_xor(data, g)
-    return res.swapaxes(0, 1)
-
-
-def _sub_bytes(data, guesses):
-    return aes.sub_bytes(_add_round_key(data=data, guesses=guesses))
-
-
-def _inv_sub_bytes(data, guesses):
-    return aes.inv_sub_bytes(_add_round_key(data=data, guesses=guesses))
-
-
-def _delta_last_rounds(data, guesses):
-    data = data.astype('uint8')
-    return _np.bitwise_xor(
-        aes.shift_rows(data),
-        aes.inv_sub_bytes(
-            _add_round_key(data=data, guesses=guesses)
-        ).swapaxes(0, 1)
-    ).swapaxes(0, 1)
-
-
-def _first_key(key):
-    return aes.key_schedule(key)[0]
-
-
-def _last_key(key):
-    return aes.key_schedule(key)[-1]
+from .utils import add_round_key as _add_round_key, sub_bytes as _sub_bytes
+from .utils import inv_sub_bytes as _inv_sub_bytes, delta_last_rounds as _delta_last_rounds
+from .utils import first_key as _first_key, last_key as _last_key
 
 
 class FirstAddRoundKey:
