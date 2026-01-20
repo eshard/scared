@@ -151,7 +151,7 @@ class TTestThreadAccumulator():
         self.precision = precision
         self.container = None
         self._exception = None
-        self._stop_loop = _th.Event()
+        self._stop_loop = None
         self._thread = None
 
     def _initialize(self, traces):
@@ -182,7 +182,8 @@ class TTestThreadAccumulator():
 
     def stop(self):
         """Inform the thread to stop at next batch processing."""
-        self._stop_loop.set()
+        if self._stop_loop is not None:
+            self._stop_loop.set()
 
     def run(self, container=None):
         """Launch the accumulation on the given Container, in the main thread."""
@@ -191,9 +192,10 @@ class TTestThreadAccumulator():
             self.container = container if container is not None else self.container
             if not isinstance(self.container, _container.Container):
                 raise ValueError(f'Please give a Container, {type(self.container)} found.')
-            self._stop_loop.clear()
+            if self._stop_loop is not None:
+                self._stop_loop.clear()
             for batch in self.container.batches():
-                if self._stop_loop.is_set():
+                if self._stop_loop is not None and self._stop_loop.is_set():
                     return
                 samples = batch.samples[:]
                 self.update(samples)
@@ -201,6 +203,7 @@ class TTestThreadAccumulator():
         except Exception as e:
             self._exception = e
         finally:
+            self._stop_loop = None
             if self._exception and self._thread is None:
                 raise self._exception
 
@@ -209,6 +212,7 @@ class TTestThreadAccumulator():
         if self._thread is not None and self._thread._initialized and self._thread.is_alive():
             raise RuntimeError('Thread is already running. Use the `join` method before starting again.')
         self.container = container
+        self._stop_loop = _th.Event()
         self._thread = _th.Thread(target=self.run, daemon=True)
         self._thread.start()
 
