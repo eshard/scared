@@ -21,6 +21,7 @@ def _data_order(data):
         return 'C'
     if data.flags.f_contiguous:
         return 'F'
+    return ''
 
 
 def fast_astype(data, dtype='float32', order='C'):
@@ -31,11 +32,12 @@ def fast_astype(data, dtype='float32', order='C'):
         return data
     if data.ndim != 2:
         return data.astype(dtype=dtype, order=order)
-    out = np.empty_like(data, order=order, dtype=dtype)
     if order.upper() == 'C':
-        _fast_astype_core_c(data, out)
+        func = _fast_astype_core_c
     elif order.upper() == 'F':
-        _fast_astype_core_f(data, out)
+        func = _fast_astype_core_f
     else:
-        raise ValueError(f'Invalid order {order}.')
+        raise ValueError(f'Invalid order {order}, only F and C allowed.')
+    out = np.empty_like(data, order=order, dtype=dtype)
+    func(data, out)
     return out
