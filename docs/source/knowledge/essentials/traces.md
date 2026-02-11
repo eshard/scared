@@ -29,7 +29,7 @@ For this usage, a factory function is provided, which takes care for you of all 
 
 Reader (or formats) classes are responsible for managing all the concrete manipulation of data, from the actual storage to the trace header set API.
 
-A concrete reader class must inherit from `estraces.AbstracReader` base class. The `AbstractReader` class defines the basic contract that a reader class must fulfilled to be compatible and be used with the `TraceHeaderSet` abstraction.
+A concrete reader class must inherit from `estraces.AbstractReader` base class. The `AbstractReader` class defines the basic contract that a reader class must fulfilled to be compatible and be used with the `TraceHeaderSet` abstraction.
 
 The most important points of this contract (not the only ones !) are:
 
