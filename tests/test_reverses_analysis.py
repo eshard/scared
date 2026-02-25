@@ -269,6 +269,7 @@ def _pickle_reverse_sf(key, plaintext):
     return result
 
 
+@pytest.mark.scalib
 def test_snr_reverse_scalib_pickle_before_run(ths):
     """Test that a fresh SNRReverseSCALib instance can be pickled and unpickled."""
     import pickle
@@ -283,6 +284,7 @@ def test_snr_reverse_scalib_pickle_before_run(ths):
     assert restored.results is None
 
 
+@pytest.mark.scalib
 def test_snr_reverse_scalib_pickle_after_run(ths):
     """Test that results are preserved after pickling a run SNRReverseSCALib instance."""
     import pickle

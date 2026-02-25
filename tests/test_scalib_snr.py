@@ -7,6 +7,8 @@ import logging
 from scared.scalib import SNRDistinguisherSCALib, SNRDistinguisherSCALibMixin, SCALIB_AVAILABLE
 from scared import DistinguisherError
 
+pytestmark = pytest.mark.scalib
+
 
 @pytest.fixture
 def simple_test_data():

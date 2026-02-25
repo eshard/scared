@@ -8,6 +8,8 @@ from .context import scared  # noqa: F401
 import pytest
 import numpy as np
 
+pytestmark = pytest.mark.scalib
+
 
 @pytest.fixture
 def ths_1():
