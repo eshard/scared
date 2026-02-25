@@ -31,11 +31,10 @@ def pytest_collection_modifyitems(config, items):
     except ImportError:
         scalib_available = False
 
-    # Skip SCALib tests if on ARM or if SCALib not available
+    # Skip tests marked with @pytest.mark.scalib if on ARM or if SCALib not available
     if is_arm or not scalib_available:
         reason = "SCALib not available on ARM architecture" if is_arm else "SCALib not installed"
         skip_scalib = pytest.mark.skip(reason=reason)
         for item in items:
-            # Skip tests in scalib-related test files
-            if 'scalib' in str(item.fspath).lower():
+            if item.get_closest_marker('scalib'):
                 item.add_marker(skip_scalib)

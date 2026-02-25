@@ -7,6 +7,7 @@ from scared.scalib import SNRAttackSCALib
 
 
 @pytest.mark.end_to_end
+@pytest.mark.scalib
 def test_snr_scalib_attack_on_dpa_v2():
 
     ths = traces.read_ths_from_ets_file('tests/end_to_end/dpa_v2_sub.ets')

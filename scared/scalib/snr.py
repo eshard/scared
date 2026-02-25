@@ -87,6 +87,11 @@ class SNRDistinguisherSCALibMixin(_DistinguisherMixin):
 
     def _update(self, traces, data):
         """Update the SNR estimation with new traces and data."""
+        if self._scalib_snr is None:
+            raise RuntimeError(
+                'This SNRDistinguisherSCALib instance was restored from serialization and cannot accumulate new traces. '
+                'Use results stored at analysis level.'
+            )
         if traces.shape[1] != self._trace_length:
             raise ValueError(f'traces has different length {traces.shape[1]} than already processed traces {self._trace_length}.')
         if data.shape[1] != self._data_words:
@@ -113,8 +118,23 @@ class SNRDistinguisherSCALibMixin(_DistinguisherMixin):
 
     def _compute(self):
         """Compute and return the SNR values."""
+        if self._scalib_snr is None:
+            raise RuntimeError(
+                'This SNRDistinguisherSCALib instance was restored from serialization and cannot recompute results. '
+                'Use results stored at analysis level.'
+            )
         snr_values = self._scalib_snr.get_snr()
         return snr_values.astype(self.precision)
+
+    def __getstate__(self):
+        """Return picklable state, replacing the unpicklable C++ SNR object with None."""
+        state = self.__dict__.copy()
+        state['_scalib_snr'] = None
+        return state
+
+    def __setstate__(self, state):
+        """Restore state, leaving the C++ SNR object as None until update() is called again."""
+        self.__dict__.update(state)
 
     @property
     def _distinguisher_str(self):
