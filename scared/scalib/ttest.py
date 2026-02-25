@@ -1,14 +1,23 @@
 """SCALib-based TTest implementation for scared."""
 
+import logging as _logging
 import numpy as _np
 from ..ttest import TTestContainer as _TTestContainer
 from ..utils.fast_astype import fast_astype as _fast_astype
 
-try:
-    from scalib.metrics import Ttest as _SCALibTtest  # noqa: N811
-    SCALIB_AVAILABLE = True
-except ImportError:
-    SCALIB_AVAILABLE = False
+logger = _logging.getLogger(__name__)
+
+
+def _try_import_scalib():
+    try:
+        from scalib.metrics import Ttest as ttest_cls  # noqa: N811
+        return ttest_cls, True
+    except ImportError:
+        logger.warning('SCALib not available. TTestAnalysisSCALib will not work.')
+        return None, False
+
+
+_SCALibTtest, SCALIB_AVAILABLE = _try_import_scalib()
 
 
 class TTestAnalysisSCALib:
@@ -81,7 +90,7 @@ class TTestAnalysisSCALib:
             raise ImportError('SCALib is not installed. Please install it to use TTestAnalysisSCALib.')
 
         self._set_order(order)
-        self._scalib_ttest = None
+        self._scalib_ttest = _SCALibTtest(d=order)
         self.result_all_orders = None
 
     def _set_order(self, order):
@@ -102,18 +111,25 @@ class TTestAnalysisSCALib:
             ttest_container (TTestContainer): Container wrapping two TraceHeaderSet objects.
 
         Raises:
+            RuntimeError: If the instance was restored from serialization (results already available).
             TypeError: If ttest_container is not a TTestContainer instance.
             ValueError: If the two trace sets have different trace lengths.
 
         """
+        if self._scalib_ttest is None:
+            raise RuntimeError(
+                'This TTestAnalysisSCALib instance was restored from serialization and already holds results. '
+                'Access results via result or result_all_orders, or create a new instance to run a fresh computation.'
+            )
         if not isinstance(ttest_container, _TTestContainer):
             raise TypeError(f'ttest_container should be a TTestContainer, not {type(ttest_container)}.')
 
         container_1, container_2 = ttest_container.containers
-        self._scalib_ttest = _SCALibTtest(d=self.order)
 
         batches_1 = list(container_1.batches())
         batches_2 = list(container_2.batches())
+        nb_iterations = len(batches_1) + len(batches_2)
+        logger.info(f'Start run t-test on container {ttest_container}, with {nb_iterations} iterations', {'nb_iterations': nb_iterations})
 
         for batch_1, batch_2 in zip(batches_1, batches_2):
             traces_1 = batch_1.samples[:]
@@ -126,7 +142,9 @@ class TTestAnalysisSCALib:
             labels_2 = _np.ones(traces_2_int16.shape[0], dtype=_np.uint16)
 
             self._scalib_ttest.fit_u(traces_1_int16, labels_1)
+            logger.info('t-test iteration finished.')
             self._scalib_ttest.fit_u(traces_2_int16, labels_2)
+            logger.info('t-test iteration finished.')
 
         if len(batches_1) < len(batches_2):
             for batch_2 in batches_2[len(batches_1):]:
@@ -134,12 +152,14 @@ class TTestAnalysisSCALib:
                 traces_2_int16 = _fast_astype(traces_2, dtype='int16', order='C')
                 labels_2 = _np.ones(traces_2_int16.shape[0], dtype=_np.uint16)
                 self._scalib_ttest.fit_u(traces_2_int16, labels_2)
+                logger.info('t-test iteration finished.')
         elif len(batches_2) < len(batches_1):
             for batch_1 in batches_1[len(batches_2):]:
                 traces_1 = batch_1.samples[:]
                 traces_1_int16 = _fast_astype(traces_1, dtype='int16', order='C')
                 labels_1 = _np.zeros(traces_1_int16.shape[0], dtype=_np.uint16)
                 self._scalib_ttest.fit_u(traces_1_int16, labels_1)
+                logger.info('t-test iteration finished.')
 
         self._compute()
 
@@ -156,6 +176,16 @@ class TTestAnalysisSCALib:
 
         """
         return self.result_all_orders[self.order - 1]
+
+    def __getstate__(self):
+        """Return picklable state, replacing the unpicklable C++ Ttest object with None."""
+        state = self.__dict__.copy()
+        state['_scalib_ttest'] = None
+        return state
+
+    def __setstate__(self, state):
+        """Restore state. The C++ Ttest object is not restored; results are available via result_all_orders."""
+        self.__dict__.update(state)
 
     def __str__(self):
         return f't-Test analysis (SCALib, order={self.order})'

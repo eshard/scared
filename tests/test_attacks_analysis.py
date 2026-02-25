@@ -516,3 +516,44 @@ def test_mia_bin_edges_init(sf):
     a = scared.MIAAttack(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight(), discriminant=scared.abssum)
     assert np.array_equal(a.bin_edges, np.arange(258))
     assert isinstance(str(a), str)
+
+
+# Pickle tests for SCALib attack
+
+def _pickle_attack_sf(guesses, plaintext):
+    result = np.empty((plaintext.shape[0], len(guesses), 16), dtype='uint8')
+    for guess in guesses:
+        for byte in range(16):
+            result[:, guess, byte] = np.sum(plaintext, axis=1)
+    return result
+
+
+def test_snr_attack_scalib_pickle_before_run(ths):
+    """Test that a fresh SNRAttackSCALib instance can be pickled and unpickled."""
+    import pickle
+    from scared.scalib import SNRAttackSCALib
+
+    sf = scared.attack_selection_function(_pickle_attack_sf)
+    attack = SNRAttackSCALib(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+
+    restored = pickle.loads(pickle.dumps(attack))
+
+    assert restored.processed_traces == 0
+    assert restored.results is None
+
+
+def test_snr_attack_scalib_pickle_after_run(ths):
+    """Test that results are preserved after pickling a run SNRAttackSCALib instance."""
+    import pickle
+    from scared.scalib import SNRAttackSCALib
+
+    sf = scared.attack_selection_function(_pickle_attack_sf)
+    attack = SNRAttackSCALib(selection_function=sf, model=scared.HammingWeight(), discriminant=scared.maxabs)
+    attack.run(scared.Container(ths))
+
+    restored = pickle.loads(pickle.dumps(attack))
+
+    assert restored._scalib_snr is None
+    assert restored.results is not None
+    np.testing.assert_array_equal(restored.results, attack.results)
+    np.testing.assert_array_equal(restored.scores, attack.scores)

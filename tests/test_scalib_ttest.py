@@ -29,6 +29,20 @@ def ths_2():
     return scared.traces.formats.read_ths_from_ram(samples=samples, plaintext=plaintext)
 
 
+def test_scalib_not_available_logs_warning(mocker):
+    """Test that a warning is logged when SCALib is not available at import time."""
+    import sys
+    import scared.scalib.ttest as ttest_module
+
+    mocker.patch.dict(sys.modules, {'scalib': None, 'scalib.metrics': None})
+    mock_warning = mocker.patch.object(ttest_module.logger, 'warning')
+
+    _, available = ttest_module._try_import_scalib()
+
+    assert not available
+    mock_warning.assert_called_once_with('SCALib not available. TTestAnalysisSCALib will not work.')
+
+
 def test_scalib_ttest_raises_if_scalib_not_available(mocker):
     """Test that ImportError is raised when SCALib is not available."""
     mocker.patch('scared.scalib.ttest.SCALIB_AVAILABLE', False)
@@ -338,6 +352,91 @@ def test_scalib_ttest_with_small_traces():
 
     assert ttest.result is not None
     assert ttest.result.shape == (10,)
+
+
+def test_scalib_ttest_pickle_before_run():
+    """Test that a fresh TTestAnalysisSCALib instance can be pickled and unpickled."""
+    import pickle
+    from scared.scalib import TTestAnalysisSCALib
+
+    ttest = TTestAnalysisSCALib(order=2)
+    restored = pickle.loads(pickle.dumps(ttest))
+
+    assert restored.order == 2
+    assert restored.result_all_orders is None
+    assert restored._scalib_ttest is None
+
+
+def test_scalib_ttest_pickle_after_run():
+    """Test that result is preserved after pickling a run TTestAnalysisSCALib instance."""
+    import pickle
+    from scared.scalib import TTestAnalysisSCALib
+
+    shape = (200, 50)
+    samples_1 = np.random.randint(0, 256, shape, dtype='uint8')
+    samples_2 = np.random.randint(0, 256, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 256, (shape[0], 16), dtype='uint8')
+
+    ths_1 = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=plaintext)
+    ths_2 = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=plaintext)
+
+    container = scared.TTestContainer(ths_1, ths_2)
+    ttest = TTestAnalysisSCALib()
+    ttest.run(container)
+
+    restored = pickle.loads(pickle.dumps(ttest))
+
+    assert restored._scalib_ttest is None
+    assert restored.order == ttest.order
+    np.testing.assert_array_equal(restored.result, ttest.result)
+    np.testing.assert_array_equal(restored.result_all_orders, ttest.result_all_orders)
+
+
+def test_scalib_ttest_pickle_after_run_higher_order():
+    """Test that result_all_orders is preserved after pickling a higher-order run instance."""
+    import pickle
+    from scared.scalib import TTestAnalysisSCALib
+
+    shape = (200, 50)
+    samples_1 = np.random.randint(0, 256, shape, dtype='uint8')
+    samples_2 = np.random.randint(0, 256, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 256, (shape[0], 16), dtype='uint8')
+
+    ths_1 = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=plaintext)
+    ths_2 = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=plaintext)
+
+    container = scared.TTestContainer(ths_1, ths_2)
+    ttest = TTestAnalysisSCALib(order=3)
+    ttest.run(container)
+
+    restored = pickle.loads(pickle.dumps(ttest))
+
+    assert restored.order == 3
+    assert restored.result_all_orders.shape == (3, 50)
+    np.testing.assert_array_equal(restored.result_all_orders, ttest.result_all_orders)
+
+
+def test_scalib_ttest_run_raises_on_deserialized_instance():
+    """Test that run() raises RuntimeError when called on a deserialized instance."""
+    import pickle
+    from scared.scalib import TTestAnalysisSCALib
+
+    shape = (200, 50)
+    samples_1 = np.random.randint(0, 256, shape, dtype='uint8')
+    samples_2 = np.random.randint(0, 256, shape, dtype='uint8')
+    plaintext = np.random.randint(0, 256, (shape[0], 16), dtype='uint8')
+
+    ths_1 = scared.traces.formats.read_ths_from_ram(samples=samples_1, plaintext=plaintext)
+    ths_2 = scared.traces.formats.read_ths_from_ram(samples=samples_2, plaintext=plaintext)
+
+    container = scared.TTestContainer(ths_1, ths_2)
+    ttest = TTestAnalysisSCALib()
+    ttest.run(container)
+
+    restored = pickle.loads(pickle.dumps(ttest))
+
+    with pytest.raises(RuntimeError, match='restored from serialization'):
+        restored.run(container)
 
 
 @pytest.mark.parametrize('dtype', ['uint8', 'int8', 'int16', 'int32'])

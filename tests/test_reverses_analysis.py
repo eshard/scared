@@ -258,3 +258,42 @@ def test_mia_bin_edges_init(sf):
     a = scared.MIAReverse(bin_edges=np.arange(258), selection_function=sf, model=scared.HammingWeight())
     assert np.array_equal(a.bin_edges, np.arange(258))
     assert isinstance(str(a), str)
+
+
+# Pickle tests for SCALib reverse
+
+def _pickle_reverse_sf(key, plaintext):
+    result = np.empty((plaintext.shape[0], 16), dtype='uint8')
+    for byte in range(16):
+        result[:, byte] = np.sum(plaintext, axis=1)
+    return result
+
+
+def test_snr_reverse_scalib_pickle_before_run(ths):
+    """Test that a fresh SNRReverseSCALib instance can be pickled and unpickled."""
+    import pickle
+    from scared.scalib import SNRReverseSCALib
+
+    sf = scared.reverse_selection_function(_pickle_reverse_sf)
+    reverse = SNRReverseSCALib(selection_function=sf, model=scared.HammingWeight())
+
+    restored = pickle.loads(pickle.dumps(reverse))
+
+    assert restored.processed_traces == 0
+    assert restored.results is None
+
+
+def test_snr_reverse_scalib_pickle_after_run(ths):
+    """Test that results are preserved after pickling a run SNRReverseSCALib instance."""
+    import pickle
+    from scared.scalib import SNRReverseSCALib
+
+    sf = scared.reverse_selection_function(_pickle_reverse_sf)
+    reverse = SNRReverseSCALib(selection_function=sf, model=scared.HammingWeight())
+    reverse.run(scared.Container(ths))
+
+    restored = pickle.loads(pickle.dumps(reverse))
+
+    assert restored._scalib_snr is None
+    assert restored.results is not None
+    np.testing.assert_array_equal(restored.results, reverse.results)
