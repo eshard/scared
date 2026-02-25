@@ -117,9 +117,10 @@ build:pypi:src:
 
 build:pypi:wheel:
   stage: build
+  variables:
+    GIT_DEPTH: 0
   script:
     - conda activate
-    - git fetch --tags
     - pip install -U pip setuptools setuptools-scm wheel
     - python setup.py bdist_wheel
   artifacts:

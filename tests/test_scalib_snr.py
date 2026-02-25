@@ -7,6 +7,8 @@ import logging
 from scared.scalib import SNRDistinguisherSCALib, SNRDistinguisherSCALibMixin, SCALIB_AVAILABLE
 from scared import DistinguisherError
 
+pytestmark = pytest.mark.scalib
+
 
 @pytest.fixture
 def simple_test_data():
@@ -643,6 +645,25 @@ def test_scalib_snr_init_succeeds_when_scalib_unavailable(mocker):
     assert snr.precision == 'float32'
 
 
+def test_scalib_snr_warning_logged_when_scalib_unavailable(monkeypatch, caplog):
+    """Test that a warning is logged when SCALib is not available at import time."""
+    import sys
+    import importlib
+    import scared.scalib as scalib_pkg
+
+    # Capture the current snr attribute so monkeypatch restores it on teardown.
+    # importlib.import_module updates scared.scalib.__dict__['snr'] as a side effect,
+    # but monkeypatch only restores sys.modules entries, not package attributes.
+    monkeypatch.setattr(scalib_pkg, 'snr', scalib_pkg.snr)
+    monkeypatch.delitem(sys.modules, 'scared.scalib.snr', raising=False)
+    monkeypatch.setitem(sys.modules, 'scalib.metrics', None)
+
+    with caplog.at_level(logging.WARNING):
+        importlib.import_module('scared.scalib.snr')
+
+    assert any('SCALib not available' in record.message for record in caplog.records)
+
+
 def test_scalib_snr_error_during_update_when_scalib_unavailable(mocker):
     """Test that error occurs during update, not during init, when SCALib unavailable."""
     import scared.scalib.snr
@@ -657,3 +678,58 @@ def test_scalib_snr_error_during_update_when_scalib_unavailable(mocker):
 
     assert "SCALib is not installed" in str(exc_info.value)
     assert "pip install scalib" in str(exc_info.value)
+
+
+# Pickle tests
+
+def test_scalib_snr_pickle_before_update():
+    """Test that a fresh SNRDistinguisherSCALib can be pickled and unpickled."""
+    import pickle
+    snr = SNRDistinguisherSCALib(partitions=range(16), precision='float32')
+
+    restored = pickle.loads(pickle.dumps(snr))
+
+    assert np.array_equal(restored.partitions, snr.partitions)
+    assert restored.precision == snr.precision
+    assert restored.processed_traces == 0
+
+
+def test_scalib_snr_pickle_after_update(simple_test_data):
+    """Test that state is preserved after pickling an updated SNRDistinguisherSCALib instance."""
+    import pickle
+    traces, labels = simple_test_data
+    snr = SNRDistinguisherSCALib(partitions=range(16))
+    snr.update(traces, labels)
+
+    restored = pickle.loads(pickle.dumps(snr))
+
+    assert restored._scalib_snr is None
+    assert restored.processed_traces == snr.processed_traces
+    assert np.array_equal(restored.partitions, snr.partitions)
+    assert restored.precision == snr.precision
+
+
+def test_scalib_snr_pickle_update_after_restore_raises(simple_test_data):
+    """Test that calling update() on a restored instance raises RuntimeError."""
+    import pickle
+    traces, labels = simple_test_data
+    snr = SNRDistinguisherSCALib(partitions=range(16))
+    snr.update(traces, labels)
+
+    restored = pickle.loads(pickle.dumps(snr))
+
+    with pytest.raises(RuntimeError, match='restored from serialization'):
+        restored.update(traces, labels)
+
+
+def test_scalib_snr_pickle_compute_after_restore_raises(simple_test_data):
+    """Test that calling compute() on a restored instance raises RuntimeError."""
+    import pickle
+    traces, labels = simple_test_data
+    snr = SNRDistinguisherSCALib(partitions=range(16))
+    snr.update(traces, labels)
+
+    restored = pickle.loads(pickle.dumps(snr))
+
+    with pytest.raises(RuntimeError, match='restored from serialization'):
+        restored.compute()
