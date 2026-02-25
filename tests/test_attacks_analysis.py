@@ -528,6 +528,7 @@ def _pickle_attack_sf(guesses, plaintext):
     return result
 
 
+@pytest.mark.scalib
 def test_snr_attack_scalib_pickle_before_run(ths):
     """Test that a fresh SNRAttackSCALib instance can be pickled and unpickled."""
     import pickle
@@ -542,6 +543,7 @@ def test_snr_attack_scalib_pickle_before_run(ths):
     assert restored.results is None
 
 
+@pytest.mark.scalib
 def test_snr_attack_scalib_pickle_after_run(ths):
     """Test that results are preserved after pickling a run SNRAttackSCALib instance."""
     import pickle
