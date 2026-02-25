@@ -10,7 +10,7 @@ logger = _logging.getLogger(__name__)
 
 def _try_import_scalib():
     try:
-        from scalib.metrics import Ttest as ttest_cls  # noqa: N811
+        from scalib.metrics import Ttest as ttest_cls  # noqa: N811, N813
         return ttest_cls, True
     except ImportError:
         logger.warning('SCALib not available. TTestAnalysisSCALib will not work.')
