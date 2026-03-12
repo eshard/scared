@@ -675,9 +675,18 @@ def test_encrypt_stop_at_intermediate_value(aes_data):
     int_values = aes_data['128_encrypt_intermediate_outputs']
     key = aes_data['128_key']
     plain = aes_data['plaintext']
+    n_rounds = len(int_values)
+    warning_cases = {
+        (0, aes.Steps.SUB_BYTES), (0, aes.Steps.SHIFT_ROWS), (0, aes.Steps.MIX_COLUMNS),
+        (n_rounds - 1, aes.Steps.MIX_COLUMNS),
+    }
     for _round, vals in enumerate(int_values):
         for step, expected in enumerate(vals):
-            value = aes.encrypt(plaintext=plain, key=key, at_round=_round, after_step=step)
+            if (_round, step) in warning_cases:
+                with pytest.warns(UserWarning):
+                    value = aes.encrypt(plaintext=plain, key=key, at_round=_round, after_step=step)
+            else:
+                value = aes.encrypt(plaintext=plain, key=key, at_round=_round, after_step=step)
             assert np.array_equal(expected, value)
 
 
@@ -685,9 +694,18 @@ def test_decrypt_stop_at_intermediate_value(aes_data):
     int_values = aes_data['128_decrypt_intermediate_outputs']
     key = aes_data['128_key']
     cipher = aes_data['128_ciphertext']
+    n_rounds = len(int_values)
+    warning_cases = {
+        (0, aes.InverseSteps.INV_SHIFT_ROWS), (0, aes.InverseSteps.INV_SUB_BYTES), (0, aes.InverseSteps.INV_MIX_COLUMNS),
+        (n_rounds - 1, aes.InverseSteps.INV_MIX_COLUMNS),
+    }
     for _round, vals in enumerate(int_values):
         for step, expected in enumerate(vals):
-            value = aes.decrypt(ciphertext=cipher, key=key, at_round=_round, after_step=step)
+            if (_round, step) in warning_cases:
+                with pytest.warns(UserWarning):
+                    value = aes.decrypt(ciphertext=cipher, key=key, at_round=_round, after_step=step)
+            else:
+                value = aes.decrypt(ciphertext=cipher, key=key, at_round=_round, after_step=step)
             assert np.array_equal(expected, value)
 
 
@@ -761,3 +779,31 @@ def test_decrypt_raises_exception_if_step_is_incorrect(aes_data):
         aes.decrypt(plain, key=key_128, after_step=-1)
     with pytest.raises(ValueError):
         aes.decrypt(plain, key=key_128, after_step=4)
+
+
+def test_encrypt_warns_when_stopping_after_identity_step(aes_data):
+    key = aes_data['128_key']
+    plain = aes_data['plaintext']
+
+    # Round 0: SUB_BYTES, SHIFT_ROWS, MIX_COLUMNS are identity operations
+    for step in [aes.Steps.SUB_BYTES, aes.Steps.SHIFT_ROWS, aes.Steps.MIX_COLUMNS]:
+        with pytest.warns(UserWarning):
+            aes.encrypt(plaintext=plain, key=key, at_round=0, after_step=step)
+
+    # Last round: MIX_COLUMNS is identity
+    with pytest.warns(UserWarning):
+        aes.encrypt(plaintext=plain, key=key, at_round=10, after_step=aes.Steps.MIX_COLUMNS)
+
+
+def test_decrypt_warns_when_stopping_after_identity_step(aes_data):
+    key = aes_data['128_key']
+    cipher = aes_data['128_ciphertext']
+
+    # Round 0: INV_SHIFT_ROWS, INV_SUB_BYTES, INV_MIX_COLUMNS are identity operations
+    for step in [aes.InverseSteps.INV_SHIFT_ROWS, aes.InverseSteps.INV_SUB_BYTES, aes.InverseSteps.INV_MIX_COLUMNS]:
+        with pytest.warns(UserWarning):
+            aes.decrypt(ciphertext=cipher, key=key, at_round=0, after_step=step)
+
+    # Last round: INV_MIX_COLUMNS is identity
+    with pytest.warns(UserWarning):
+        aes.decrypt(ciphertext=cipher, key=key, at_round=10, after_step=aes.InverseSteps.INV_MIX_COLUMNS)
