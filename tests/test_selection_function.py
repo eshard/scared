@@ -524,6 +524,7 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))
     assert isinstance(str(sf), str)
 
+# Issue 95: https://gitlab.com/eshard/scared/-/work_items/95
 def test_overflow_divide_zero():
     import warnings
     n_classes = 256
