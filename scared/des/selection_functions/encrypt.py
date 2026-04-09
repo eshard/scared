@@ -1,40 +1,8 @@
 from scared.selection_functions.base import _decorated_selection_function, _AttackSelectionFunctionWrapped
-from scared.des import base as des
 import numpy as _np
-
-
-def _des_function(data, guesses, at_round, after_step):
-    result = _np.empty((len(guesses), ) + data.shape, dtype='uint8')
-    data = data.astype('uint8')
-    for i, guess in enumerate(guesses):
-        # expanded key with every byte to current key guess on 6-bit word
-        current_expanded_key_guess = _np.bitwise_xor(_np.zeros((128), dtype=_np.uint8), guess)
-        result[i] = des.encrypt(data, current_expanded_key_guess, at_round=at_round, after_step=after_step)
-    return result.swapaxes(0, 1)
-
-
-def _add_round_key(data, guesses):
-    return _des_function(data, guesses, 0, des.Steps.ADD_ROUND_KEY)
-
-
-def _sboxes(data, guesses):
-    return _des_function(data, guesses, 0, des.Steps.SBOXES)
-
-
-def _first_round(data, guesses):
-    return _des_function(data, guesses, 0, des.Steps.INV_PERMUTATION_P_RIGHT)
-
-
-def _delta_last_rounds(data, guesses):
-    return _des_function(data, guesses, 0, des.Steps.INV_PERMUTATION_P_DELTA_RIGHT)
-
-
-def _first_key(key):
-    return des.key_schedule(key)[0]
-
-
-def _last_key(key):
-    return des.key_schedule(key)[-1]
+from .utils import add_round_key as _add_round_key, sboxes as _sboxes
+from .utils import first_round as _first_round, delta_last_rounds as _delta_last_rounds
+from .utils import first_key as _first_key, last_key as _last_key
 
 
 class FirstAddRoundKey:
