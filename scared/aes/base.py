@@ -3,6 +3,7 @@
 Ready-to-use selection functions compatible with side-channel analysis framework are provided.
 """
 import numpy as _np
+import warnings as _warn
 import enum
 from ..utils.misc import _is_bytes_array
 
@@ -203,10 +204,10 @@ class Steps(enum.IntEnum):
 class InverseSteps(enum.IntEnum):
     """Enumeration for the four inverse AES round steps."""
 
-    INV_ADD_ROUND_KEY = 0
-    INV_MIX_COLUMNS = 1
-    INV_SHIFT_ROWS = 2
-    INV_SUB_BYTES = 3
+    INV_SHIFT_ROWS = 0
+    INV_SUB_BYTES = 1
+    INV_ADD_ROUND_KEY = 2
+    INV_MIX_COLUMNS = 3
 
 
 def _is_bytes_of_len(state, length=[16]):
@@ -512,9 +513,9 @@ _ENC_FIRST_ROUND = [_identity, _identity, _identity, add_round_key]
 _ENC_ROUND = [sub_bytes, shift_rows, mix_columns, add_round_key]
 _ENC_LAST_ROUND = [sub_bytes, shift_rows, _identity, add_round_key]
 
-_DEC_FIRST_ROUND = [inv_add_round_key, _identity, inv_shift_rows, inv_sub_bytes]
-_DEC_ROUND = [inv_add_round_key, inv_mix_columns, inv_shift_rows, inv_sub_bytes]
-_DEC_LAST_ROUND = [inv_add_round_key, _identity, _identity, _identity]
+_DEC_FIRST_ROUND = [_identity, _identity, inv_add_round_key, _identity]
+_DEC_ROUND = [inv_shift_rows, inv_sub_bytes, inv_add_round_key, inv_mix_columns]
+_DEC_LAST_ROUND = [inv_shift_rows, inv_sub_bytes, inv_add_round_key, _identity]
 
 
 def encrypt(plaintext, key, at_round=None, after_step=Steps.ADD_ROUND_KEY):
@@ -535,8 +536,9 @@ def encrypt(plaintext, key, at_round=None, after_step=Steps.ADD_ROUND_KEY):
         key (numpy.ndarray): a uint8 array of 16, 24 or 32 bytes words as last dimension.
             Multiple keys can be provided as an array of shape (N, 16).
         at_round (int, default: None): stop encryption at the end of the targeted round. Must be between 0 and the number of rounds of the mode.
-        after_step (int): stop encryption after targeted operation of the round. Each round have 4 operations (first and last rounds use identity functions.)
-            Must be between 0 and 3. Use Steps and InverseSteps enumeration to benefit of an explicit steps naming.
+        after_step (int, default: Steps.ADD_ROUND_KEY): stop encryption after targeted operation of the round.
+            Each round have 4 operations (first and last rounds use identity functions).
+            Must be between 0 and 3. Use Steps enumeration to benefit of an explicit steps naming.
 
     Returns:
         (numpy.ndarray) resulting ciphertext.
@@ -556,7 +558,7 @@ def encrypt(plaintext, key, at_round=None, after_step=Steps.ADD_ROUND_KEY):
     return _parametric_cipher(state=plaintext, key=key, operations=operations, at_round=at_round, after_step=after_step)
 
 
-def decrypt(ciphertext, key, at_round=None, after_step=InverseSteps.INV_SUB_BYTES):
+def decrypt(ciphertext, key, at_round=None, after_step=InverseSteps.INV_ADD_ROUND_KEY):
     """Decrypt ciphertext using AES with provided key.
 
     AES-128, AES-192 and AES-256 modes are supported, depending on the length of key.
@@ -574,8 +576,9 @@ def decrypt(ciphertext, key, at_round=None, after_step=InverseSteps.INV_SUB_BYTE
         key (numpy.ndarray): a uint8 array of 16, 24 or 32 bytes words as last dimension.
             Multiple keys can be provided as an array of shape (N, 16).
         at_round (int, default: None): stop decryption at the end of the targeted round. Must be between 0 and the number of rounds of the mode.
-        after_step (int): stop decryption after targeted operation of the round. Each round have 4 operations (first and last rounds use identity functions.)
-            Must be between 0 and 3. Use Steps and InverseSteps enumeration to benefit of an explicit steps naming.
+        after_step (int, default: InverseSteps.INV_ADD_ROUND_KEY): stop decryption after targeted operation of the round.
+            Each round have 4 operations (first and last rounds use identity functions).
+            Must be between 0 and 3. Use InverseSteps enumeration to benefit of an explicit steps naming.
 
     Returns:
         (numpy.ndarray) resulting plaintext.
@@ -652,4 +655,16 @@ def _prepare_rounds(round_keys, at_round, after_step, operations):
         else:
             rounds.append(operations[1])
     rounds[-1] = rounds[-1][:after_step + 1]
+
+    if rounds[-1][-1] == _identity:
+        _warn.warn(f'''By stopping after step {after_step} at round {at_round}, you are returning after an identity operations.
+    The AES implementation follows the NIST convention, so
+    For encryption:
+        - At round 0, stopping after steps SUB_BYTES, SHIFT_ROWS or MIX_COLUMNS returns the plaintext. Please stop at round 1
+        - At last round, stopping after step MIX_COLUMNS is equivalent to stop after SHIFT_ROWS
+    For decryption:
+        - At round 0, stopping at step INV_MIX_COLUMNS is equivalent to stop after the first INV_ADD_ROUND_KEY.
+        - At last round, stopping after INV_MIX_COLUMNS, INV_SHIFT_ROWS or INV_SUB_BYTES is equivalent
+            to stop after the last INV_ADD_ROUND_KEY.''', UserWarning)
+
     return rounds
