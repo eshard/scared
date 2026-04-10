@@ -55,7 +55,7 @@ class Guesses(_np.ndarray):
 
             if min_val >= 0:
                 # Unsigned type
-                bits = _np.ceil(_np.log2(max_val + 1))
+                bits = int(max_val).bit_length()
                 candidates = [8, 16, 32, 64]
                 dtype_inferred = _np.dtype(f'uint{next(b for b in candidates if bits <= b)}')
             else:

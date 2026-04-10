@@ -523,3 +523,16 @@ def test_selection_function_compute_raises_exception_if_words_selection_is_incon
     with pytest.raises(scared.SelectionFunctionError):
         sf(plaintext=np.random.randint(0, 255, (200, 16), dtype='uint8'))
     assert isinstance(str(sf), str)
+
+
+def test_overflow_divide_zero():
+    # Issue 95: https://gitlab.com/eshard/scared/-/work_items/95
+    import warnings
+    n_classes = 256
+    guesses = np.arange(n_classes, dtype=np.uint8)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        scared.aes.selection_functions.encrypt.FirstSubBytes(words=[0],
+                                                             guesses=guesses)
+    runtime_warnings = [x for x in w if issubclass(x.category, RuntimeWarning)]
+    assert not runtime_warnings, f"Unexpected RuntimeWarnings: {[str(x.message) for x in runtime_warnings]}"
