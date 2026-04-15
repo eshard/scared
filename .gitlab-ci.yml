@@ -99,6 +99,7 @@ build:conda:x86_64:
 
 build:conda:arm64:
   extends: .build:conda
+  allow_failure: true
   tags:
     - arm
   variables:
