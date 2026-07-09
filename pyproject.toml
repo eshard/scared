@@ -58,8 +58,8 @@ exclude = ["tests"]
 
 [tool.setuptools_scm]
 version_file = "scared/_version.py"
-version_scheme = "no-guess-dev"
-local_scheme = "node-and-date"
+version_scheme = "post-release"
+local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 norecursedirs = [".* *.egg* build dist conda.recipe .recipe"]
