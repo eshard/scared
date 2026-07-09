@@ -9,6 +9,7 @@ SCALib (https://github.com/simple-crypto/SCALib) is an optional dependency.
 from .snr import SNRDistinguisherSCALib, SNRDistinguisherSCALibMixin, SCALIB_AVAILABLE
 from .analysis import SNRAttackSCALib, SNRReverseSCALib
 from .ttest import TTestAnalysisSCALib
+from .cpa import CPAAttackSCALib
 
 __all__ = [
     'SNRDistinguisherSCALib',
@@ -16,5 +17,6 @@ __all__ = [
     'SNRAttackSCALib',
     'SNRReverseSCALib',
     'TTestAnalysisSCALib',
+    'CPAAttackSCALib',
     'SCALIB_AVAILABLE',
 ]
