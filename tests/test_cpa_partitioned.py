@@ -289,12 +289,11 @@ def test_signed_targets_supported_with_explicit_partitions():
     assert np.allclose(attack.results, builtin.results, atol=1e-6, equal_nan=True)
 
 
-def test_pickling_drops_partition_lookup_and_keeps_results(leaking_traces):
+def test_pickling_preserves_results(leaking_traces):
     traces, metadatas = leaking_traces
     attack = CPAPartitionedAttack(selection_function=aes.selection_functions.encrypt.FirstSubBytes(), model=HammingWeight(), discriminant=maxabs)
     _run(attack, traces, metadatas)
 
     restored = pickle.loads(pickle.dumps(attack))
-    assert '_data_to_partition_index' not in restored.__dict__
     assert restored.scores.argmax(axis=0)[0] == _SECRET_KEY_BYTE
     assert np.allclose(restored.results, attack.results, equal_nan=True)

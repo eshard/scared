@@ -1,9 +1,11 @@
-"""CPA attack computed through trace partitioning, without any SCALib dependency.
+"""CPA attack computed through trace partitioning.
 
 This attack reproduces :class:`scared.CPAAttack` key ranking *and* correlation values, but
 removes the guess dimension from the accumulation. Traces are partitioned once by their raw
 target class, and every guess is enumerated cheaply at correlation time from a precomputed
-model table.
+model table. This trick -- accumulating per-class statistics independently of the guesses and
+recombining them through a model table at the end -- is borrowed from SCALib's CPA, and is
+implemented here on top of scared's own partitioned distinguisher.
 
 The model table is built by evaluating the actual selection function on the canonical class
 set for the whole guess space, so no assumption is made on how the guess and the target
@@ -182,16 +184,6 @@ class CPAPartitionedAttack(_BasePartitionedAttack, _PartitionedDistinguisherMixi
             results[:, word, :] = correlation.astype(self.precision)
 
         return results
-
-    def __getstate__(self):
-        """Return picklable state, dropping the non-picklable numba partition lookup (rebuilt on update)."""
-        state = self.__dict__.copy()
-        state.pop('_data_to_partition_index', None)
-        return state
-
-    def __setstate__(self, state):
-        """Restore state, leaving the partition lookup unset until update is called again."""
-        self.__dict__.update(state)
 
     @property
     def _distinguisher_str(self):
