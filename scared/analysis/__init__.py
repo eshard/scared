@@ -9,3 +9,4 @@ from ._analysis import (  # noqa: F401
 )
 from .template import TemplateAttack, TemplateDPAAttack, BaseTemplateAttack  # noqa: F401
 from .base import BaseAttack, BasePartitionedAttack, BasePartitionedReverse, BaseReverse   # noqa: F401
+from .cpa_partitioned import CPAPartitionedAttack  # noqa: F401

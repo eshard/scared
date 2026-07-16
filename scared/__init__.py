@@ -22,7 +22,8 @@ from .analysis import (  # noqa:F401
     BaseReverse, CPAReverse, DPAReverse,
     ANOVAReverse, NICVReverse, SNRReverse,
     BasePartitionedReverse, MIAReverse,
-    TemplateAttack, TemplateDPAAttack
+    TemplateAttack, TemplateDPAAttack,
+    CPAPartitionedAttack
 )
 from .preprocesses import preprocess, Preprocess, PreprocessError  # noqa:F401
 from .synchronization import Synchronizer, ResynchroError, SynchronizerError  # noqa:F401
