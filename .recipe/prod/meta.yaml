@@ -26,6 +26,9 @@ requirements:
     - psutil
     - scipy
     # Note: scalib is optional, install separately if needed on x86_64
+  run_constrained:
+    # Wrong sdot/ddot results on arm64, fixed in 0.3.34: https://github.com/OpenMathLib/OpenBLAS/pull/5918
+    - libopenblas !=0.3.32,!=0.3.33  # [aarch64 or arm64]
 
 test:
   imports:
